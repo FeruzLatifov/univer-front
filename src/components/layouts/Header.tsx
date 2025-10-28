@@ -2,7 +2,7 @@ import { Bell, Menu, Moon, Sun, Search, User, LogOut, GraduationCap, BookOpen, U
 import { useAuthStore } from '@/stores/authStore'
 import { useThemeStore } from '@/stores/themeStore'
 import { getInitials } from '@/lib/utils'
-import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import NotificationsDropdown from '@/components/NotificationsDropdown'
 
 export default function Header() {
