@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.2 0 0);
+  --color-muted: oklch(0.96 0.01 240);
+  --color-muted-foreground: oklch(0.5 0.02 240);
+  --color-accent: oklch(0.96 0.01 240);
+  --color-accent-foreground: oklch(0.2 0.1 240);
+  --color-border: oklch(0.92 0.02 240);
+  --color-input: oklch(0.92 0.02 240);
+  --color-ring: oklch(0.2 0.1 240);
+  --radius: 0.5rem;
+}
+
+:root {
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --muted: var(--color-muted);
+  --muted-foreground: var(--color-muted-foreground);
+  --accent: var(--color-accent);
+  --accent-foreground: var(--color-accent-foreground);
+  --border: var(--color-border);
+  --input: var(--color-input);
+  --ring: var(--color-ring);
+}
+
+.dark {
+  --color-background: oklch(0.15 0 0);
+  --color-foreground: oklch(0.98 0 0);
+  --color-muted: oklch(0.25 0.01 240);
+  --color-muted-foreground: oklch(0.65 0.02 240);
+  --color-accent: oklch(0.25 0.01 240);
+  --color-accent-foreground: oklch(0.98 0 0);
+  --color-border: oklch(0.25 0.01 240);
+  --color-input: oklch(0.25 0.01 240);
+  --color-ring: oklch(0.85 0.02 240);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ultra-dense table utilities */
+.table-dense th {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+}
+
+.table-dense td {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+}
+
+.table-dense tr {
+  border-bottom: 1px solid rgb(229 231 235);
+}
+
+.table-dense tr:hover {
+  background-color: rgb(249 250 251);
+}
+
+/* Dense form controls */
+.input-dense {
+  height: 2rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 0.375rem;
+}
+
+.btn-dense {
+  height: 1.75rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.6875rem;
+  border-radius: 0.375rem;
+}
+
+/* Custom gradient backgrounds for different faculties */
+.gradient-science {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+}
+
+.gradient-medical {
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+
+.gradient-math {
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+}
+
+.gradient-code {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.gradient-philosophy {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Smooth transitions */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* Blob animation for login page */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
