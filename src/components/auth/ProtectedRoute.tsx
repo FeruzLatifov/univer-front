@@ -1,9 +1,11 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore, User } from '@/stores/authStore'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  allowedRoles?: User['role'][]
+  allowedRoles?: User['role'][] // Frontend fallback (for UX)
+  resourcePath?: string // Backend permission path (for real security)
   redirectTo?: string
 }
 
@@ -11,18 +13,22 @@ interface ProtectedRouteProps {
  * Protected Route Component
  *
  * Protects routes from unauthenticated access
- * Optionally restricts access by role
+ * Uses TWO-LAYER protection:
+ * 1. Frontend role check (UX only) - allowedRoles
+ * 2. Backend permission check (REAL security) - resourcePath
  *
  * @param children - The component to render if authorized
- * @param allowedRoles - Optional array of roles that can access this route
+ * @param allowedRoles - Optional array of roles for frontend UX (F12 can bypass this)
+ * @param resourcePath - Backend resource path (e.g., "structure/faculties") - CANNOT be bypassed
  * @param redirectTo - Where to redirect if not authorized (default: /login)
  */
 export function ProtectedRoute({
   children,
   allowedRoles,
+  resourcePath,
   redirectTo = '/login'
 }: ProtectedRouteProps) {
-  const { isAuthenticated, user, loading } = useAuthStore()
+  const { isAuthenticated, user, loading, canAccessPath } = useAuthStore()
   const location = useLocation()
 
   // Show loading state while checking auth
@@ -42,13 +48,23 @@ export function ProtectedRoute({
     return <Navigate to={redirectTo} state={{ from: location }} replace />
   }
 
-  // Check role-based access if roles are specified
+  // PRIMARY SECURITY: Backend permission check (CANNOT be bypassed via F12)
+  if (resourcePath) {
+    if (!canAccessPath(resourcePath)) {
+      console.warn(`Access denied to resource: ${resourcePath}. User role: ${user.role}`)
+      // SECURITY: Show 404 instead of 403/Unauthorized
+      // Makes it look like page doesn't exist (safer)
+      return <NotFoundPage />
+    }
+  }
+
+  // SECONDARY: Frontend role check (UX only - can be bypassed via F12, but backend will reject API calls)
   if (allowedRoles && allowedRoles.length > 0) {
     if (!allowedRoles.includes(user.role)) {
-      // User is authenticated but doesn't have required role
-      return (
-        <Navigate to="/unauthorized" state={{ from: location }} replace />
-      )
+      console.warn(`Access denied by role. Required: ${allowedRoles.join(', ')}, User: ${user.role}`)
+      // SECURITY: Show 404 instead of 403/Unauthorized
+      // Doesn't reveal that page exists
+      return <NotFoundPage />
     }
   }
 

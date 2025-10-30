@@ -1,4 +1,4 @@
-import { 
+import {
   LayoutDashboard,
   Users,
   GraduationCap,
@@ -27,6 +27,7 @@ import {
   Users2,
   KeyRound,
   Building2,
+  MessageSquare,
   // Talim ikonkalari
   BookMarked,
   Microscope,
@@ -406,6 +407,14 @@ export const menuItems: MenuItem[] = [
         label: 'Hisobotlar',
         icon: <BarChart3 className="w-4 h-4" />,
         path: '/teacher/reports',
+        color: 'text-green-600',
+        gradient: 'gradient-code',
+      },
+      {
+        id: 'teacher-forum',
+        label: 'Forum',
+        icon: <MessageSquare className="w-4 h-4" />,
+        path: '/teacher/forum',
         color: 'text-green-600',
         gradient: 'gradient-code',
       },

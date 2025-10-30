@@ -1,9 +1,15 @@
+import { useEffect } from 'react'
 import { mockStudents } from '@/lib/mockData'
 import { Search, Plus, Filter, Download, Edit, Trash2, Eye, Upload, GraduationCap, Users, BookOpen, Award, Calendar, Phone, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { getGradeColor, formatDate } from '@/lib/utils'
+import { setPageMeta, PAGE_META } from '@/utils/favicon'
 
 export default function StudentsPage() {
+  // Set page meta (title & favicon)
+  useEffect(() => {
+    setPageMeta(PAGE_META.students)
+  }, [])
   return (
     <div className="space-y-6">
       {/* Header */}

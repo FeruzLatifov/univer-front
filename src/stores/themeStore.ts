@@ -10,21 +10,21 @@ interface ThemeState {
 
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       theme: 'light',
       sidebarCollapsed: false,
 
       toggleTheme: () => {
         set((state) => {
           const newTheme = state.theme === 'light' ? 'dark' : 'light'
-          
+
           // Update document class
           if (newTheme === 'dark') {
             document.documentElement.classList.add('dark')
           } else {
             document.documentElement.classList.remove('dark')
           }
-          
+
           return { theme: newTheme }
         })
       },
@@ -35,6 +35,14 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: 'theme-storage',
+      onRehydrateStorage: () => (state) => {
+        // Apply theme class on rehydration
+        if (state?.theme === 'dark') {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+      },
     }
   )
 )

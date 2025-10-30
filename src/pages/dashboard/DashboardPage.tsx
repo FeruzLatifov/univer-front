@@ -1,10 +1,17 @@
+import { useEffect } from 'react'
 import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, TrendingDown, Calendar, Award, Microscope, Calculator, Code, Brain, Stethoscope } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { mockDashboardStats, mockStudentsByFaculty, mockStudentsByCourse, mockGPADistribution, mockPaymentStats } from '@/lib/mockData'
 import { formatNumber, formatCurrency } from '@/lib/utils'
+import { setPageMeta, PAGE_META } from '@/utils/favicon'
 
 export default function DashboardPage() {
   const stats = mockDashboardStats
+
+  // Set page meta (title & favicon)
+  useEffect(() => {
+    setPageMeta(PAGE_META.dashboard)
+  }, [])
 
   return (
     <div className="p-4 space-y-4">

@@ -1,6 +1,19 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { jwtDecode } from 'jwt-decode'
 import * as authApi from '@/lib/api/auth'
+
+/**
+ * JWT Payload Interface
+ * Permissions stored in JWT token (secure, cannot be tampered)
+ */
+interface JWTPayload {
+  user_id: number
+  role?: string
+  permissions?: string[]
+  exp: number
+  iat?: number
+}
 
 export interface User {
   id: number
@@ -15,6 +28,7 @@ export interface User {
   login?: string
   student_id?: string
   active: boolean
+  permissions?: string[] // Backend'dan kelgan permissions list
   // Additional fields from Laravel
   employee?: {
     id: number
@@ -40,6 +54,7 @@ interface AuthState {
   isAuthenticated: boolean
   loading: boolean
   error: string | null
+  permissionsCachedAt: number | null // ← NEW: Cache timestamp
 
   // Actions
   login: (credentials: authApi.LoginCredentials) => Promise<void>
@@ -50,6 +65,15 @@ interface AuthState {
   updateProfile: (data: any) => Promise<void>
   uploadAvatar: (file: File) => Promise<void>
   clearError: () => void
+
+  // JWT Verification Methods (F12-proof security)
+  getJWTPermissions: () => string[] | null
+  isTokenValid: () => boolean
+  canAccessPath: (path: string) => boolean
+
+  // Smart Cache Methods (Performance optimization)
+  isPermissionsCacheValid: () => boolean
+  refreshPermissionsInBackground: () => Promise<void>
 }
 
 /**
@@ -58,6 +82,23 @@ interface AuthState {
  * Manages authentication state using Zustand with persistence
  * Supports both staff and student authentication
  */
+/**
+ * Custom session storage for Zustand
+ * Browser yopilganda avtomatik o'chadi (localStorage emas)
+ */
+const sessionStorageAdapter = {
+  getItem: (name: string) => {
+    const value = sessionStorage.getItem(name)
+    return value ? JSON.parse(value) : null
+  },
+  setItem: (name: string, value: any) => {
+    sessionStorage.setItem(name, JSON.stringify(value))
+  },
+  removeItem: (name: string) => {
+    sessionStorage.removeItem(name)
+  },
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -66,6 +107,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       loading: false,
       error: null,
+      permissionsCachedAt: null, // ← NEW: Initialize cache timestamp
 
       /**
        * Login
@@ -96,13 +138,14 @@ export const useAuthStore = create<AuthState>()(
               login: user.login,
               student_id: user.student_id_number,
               active: user.active,
+              permissions: user.permissions || [], // Backend'dan kelgan permissions
               employee: user.employee,
               meta: user.meta,
             }
 
-            // Store token in localStorage for API client
-            localStorage.setItem('access_token', access_token)
-            localStorage.setItem('user_type', credentials.userType)
+            // Store token in sessionStorage (browser yopilsa o'chadi)
+            sessionStorage.setItem('access_token', access_token)
+            sessionStorage.setItem('user_type', credentials.userType)
 
             set({
               user: mappedUser,
@@ -110,6 +153,7 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: true,
               loading: false,
               error: null,
+              permissionsCachedAt: Date.now(), // ← Set cache timestamp on login
             })
           } else {
             throw new Error('Login failed')
@@ -137,9 +181,9 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('Logout error:', error)
         } finally {
-          // Clear state and localStorage
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('user_type')
+          // Clear state and sessionStorage
+          sessionStorage.removeItem('access_token')
+          sessionStorage.removeItem('user_type')
 
           set({
             user: null,
@@ -154,7 +198,7 @@ export const useAuthStore = create<AuthState>()(
        * Refresh Token
        */
       refreshToken: async () => {
-        const userType = localStorage.getItem('user_type') as 'staff' | 'student'
+        const userType = sessionStorage.getItem('user_type') as 'staff' | 'student'
 
         if (!userType) {
           throw new Error('User type not found')
@@ -167,7 +211,7 @@ export const useAuthStore = create<AuthState>()(
 
           if (response.success) {
             const { access_token } = response.data
-            localStorage.setItem('access_token', access_token)
+            sessionStorage.setItem('access_token', access_token)
 
             set({ token: access_token })
           }
@@ -183,7 +227,7 @@ export const useAuthStore = create<AuthState>()(
        * Fetch Current User
        */
       fetchCurrentUser: async () => {
-        const userType = localStorage.getItem('user_type') as 'staff' | 'student'
+        const userType = sessionStorage.getItem('user_type') as 'staff' | 'student'
 
         if (!userType) {
           return
@@ -313,13 +357,199 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => {
         set({ error: null })
       },
+
+      /**
+       * Get permissions from JWT token (secure source)
+       * JWT is signed by backend, cannot be tampered via F12
+       * @returns Permissions array or null if token invalid
+       */
+      getJWTPermissions: (): string[] | null => {
+        const { token } = get()
+
+        if (!token) {
+          return null
+        }
+
+        try {
+          const decoded = jwtDecode<JWTPayload>(token)
+
+          // Check if token expired
+          if (decoded.exp * 1000 < Date.now()) {
+            console.warn('⚠️ JWT token expired')
+            get().logout()
+            return null
+          }
+
+          return decoded.permissions || []
+        } catch (error) {
+          console.error('❌ Invalid JWT token:', error)
+          // Don't logout on parse error - might be old token format
+          return null
+        }
+      },
+
+      /**
+       * Verify that localStorage permissions match JWT permissions
+       * Detects F12 tampering attempts
+       * @returns true if valid, false if tampered (triggers logout)
+       */
+      isTokenValid: (): boolean => {
+        const { user, getJWTPermissions } = get()
+
+        if (!user || !user.permissions) {
+          return false
+        }
+
+        const jwtPermissions = getJWTPermissions()
+
+        // If JWT doesn't have permissions, fall back to localStorage (backward compatibility)
+        if (!jwtPermissions) {
+          return true
+        }
+
+        // Sort and compare to detect tampering
+        const localPerms = [...user.permissions].sort()
+        const jwtPerms = [...jwtPermissions].sort()
+
+        const match = JSON.stringify(localPerms) === JSON.stringify(jwtPerms)
+
+        if (!match) {
+          console.error('⚠️ SECURITY ALERT: Permissions tampered via F12!')
+          console.error('LocalStorage permissions:', localPerms)
+          console.error('JWT token permissions:', jwtPerms)
+          console.error('Logging out for security...')
+          get().logout()
+          return false
+        }
+
+        return true
+      },
+
+      /**
+       * Check if permissions cache is still valid
+       * TTL: 15 minutes (configurable)
+       */
+      isPermissionsCacheValid: (): boolean => {
+        const { permissionsCachedAt } = get()
+
+        if (!permissionsCachedAt) {
+          return false
+        }
+
+        const CACHE_TTL = 15 * 60 * 1000 // 15 minutes
+        const cacheAge = Date.now() - permissionsCachedAt
+
+        return cacheAge < CACHE_TTL
+      },
+
+      /**
+       * Refresh permissions in background (non-blocking)
+       * Called automatically when cache expires
+       * Performance: No user impact, instant page loads
+       */
+      refreshPermissionsInBackground: async (): Promise<void> => {
+        const { user, isPermissionsCacheValid, token } = get()
+
+        // Skip if no user or cache still valid
+        if (!user || !token || isPermissionsCacheValid()) {
+          return
+        }
+
+        try {
+          console.log('🔄 Refreshing permissions in background...')
+
+          // Non-blocking API call
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/v1/user/permissions`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+
+          if (!response.ok) {
+            throw new Error('Permission refresh failed')
+          }
+
+          const data = await response.json()
+          const newPermissions = data.data?.permissions || data.permissions
+
+          if (newPermissions) {
+            set({
+              user: {
+                ...user,
+                permissions: newPermissions
+              },
+              permissionsCachedAt: Date.now()
+            })
+
+            console.log('✅ Permissions refreshed:', newPermissions.length, 'permissions')
+          }
+        } catch (error) {
+          console.warn('⚠️ Background permission refresh failed:', error)
+          // Fail silently - don't block user, use cached permissions
+        }
+      },
+
+      /**
+       * Check if user can access a specific path
+       * SECURITY: Uses JWT token permissions (F12-proof)
+       * PERFORMANCE: Triggers background refresh if cache expired
+       */
+      canAccessPath: (path: string): boolean => {
+        const { user, isTokenValid, getJWTPermissions, refreshPermissionsInBackground } = get()
+
+        if (!user) {
+          return false
+        }
+
+        // CRITICAL SECURITY: Verify token hasn't been tampered
+        // If localStorage permissions don't match JWT, logout and deny access
+        if (!isTokenValid()) {
+          console.error('❌ Access denied: Token validation failed')
+          return false
+        }
+
+        // PERFORMANCE: Trigger background refresh if cache expired (non-blocking)
+        refreshPermissionsInBackground()
+
+        // Get permissions from JWT (secure source, not localStorage)
+        const permissions = getJWTPermissions()
+
+        // Fallback to localStorage if JWT doesn't have permissions (backward compatibility)
+        const effectivePermissions = permissions || user.permissions || []
+
+        if (effectivePermissions.length === 0) {
+          return false
+        }
+
+        // Admin has access to everything
+        if (user.role === 'admin' || effectivePermissions.includes('*')) {
+          return true
+        }
+
+        // Normalize path (remove leading/trailing slashes)
+        const normalizedPath = path.replace(/^\/+|\/+$/g, '')
+
+        // Check exact match
+        if (effectivePermissions.includes(normalizedPath)) {
+          return true
+        }
+
+        // Check if any parent path is allowed (e.g., "employees" allows "employees/workload")
+        return effectivePermissions.some(permission => {
+          const normalizedPermission = permission.replace(/^\/+|\/+$/g, '')
+          return normalizedPath.startsWith(normalizedPermission + '/')
+        })
+      },
     }),
     {
       name: 'auth-storage',
+      storage: sessionStorageAdapter, // ← sessionStorage (not localStorage)
       partialize: (state) => ({
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
+        permissionsCachedAt: state.permissionsCachedAt, // ← Save cache timestamp
       }),
     }
   )

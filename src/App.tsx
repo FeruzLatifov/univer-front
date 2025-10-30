@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthInit } from '@/hooks/useAuthInit'
 import { ProtectedRoute, PublicRoute } from '@/components/auth/ProtectedRoute'
+import { initGlobalFavicon } from '@/utils/favicon'
 
 // Layouts
 import MainLayout from '@/components/layouts/MainLayout'
@@ -8,6 +10,7 @@ import AuthLayout from '@/components/layouts/AuthLayout'
 
 // Auth Pages
 import LoginPage from '@/pages/auth/LoginPage'
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import UnauthorizedPage from '@/pages/auth/UnauthorizedPage'
 
 // Pages
@@ -119,6 +122,11 @@ function App() {
   // Initialize authentication on app load
   const isAuthInitialized = useAuthInit()
 
+  // Initialize global favicon and system name from backend
+  useEffect(() => {
+    initGlobalFavicon()
+  }, [])
+
   // Show loading screen while initializing auth
   if (!isAuthInitialized) {
     return (
@@ -140,6 +148,11 @@ function App() {
             <LoginPage />
           </PublicRoute>
         } />
+        <Route path="/forgot-password" element={
+          <PublicRoute>
+            <ForgotPasswordPage />
+          </PublicRoute>
+        } />
       </Route>
 
       {/* Unauthorized Page */}
@@ -155,18 +168,50 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         
         {/* Structure */}
-        <Route path="/structure/university" element={<UniversityPage />} />
-        <Route path="/structure/faculties" element={<FacultiesPage />} />
-        <Route path="/structure/departments" element={<DepartmentsPage />} />
+        <Route path="/structure/university" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector']} resourcePath="structure/university">
+            <UniversityPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/structure/faculties" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'dean']} resourcePath="structure/faculties">
+            <FacultiesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/structure/departments" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'dean']} resourcePath="structure/departments">
+            <DepartmentsPage />
+          </ProtectedRoute>
+        } />
         
         {/* Employees */}
-        <Route path="/employees" element={<EmployeesPage />} />
-        <Route path="/employees/workload" element={<TeachersWorkloadPage />} />
-        <Route path="/employees/academic-degrees" element={<AcademicDegreesPage />} />
+        <Route path="/employees" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'dean', 'hr']} resourcePath="employees">
+            <EmployeesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/employees/workload" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'dean', 'hr']} resourcePath="employees/workload">
+            <TeachersWorkloadPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/employees/academic-degrees" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'hr']} resourcePath="employees/academic-degrees">
+            <AcademicDegreesPage />
+          </ProtectedRoute>
+        } />
         
         {/* Decrees & Transfers */}
-        <Route path="/decrees" element={<DecreesPage />} />
-        <Route path="/transfers" element={<TransfersPage />} />
+        <Route path="/decrees" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'hr']} resourcePath="decrees">
+            <DecreesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/transfers" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'hr']} resourcePath="transfers">
+            <TransfersPage />
+          </ProtectedRoute>
+        } />
         
         {/* Students */}
         <Route path="/students" element={<StudentsPage />} />
@@ -182,17 +227,17 @@ function App() {
         
         {/* Finance - Only admin, rector, accountant */}
         <Route path="/finance" element={
-          <ProtectedRoute allowedRoles={['admin', 'rector', 'accountant']}>
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'accountant']} resourcePath="finance">
             <FinancePage />
           </ProtectedRoute>
         } />
         <Route path="/finance/contracts" element={
-          <ProtectedRoute allowedRoles={['admin', 'rector', 'accountant']}>
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'accountant']} resourcePath="finance/contracts">
             <ContractsPage />
           </ProtectedRoute>
         } />
         <Route path="/finance/payments" element={
-          <ProtectedRoute allowedRoles={['admin', 'rector', 'accountant']}>
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'accountant']} resourcePath="finance/payments">
             <PaymentsPage />
           </ProtectedRoute>
         } />
@@ -264,20 +309,32 @@ function App() {
         <Route path="/exams" element={<ExamsPage />} />
 
         {/* Archive */}
-        <Route path="/archive" element={<ArchivePage />} />
-        <Route path="/archive/diplomas" element={<DiplomasPage />} />
+        <Route path="/archive" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'hr']} resourcePath="archive">
+            <ArchivePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/archive/diplomas" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector', 'hr']} resourcePath="archive/diplomas">
+            <DiplomasPage />
+          </ProtectedRoute>
+        } />
 
         {/* Reports */}
-        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/reports" element={
+          <ProtectedRoute allowedRoles={['admin', 'rector']} resourcePath="reports">
+            <ReportsPage />
+          </ProtectedRoute>
+        } />
 
         {/* System - Admin only */}
         <Route path="/system/users" element={
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={['admin']} resourcePath="system/users">
             <SystemUsersPage />
           </ProtectedRoute>
         } />
         <Route path="/system/roles" element={
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={['admin']} resourcePath="system/roles">
             <SystemRolesPage />
           </ProtectedRoute>
         } />

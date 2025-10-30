@@ -12,13 +12,14 @@ export const apiClient = axios.create({
 // Request interceptor for adding auth token and language parameter
 apiClient.interceptors.request.use(
   (config) => {
-    // Add authorization token
-    const token = localStorage.getItem('access_token')
+    // Add authorization token from sessionStorage (more secure)
+    const token = sessionStorage.getItem('access_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
 
     // Add language parameter (Yii2 compatible: ?l=ru-RU)
+    // Language can stay in localStorage (not sensitive data)
     const apiLocale = localStorage.getItem('api_locale') || 'uz-UZ'
     if (!config.params) {
       config.params = {}
@@ -53,8 +54,8 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true
 
       try {
-        const refreshToken = localStorage.getItem('refresh_token')
-        const userType = localStorage.getItem('user_type') || 'student'
+        const refreshToken = sessionStorage.getItem('refresh_token')
+        const userType = sessionStorage.getItem('user_type') || 'student'
         if (refreshToken) {
           // Try to refresh the token (Laravel format)
           const response = await axios.post(
@@ -63,7 +64,7 @@ apiClient.interceptors.response.use(
           )
 
           const { access_token } = response.data
-          localStorage.setItem('access_token', access_token)
+          sessionStorage.setItem('access_token', access_token)
 
           // Retry original request with new token
           originalRequest.headers.Authorization = `Bearer ${access_token}`
@@ -71,8 +72,8 @@ apiClient.interceptors.response.use(
         }
       } catch (refreshError) {
         // Refresh failed, logout user
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
+        sessionStorage.removeItem('access_token')
+        sessionStorage.removeItem('refresh_token')
         window.location.href = '/login'
         return Promise.reject(refreshError)
       }

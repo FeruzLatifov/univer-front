@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { useThemeStore } from '@/stores/themeStore'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import {
-  LogIn, Lock, GraduationCap, BookOpen, Users, Award, Globe, User, IdCard,
-  BarChart3, Brain, TrendingUp, FileText, Sparkles, Activity, Target, Zap,
-  FileCheck, FileSignature, LayoutDashboard, ExternalLink
+  LogIn, Lock, GraduationCap, User, IdCard, Moon, Sun, Sparkles
 } from 'lucide-react'
 import { toast } from 'sonner'
+import * as systemApi from '@/lib/api/system'
+import { setPageMeta, PAGE_META, DEFAULT_FAVICON } from '@/utils/favicon'
 
 type UserType = 'staff' | 'student'
 
@@ -16,10 +17,47 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { login, loading, error, clearError } = useAuthStore()
+  const { theme, toggleTheme } = useThemeStore()
   const [userType, setUserType] = useState<UserType>('staff')
   const [loginField, setLoginField] = useState('admin')
   const [studentId, setStudentId] = useState('ST001')
   const [password, setPassword] = useState('admin123')
+
+  // System configuration
+  const [systemConfig, setSystemConfig] = useState<systemApi.SystemLoginConfig>({
+    logo: null,
+    name: 'UNIVER',
+    description: 'Universitet Boshqaruv Tizimi'
+  })
+  const [configLoading, setConfigLoading] = useState(true)
+
+  // Set page meta (title & favicon)
+  useEffect(() => {
+    setPageMeta(PAGE_META.login)
+  }, [])
+
+  // Fetch system configuration on mount
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const config = await systemApi.getLoginConfig()
+        setSystemConfig(config)
+        // Just update description if available, title stays as "Kirish"
+        if (config.description) {
+          setPageMeta({
+            description: config.description
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch system config:', error)
+        // Keep default values if API fails
+      } finally {
+        setConfigLoading(false)
+      }
+    }
+
+    fetchConfig()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,361 +89,217 @@ export default function LoginPage() {
     }
   }
 
-  // Features showcase
-  const features = [
-    {
-      icon: Brain,
-      title: 'AI Tahlil',
-      description: 'Sun\'iy intellekt orqali avtomatik tahlil',
-      color: 'from-purple-500 to-pink-500',
-      bgColor: 'bg-purple-50',
-      iconColor: 'text-purple-600'
-    },
-    {
-      icon: BarChart3,
-      title: 'Statistika',
-      description: 'Real vaqtda to\'liq statistik ma\'lumotlar',
-      color: 'from-blue-500 to-cyan-500',
-      bgColor: 'bg-blue-50',
-      iconColor: 'text-blue-600'
-    },
-    {
-      icon: TrendingUp,
-      title: 'Tahlillar',
-      description: 'O\'qish sifati va natijalarni tahlil qilish',
-      color: 'from-green-500 to-emerald-500',
-      bgColor: 'bg-green-50',
-      iconColor: 'text-green-600'
-    },
-    {
-      icon: FileText,
-      title: 'Hisobotlar',
-      description: 'Avtomatik hisobot va dashboardlar',
-      color: 'from-orange-500 to-red-500',
-      bgColor: 'bg-orange-50',
-      iconColor: 'text-orange-600'
-    },
-    {
-      icon: Zap,
-      title: 'Raqamlashtirish',
-      description: 'To\'liq raqamli ta\'lim jarayoni',
-      color: 'from-indigo-500 to-purple-500',
-      bgColor: 'bg-indigo-50',
-      iconColor: 'text-indigo-600'
-    },
-    {
-      icon: Target,
-      title: 'Monitoring',
-      description: 'Talabalar faoliyatini kuzatish',
-      color: 'from-pink-500 to-rose-500',
-      bgColor: 'bg-pink-50',
-      iconColor: 'text-pink-600'
-    }
-  ]
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-cyan-500 to-purple-600 relative overflow-hidden">
-      {/* Language Switcher - Top Right - Zamonaviy dizayn */}
-      <div className="absolute top-6 right-6 z-50">
-        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-2xl p-2">
+    <div className="min-h-screen relative overflow-hidden transition-colors duration-300 flex items-center justify-center">
+      {/* Professional Background - WCAG AA Compliant */}
+      <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-white to-slate-100'}`}></div>
+
+      {/* Floating Gradient Orbs - Subtle & Professional */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Main Orb - Blue */}
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/40 to-cyan-200/30 dark:from-blue-500/20 dark:to-cyan-400/10 rounded-full blur-3xl animate-float"></div>
+
+        {/* Secondary Orb - Violet */}
+        <div
+          className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-violet-300/40 to-purple-200/30 dark:from-violet-500/20 dark:to-purple-400/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: '2s' }}
+        ></div>
+
+        {/* Accent Orb - Emerald */}
+        <div
+          className="absolute top-1/2 left-1/2 w-[500px] h-[500px] bg-gradient-to-br from-emerald-300/40 to-teal-200/30 dark:from-emerald-500/20 dark:to-teal-400/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: '4s' }}
+        ></div>
+
+        {/* Extra highlight orb - Top right */}
+        <div
+          className="absolute top-10 right-10 w-[300px] h-[300px] bg-gradient-to-br from-cyan-300/30 to-blue-200/20 dark:from-cyan-400/15 dark:to-blue-300/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: '3s' }}
+        ></div>
+      </div>
+
+      {/* Tech Grid Pattern */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgxMzksMjU1LDI1NSwwLjA4KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-60"></div>
+
+      {/* Top Right Controls */}
+      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20 flex items-center gap-3 animate-slide-up">
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={toggleTheme}
+          className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all ${
+            theme === 'dark'
+              ? 'bg-slate-800 hover:bg-slate-700 border-2 border-slate-700'
+              : 'bg-white hover:bg-slate-50 border-2 border-slate-200 shadow-lg'
+          }`}
+          aria-label={theme === 'light' ? 'Qorong\'i rejim' : 'Yorug\' rejim'}
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-5 h-5 text-yellow-400" />
+          ) : (
+            <Moon className="w-5 h-5 text-slate-700" />
+          )}
+        </button>
+
+        {/* Language Switcher */}
+        <div className={`backdrop-blur-xl rounded-xl border-2 shadow-lg ${
+          theme === 'dark'
+            ? 'bg-slate-800 border-slate-700'
+            : 'bg-white border-slate-200'
+        }`}>
           <LanguageSwitcher variant="ghost" size="sm" showFlag={true} showName={false} />
         </div>
       </div>
 
-      {/* AI/Education Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Bright gradient mesh */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-          <div className="absolute top-0 right-0 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
-        </div>
+      <div className="container mx-auto px-4 relative z-10 w-full">
+        <div className="max-w-md mx-auto w-full">
+          {/* Login Card */}
+          <div className="w-full animate-slide-up">
+            {/* Glass Card with Glow Effect */}
+            <div className="relative group">
+              {/* Glow Effect - WCAG AA Compliant */}
+              <div className={`absolute inset-0 rounded-3xl blur-3xl transition-all duration-500 ${
+                theme === 'dark'
+                  ? 'bg-gradient-to-br from-blue-500/30 to-slate-700/30 opacity-50 group-hover:opacity-70'
+                  : 'bg-gradient-to-br from-blue-400/40 to-slate-300/40 opacity-60 group-hover:opacity-80'
+              }`}></div>
 
-        {/* Neural network pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <circle cx="30" cy="30" r="2" fill="white" opacity="0.5"/>
-                <line x1="30" y1="30" x2="60" y2="30" stroke="white" strokeWidth="0.5" opacity="0.3"/>
-                <line x1="30" y1="30" x2="30" y2="60" stroke="white" strokeWidth="0.5" opacity="0.3"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)"/>
-          </svg>
-        </div>
-
-        {/* Floating AI/Education icons and text */}
-        <div className="absolute top-20 left-10 text-white/40 font-bold text-sm animate-float">
-          🎓 EDUCATION
-        </div>
-        <div className="absolute top-32 right-16 text-white/40 font-bold text-sm animate-float animation-delay-2000">
-          🤖 AI POWERED
-        </div>
-        <div className="absolute bottom-40 left-16 text-white/40 font-bold text-sm animate-float animation-delay-4000">
-          📊 ANALYTICS
-        </div>
-        <div className="absolute bottom-24 right-32 text-white/40 font-bold text-sm animate-float">
-          🚀 FUTURE
-        </div>
-        <div className="absolute top-1/2 left-1/4 text-white/40 font-bold text-sm animate-float animation-delay-2000">
-          💡 INNOVATION
-        </div>
-        <div className="absolute top-1/3 right-1/4 text-white/40 font-bold text-sm animate-float animation-delay-4000">
-          📈 PROGRESS
-        </div>
-
-        {/* Geometric AI patterns */}
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 border-2 border-white/20 rotate-45 animate-spin" style={{animationDuration: '20s'}}></div>
-        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 border-2 border-white/20 rounded-full"></div>
-        <div className="absolute top-1/2 right-1/3 w-24 h-24 border-2 border-white/20 rotate-12"></div>
-      </div>
-
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-
-            {/* Left Side - Modern Branding & Features */}
-            <div className="space-y-8">
-              {/* Logo & Title - Yorqin Glass Effect */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  {/* Premium Animated Logo */}
-                  <div className="relative group">
-                    {/* Multi-layered glow effect */}
-                    <div className="absolute inset-0 w-24 h-24 rounded-3xl bg-white/50 blur-2xl animate-pulse"></div>
-                    <div className="absolute inset-0 w-24 h-24 rounded-3xl bg-gradient-to-br from-yellow-300 via-pink-300 to-blue-300 opacity-60 blur-xl group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                    {/* Main logo container - Glass effect */}
-                    <div className="relative w-24 h-24 rounded-3xl bg-white/40 backdrop-blur-xl flex items-center justify-center shadow-2xl border-2 border-white/60 transform hover:scale-110 hover:rotate-6 transition-all duration-500">
-                      {/* Inner gradient overlay */}
-                      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 via-transparent to-white/20"></div>
-
-                      {/* Animated shimmer */}
-                      <div className="absolute inset-0 rounded-3xl overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              {/* Glass Card */}
+              <div className={`relative backdrop-blur-3xl rounded-3xl border-2 shadow-2xl hover:shadow-3xl p-6 md:p-8 transition-all duration-300 ${
+                theme === 'dark'
+                  ? 'bg-slate-800 border-slate-700'
+                  : 'bg-white border-slate-200'
+              }`}>
+                {/* Logo & University Name - Inside Form */}
+                <div className="text-center mb-6">
+                  <div className="flex justify-center mb-3">
+                    {configLoading ? (
+                      <div className="relative">
+                        <div className={`w-20 h-20 rounded-xl flex items-center justify-center shadow-xl border-2 p-2 animate-pulse ${
+                          theme === 'dark'
+                            ? 'bg-slate-700 border-slate-600'
+                            : 'bg-gradient-to-br from-slate-50 via-white to-slate-100 border-slate-200'
+                        }`}>
+                          <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded"></div>
+                        </div>
                       </div>
-
-                      {/* Sparkle particles */}
-                      <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-300 rounded-full animate-ping shadow-lg"></div>
-                      <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-cyan-300 rounded-full animate-pulse shadow-lg"></div>
-                      <div className="absolute -top-1 left-3 w-2 h-2 bg-pink-300 rounded-full animate-pulse"></div>
-
-                      <GraduationCap className="w-14 h-14 text-blue-900 relative z-10 drop-shadow-2xl" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <h1 className="text-6xl font-extrabold text-white drop-shadow-2xl">
-                      UNIVER
-                    </h1>
-                    <p className="text-xl font-bold text-white/90 drop-shadow-lg">
-                      {t('nav.dashboard')} Tizimi
-                    </p>
-                  </div>
-                </div>
-
-                <div className="relative overflow-hidden flex items-center gap-3 p-5 bg-white/30 backdrop-blur-xl rounded-2xl border-2 border-white/50 shadow-xl">
-                  {/* Animated background shimmer */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer"></div>
-
-                  {/* Premium sparkles effect */}
-                  <div className="relative">
-                    <div className="w-10 h-10 rounded-xl bg-white/50 backdrop-blur-sm flex items-center justify-center shadow-md">
-                      <Sparkles className="w-6 h-6 text-yellow-600 animate-pulse" />
-                    </div>
-                    <div className="absolute inset-0 w-10 h-10 text-yellow-400 opacity-40 blur-md">
-                      <Sparkles className="w-6 h-6" />
-                    </div>
-                    {/* Sparkle particles */}
-                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
-                    <div className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-cyan-300 rounded-full animate-pulse"></div>
-                  </div>
-
-                  <p className="text-base text-white font-bold relative z-10 drop-shadow-lg">
-                    Zamonaviy AI va raqamli texnologiyalar bilan universitet jarayonlarini boshqaring
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats Grid - Yorqin Glass Effect */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="group p-5 bg-white/30 backdrop-blur-xl rounded-2xl border-2 border-white/40 hover:bg-white/40 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-white/40 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                      <Users className="w-7 h-7 text-blue-700" />
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-white drop-shadow-lg">
-                        2,500+
-                      </p>
-                      <p className="text-sm text-white/90 font-semibold">Talabalar</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="group p-5 bg-white/30 backdrop-blur-xl rounded-2xl border-2 border-white/40 hover:bg-white/40 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-white/40 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                      <BookOpen className="w-7 h-7 text-purple-700" />
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-white drop-shadow-lg">
-                        340+
-                      </p>
-                      <p className="text-sm text-white/90 font-semibold">Fanlar</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="group p-5 bg-white/30 backdrop-blur-xl rounded-2xl border-2 border-white/40 hover:bg-white/40 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-white/40 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                      <Award className="w-7 h-7 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-white drop-shadow-lg">
-                        180+
-                      </p>
-                      <p className="text-sm text-white/90 font-semibold">O'qituvchilar</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="group p-5 bg-white/30 backdrop-blur-xl rounded-2xl border-2 border-white/40 hover:bg-white/40 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-white/40 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                      <Globe className="w-7 h-7 text-pink-700" />
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-white drop-shadow-lg">
-                        5
-                      </p>
-                      <p className="text-sm text-white/90 font-semibold">Fakultetlar</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Features Grid - Yorqin Glass */}
-              <div>
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2 drop-shadow-lg">
-                  <Activity className="w-6 h-6 text-white" />
-                  Tizim imkoniyatlari
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {features.map((feature, index) => (
-                    <div
-                      key={index}
-                      className="group relative p-4 bg-white/25 backdrop-blur-xl rounded-xl border-2 border-white/40 hover:bg-white/35 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                    >
-                      <div className="w-11 h-11 rounded-lg bg-white/50 backdrop-blur-sm flex items-center justify-center mb-3 shadow-md">
-                        <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
+                    ) : systemConfig.logo ? (
+                      <div className="relative">
+                        <div className={`w-20 h-20 rounded-xl flex items-center justify-center shadow-xl border-2 p-2 ${
+                          theme === 'dark'
+                            ? 'bg-slate-700 border-slate-600'
+                            : 'bg-gradient-to-br from-slate-50 via-white to-slate-100 border-slate-200'
+                        }`}>
+                          <img
+                            src={systemConfig.logo}
+                            alt={systemConfig.name}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        {/* Sparkles Icon */}
+                        <Sparkles className="absolute -top-0.5 -right-0.5 w-5 h-5 text-yellow-500 animate-pulse" />
                       </div>
-                      <h4 className="font-bold text-white text-sm mb-1 drop-shadow">
-                        {feature.title}
-                      </h4>
-                      <p className="text-xs text-white/90 font-medium">
-                        {feature.description}
+                    ) : (
+                      <div className="relative">
+                        <div className={`w-20 h-20 rounded-xl flex items-center justify-center shadow-xl border-2 p-2 ${
+                          theme === 'dark'
+                            ? 'bg-slate-700 border-slate-600'
+                            : 'bg-gradient-to-br from-slate-50 via-white to-slate-100 border-slate-200'
+                        }`}>
+                          <img
+                            src={DEFAULT_FAVICON}
+                            alt="Default Logo"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        {/* Sparkles Icon */}
+                        <Sparkles className="absolute -top-0.5 -right-0.5 w-5 h-5 text-yellow-500 animate-pulse" />
+                      </div>
+                    )}
+                  </div>
+
+                  {configLoading ? (
+                    <>
+                      <div className="h-7 w-36 bg-slate-200 dark:bg-slate-700 rounded mx-auto mb-1.5 animate-pulse"></div>
+                      <div className="h-4 w-48 bg-slate-200 dark:bg-slate-700 rounded mx-auto animate-pulse"></div>
+                    </>
+                  ) : (
+                    <>
+                      <h1 className={`text-2xl font-bold font-display mb-1.5 ${
+                        theme === 'dark'
+                          ? 'text-white'
+                          : 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent'
+                      }`}>
+                        {systemConfig.name}
+                      </h1>
+                      <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
+                        {systemConfig.description}
                       </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Side - Login Form */}
-            <div className="w-full max-w-md mx-auto space-y-6">
-              {/* Quick Access - univer-yii2 imkoniyatlari */}
-              <div className="grid grid-cols-3 gap-3">
-                <button className="group p-4 bg-white/30 backdrop-blur-xl rounded-2xl border-2 border-white/40 hover:bg-white/40 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-12 h-12 rounded-xl bg-white/50 backdrop-blur-sm flex items-center justify-center shadow-md">
-                      <FileCheck className="w-6 h-6 text-green-700" />
-                    </div>
-                    <span className="text-xs font-bold text-white text-center">Diplom tekshirish</span>
-                  </div>
-                </button>
-
-                <button className="group p-4 bg-white/30 backdrop-blur-xl rounded-2xl border-2 border-white/40 hover:bg-white/40 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-12 h-12 rounded-xl bg-white/50 backdrop-blur-sm flex items-center justify-center shadow-md">
-                      <FileSignature className="w-6 h-6 text-blue-700" />
-                    </div>
-                    <span className="text-xs font-bold text-white text-center">Shartnoma olish</span>
-                  </div>
-                </button>
-
-                <button className="group p-4 bg-white/30 backdrop-blur-xl rounded-2xl border-2 border-white/40 hover:bg-white/40 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-12 h-12 rounded-xl bg-white/50 backdrop-blur-sm flex items-center justify-center shadow-md">
-                      <LayoutDashboard className="w-6 h-6 text-purple-700" />
-                    </div>
-                    <span className="text-xs font-bold text-white text-center">Statistika</span>
-                  </div>
-                </button>
-              </div>
-
-              {/* Login Form */}
-              <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border-2 border-white/50">
-                {/* Form Header */}
-                <div className="text-center mb-8">
-                  <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                    {t('auth.login')}
-                  </h3>
-                  <p className="text-gray-600">
-                    {t('auth.welcome_back')}
-                  </p>
+                    </>
+                  )}
                 </div>
 
-                {/* User Type Tabs */}
-                <div className="flex gap-2 p-1 bg-gray-100 rounded-xl mb-6">
+                {/* User Type Tabs - Compact & Modern */}
+                <div className={`flex gap-1.5 p-1 rounded-xl mb-4 border ${
+                  theme === 'dark'
+                    ? 'bg-slate-700/30 border-slate-600/50'
+                    : 'bg-slate-100/80 border-slate-300/50'
+                }`}>
                   <button
                     type="button"
                     onClick={() => handleUserTypeChange('staff')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
                       userType === 'staff'
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                        : 'text-gray-600 hover:text-gray-800'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md scale-[1.02]'
+                        : theme === 'dark'
+                          ? 'text-slate-300 hover:bg-slate-600/50 hover:text-white'
+                          : 'text-slate-600 hover:bg-white/60 hover:text-slate-800'
                     }`}
                   >
-                    <User className="w-5 h-5" />
+                    <User className="w-4 h-4" />
                     <span>Xodimlar</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleUserTypeChange('student')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
                       userType === 'student'
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                        : 'text-gray-600 hover:text-gray-800'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md scale-[1.02]'
+                        : theme === 'dark'
+                          ? 'text-slate-300 hover:bg-slate-600/50 hover:text-white'
+                          : 'text-slate-600 hover:bg-white/60 hover:text-slate-800'
                     }`}
                   >
-                    <GraduationCap className="w-5 h-5" />
+                    <GraduationCap className="w-4 h-4" />
                     <span>Talabalar</span>
                   </button>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Login Field */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      {userType === 'staff' ? 'Login' : t('auth.student_id')}
-                    </label>
-                    <div className="relative">
+                  <div className="space-y-1.5">
+                    <label className={`text-xs font-semibold flex items-center space-x-1.5 ${
+                      theme === 'dark' ? 'text-slate-200' : 'text-slate-700'
+                    }`}>
                       {userType === 'staff' ? (
-                        <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <User className="w-3.5 h-3.5" />
                       ) : (
-                        <IdCard className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <IdCard className="w-3.5 h-3.5" />
                       )}
+                      <span>{userType === 'staff' ? 'Login' : t('auth.student_id')}</span>
+                    </label>
+                    <div className="relative group">
                       {userType === 'staff' ? (
                         <input
                           type="text"
                           value={loginField}
                           onChange={(e) => setLoginField(e.target.value)}
-                          className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                           placeholder="admin"
+                          className={`relative w-full border-2 rounded-lg px-3 py-2.5 pl-10 text-sm transition-all shadow-sm ${
+                            theme === 'dark'
+                              ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-slate-500'
+                              : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 hover:border-slate-300'
+                          } focus:outline-none`}
                           required
                         />
                       ) : (
@@ -413,80 +307,111 @@ export default function LoginPage() {
                           type="text"
                           value={studentId}
                           onChange={(e) => setStudentId(e.target.value)}
-                          className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                           placeholder="ST001"
+                          className={`relative w-full border-2 rounded-lg px-3 py-2.5 pl-10 text-sm transition-all shadow-sm ${
+                            theme === 'dark'
+                              ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-slate-500'
+                              : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 hover:border-slate-300'
+                          } focus:outline-none`}
                           required
                         />
+                      )}
+                      {userType === 'staff' ? (
+                        <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
+                          theme === 'dark'
+                            ? 'text-slate-400 group-focus-within:text-blue-400'
+                            : 'text-slate-400 group-focus-within:text-blue-600'
+                        }`} />
+                      ) : (
+                        <IdCard className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
+                          theme === 'dark'
+                            ? 'text-slate-400 group-focus-within:text-blue-400'
+                            : 'text-slate-400 group-focus-within:text-blue-600'
+                        }`} />
                       )}
                     </div>
                   </div>
 
                   {/* Password */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      {t('auth.password')}
+                  <div className="space-y-1.5">
+                    <label className={`text-xs font-semibold flex items-center space-x-1.5 ${
+                      theme === 'dark' ? 'text-slate-200' : 'text-slate-700'
+                    }`}>
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>{t('auth.password')}</span>
                     </label>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <div className="relative group">
                       <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                         placeholder="••••••••"
+                        className={`relative w-full border-2 rounded-lg px-3 py-2.5 pl-10 text-sm transition-all shadow-sm ${
+                          theme === 'dark'
+                            ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-slate-500'
+                            : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 hover:border-slate-300'
+                        } focus:outline-none`}
                         required
                       />
+                      <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
+                        theme === 'dark'
+                          ? 'text-slate-400 group-focus-within:text-blue-400'
+                          : 'text-slate-400 group-focus-within:text-blue-600'
+                      }`} />
                     </div>
                   </div>
 
-                  {/* Submit Button */}
+                  {/* Submit Button - Compact */}
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white font-semibold hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className={`w-full font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-2 text-sm ${
+                      theme === 'dark'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
                   >
                     {loading ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         <span>{t('common.loading')}</span>
                       </>
                     ) : (
                       <>
-                        <LogIn className="w-5 h-5" />
+                        <Lock className="w-4 h-4" />
                         <span>{t('auth.login_button')}</span>
+                        <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
                   </button>
-                </form>
 
-                {/* Demo Credentials */}
-                <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200/50">
-                  <p className="text-xs text-gray-700">
-                    <strong className="text-blue-800">Demo:</strong>
-                    <span className="block mt-1.5 text-gray-600">
-                      <strong>Xodim:</strong> admin / admin123
-                    </span>
-                    <span className="block text-gray-600">
-                      <strong>Talaba:</strong> ST001 / student123
-                    </span>
-                  </p>
-                </div>
-
-                {/* Error */}
-                {error && (
-                  <div className="mt-4 p-4 bg-red-50 rounded-xl border border-red-200">
-                    <p className="text-sm text-red-800 text-center">{error}</p>
+                  {/* Forgot Password Link */}
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/forgot-password')}
+                      className={`text-xs font-medium transition-colors hover:underline ${
+                        theme === 'dark'
+                          ? 'text-slate-400 hover:text-blue-400'
+                          : 'text-slate-600 hover:text-blue-600'
+                      }`}
+                    >
+                      Parolni unutdingizmi?
+                    </button>
                   </div>
-                )}
-              </div>
 
-              {/* Footer */}
-              <div className="text-center">
-                <div className="inline-block px-6 py-3 bg-white/20 backdrop-blur-xl rounded-2xl border-2 border-white/30 shadow-lg">
-                  <p className="text-sm font-bold text-white drop-shadow-lg">
-                    © 2025 UNIVER. Barcha huquqlar himoyalangan.
-                  </p>
-                </div>
+                  {/* Error Message - Compact */}
+                  {error && (
+                    <div className={`border rounded-lg p-3 text-xs animate-slide-up flex items-start space-x-2 ${
+                      theme === 'dark'
+                        ? 'bg-red-900/30 border-red-700 text-red-300'
+                        : 'bg-red-50 border-red-300 text-red-700'
+                    }`}>
+                      <Lock className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span className="font-semibold">{error}</span>
+                    </div>
+                  )}
+                </form>
               </div>
             </div>
           </div>
