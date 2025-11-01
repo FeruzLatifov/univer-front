@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login - Direct</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        pre { background: #f4f4f4; padding: 10px; overflow: auto; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Test Login (Direct API Call)</h1>
+    <p>Bu test uchun - React/Zustand/Axios ishlatsiz to'g'ridan-to'g'ri API ga so'rov yuboradi.</p>
+
+    <form id="loginForm">
+        <input type="text" id="login" placeholder="Login" value="jora_kuvandikov" required>
+        <input type="password" id="password" placeholder="Password" value="jora12345" required>
+        <button type="submit">Kirish</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault()
+
+            const login = document.getElementById('login').value
+            const password = document.getElementById('password').value
+            const resultDiv = document.getElementById('result')
+
+            resultDiv.innerHTML = '<div class="result">Yuklanmoqda...</div>'
+
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/staff/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ login, password })
+                })
+
+                const data = await response.json()
+
+                console.log('Response:', data)
+
+                if (data.success && data.data && data.data.access_token) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Login Muvaffaqiyatli!</h3>
+                            <p><strong>User:</strong> ${data.data.user.full_name}</p>
+                            <p><strong>Login:</strong> ${data.data.user.login}</p>
+                            <p><strong>Role:</strong> ${data.data.user.role}</p>
+                            <p><strong>Token:</strong></p>
+                            <pre>${data.data.access_token.substring(0, 100)}...</pre>
+                            <p><strong>Full Response:</strong></p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Login Xato</h3>
+                            <p>${data.message || 'Login yoki parol noto\'g\'ri'}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `
+                }
+            } catch (error) {
+                console.error('Error:', error)
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Xatolik</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `
+            }
+        })
+    </script>
+</body>
+</html>

@@ -23,7 +23,10 @@
     "success": "Muvaffaqiyatli",
     "error": "Xatolik",
     "confirm": "Tasdiqlash",
-    "back": "Orqaga"
+    "back": "Orqaga",
+    "version": "Versiya",
+    "uid": "UID",
+    "date": "Sana"
   },
   "nav": {
     "dashboard": "Bosh sahifa",
@@ -91,7 +94,12 @@
     "forgot_password": "Parolni unutdingizmi?",
     "login_button": "Tizimga kirish",
     "welcome_back": "Xush kelibsiz!",
-    "login_to_continue": "Davom etish uchun tizimga kiring"
+    "login_to_continue": "Davom etish uchun tizimga kiring",
+    "login_or_employee_id": "Login / Xodim ID"
+  },
+  "roles": {
+    "staff": "Xodim",
+    "student": "Talaba"
   },
   "student": {
     "portal": "Talaba portali",

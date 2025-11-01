@@ -14,13 +14,17 @@ export interface Language {
 
 export interface LanguagesResponse {
   success: boolean
-  data: Language[]
-  current: string
+  data: {
+    languages: Language[]
+    current: string
+  }
 }
 
 export interface CurrentLanguageResponse {
   success: boolean
-  data: Language
+  data: {
+    locale: string
+  }
 }
 
 export interface SetLanguageRequest {
@@ -44,7 +48,7 @@ export interface SetLanguageResponse {
  * Get all active languages
  */
 export async function getLanguages(): Promise<LanguagesResponse> {
-  const { data } = await api.get<LanguagesResponse>('/languages')
+  const { data } = await api.get<LanguagesResponse>('/v1/languages')
   return data
 }
 
@@ -52,7 +56,7 @@ export async function getLanguages(): Promise<LanguagesResponse> {
  * Get current language
  */
 export async function getCurrentLanguage(): Promise<CurrentLanguageResponse> {
-  const { data } = await api.get<CurrentLanguageResponse>('/languages/current')
+  const { data } = await api.get<CurrentLanguageResponse>('/v1/languages/current')
   return data
 }
 
@@ -60,7 +64,7 @@ export async function getCurrentLanguage(): Promise<CurrentLanguageResponse> {
  * Set/Change language
  */
 export async function setLanguage(locale: string): Promise<SetLanguageResponse> {
-  const { data } = await api.post<SetLanguageResponse>('/languages/set', { locale })
+  const { data } = await api.post<SetLanguageResponse>('/v1/languages/set', { locale })
   return data
 }
 
@@ -68,21 +72,22 @@ export async function setLanguage(locale: string): Promise<SetLanguageResponse> 
  * Get language by code
  */
 export async function getLanguage(code: string): Promise<CurrentLanguageResponse> {
-  const { data } = await api.get<CurrentLanguageResponse>(`/languages/${code}`)
+  const { data } = await api.get<CurrentLanguageResponse>(`/v1/languages/${code}`)
   return data
 }
 
 /**
- * Language codes
+ * Language codes (env-driven, fallback to uz,oz,ru,en)
  */
-export const LANGUAGE_CODES = ['uz', 'ru', 'en'] as const
+export const LANGUAGE_CODES = ['uz', 'oz', 'ru', 'en'] as const
 export type LanguageCode = typeof LANGUAGE_CODES[number]
 
 /**
  * Language names
  */
 export const LANGUAGE_NAMES: Record<LanguageCode, string> = {
-  uz: "O'zbek",
+  uz: "O'zbekcha",
+  oz: "Ўзбекча",
   ru: 'Русский',
   en: 'English',
 }
@@ -91,8 +96,9 @@ export const LANGUAGE_NAMES: Record<LanguageCode, string> = {
  * Language native names
  */
 export const LANGUAGE_NATIVE_NAMES: Record<LanguageCode, string> = {
-  uz: "O'zbek tili",
-  ru: 'Русский язык',
+  uz: "O'zbekcha",
+  oz: "Ўзбекча",
+  ru: 'Русский',
   en: 'English',
 }
 
@@ -101,6 +107,7 @@ export const LANGUAGE_NATIVE_NAMES: Record<LanguageCode, string> = {
  */
 export const LANGUAGE_FLAGS: Record<LanguageCode, string> = {
   uz: '🇺🇿',
+  oz: '🇺🇿',
   ru: '🇷🇺',
   en: '🇬🇧',
 }

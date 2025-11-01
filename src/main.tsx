@@ -94,7 +94,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <App />
           <Toaster
-            position="top-right"
+            position="bottom-right"
             richColors
             closeButton
             duration={3000}

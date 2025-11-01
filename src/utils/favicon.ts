@@ -64,22 +64,33 @@ export const setPageMeta = (options: {
 export const initGlobalFavicon = async () => {
   try {
     // Fetch system config from backend
-    const response = await fetch('/api/system/login-config')
-    const config = await response.json()
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+    const response = await fetch(`${apiUrl}/system/login-config?l=uz-UZ`)
 
-    if (config.logo) {
-      // Set favicon to system logo (browser tab icon)
-      setPageMeta({ favicon: config.logo })
-      // Store logo URL for use in components (like LoginPage)
-      setGlobalSystemLogo(config.logo)
-    } else {
-      // If no logo from backend, keep default favicon
-      setGlobalSystemLogo(null)
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
     }
 
-    if (config.name) {
-      // Store system name for future use if needed
-      setGlobalSystemName(config.name)
+    const result = await response.json()
+
+    if (result.success && result.data) {
+      const config = result.data
+
+      // Set favicon if available
+      if (config.university_logo || config.favicon) {
+        const faviconUrl = config.favicon || config.university_logo
+        setPageMeta({ favicon: faviconUrl })
+        setGlobalSystemLogo(faviconUrl)
+      } else {
+        setGlobalSystemLogo(null)
+      }
+
+      // Store system name
+      if (config.university_name) {
+        setGlobalSystemName(config.university_name)
+      } else if (config.university_short_name) {
+        setGlobalSystemName(config.university_short_name)
+      }
     }
   } catch (error) {
     console.error('Failed to load system favicon:', error)

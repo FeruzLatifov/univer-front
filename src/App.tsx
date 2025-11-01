@@ -11,6 +11,7 @@ import AuthLayout from '@/components/layouts/AuthLayout'
 // Auth Pages
 import LoginPage from '@/pages/auth/LoginPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import UnauthorizedPage from '@/pages/auth/UnauthorizedPage'
 
 // Pages
@@ -148,9 +149,26 @@ function App() {
             <LoginPage />
           </PublicRoute>
         } />
+        {/* Legacy Yii2-compatible URL */}
+        <Route path="/dashboard/login" element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        } />
         <Route path="/forgot-password" element={
           <PublicRoute>
             <ForgotPasswordPage />
+          </PublicRoute>
+        } />
+        {/* Legacy Yii2-compatible URL */}
+        <Route path="/dashboard/reset" element={
+          <PublicRoute>
+            <ForgotPasswordPage />
+          </PublicRoute>
+        } />
+        <Route path="/reset-password" element={
+          <PublicRoute>
+            <ResetPasswordPage />
           </PublicRoute>
         } />
       </Route>

@@ -2,121 +2,40 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useThemeStore } from '@/stores/themeStore'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import { ArrowLeft, User, Lock, Mail, Phone, KeyRound, Moon, Sun, IdCard } from 'lucide-react'
+import { ArrowLeft, User, IdCard, Moon, Sun, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { forgotPassword } from '@/lib/api/auth'
 import { DEFAULT_FAVICON } from '@/utils/favicon'
+import { useTranslation } from 'react-i18next'
 
-type Step = 'request' | 'verify' | 'reset'
 type UserType = 'staff' | 'student'
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate()
   const { theme, toggleTheme } = useThemeStore()
+  const { t } = useTranslation()
 
-  const [step, setStep] = useState<Step>('request')
   const [userType, setUserType] = useState<UserType>('staff')
+  const [identifier, setIdentifier] = useState('')
   const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
-  // Step 1 - Request
-  const [login, setLogin] = useState('')
-  const [code, setCode] = useState('')
-  const [contactInfo, setContactInfo] = useState<{ email?: string; phone?: string }>({})
-
-  // Step 2 - Verify
-  const [pin, setPin] = useState('')
-  const [token, setToken] = useState('')
-
-  // Step 3 - Reset
-  const [password, setPassword] = useState('')
-  const [confirmation, setConfirmation] = useState('')
-
-  const handleRequestReset = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      // TODO: API call to /api/v1/auth/reset
-      // const response = await fetch('/api/v1/auth/reset', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ login })
-      // })
-      // const data = await response.json()
+      const response = await forgotPassword(identifier, userType)
+      setSubmitted(true)
+      toast.success(response.message)
 
-      // Mock response
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      const mockData = {
-        code: 'mock_encrypted_token_' + Math.random(),
-        email: 'user@example.com',
-        phone: '+998 ** *** ** 45'
+      // Show debug info in development
+      if (response.debug) {
+        console.log('Reset token:', response.debug.token)
+        console.log('Reset link:', response.debug.reset_link)
       }
-
-      setCode(mockData.code)
-      setContactInfo({ email: mockData.email, phone: mockData.phone })
-      setStep('verify')
-      toast.success('PIN kod yuborildi')
     } catch (error: any) {
-      toast.error(error.message || 'Xatolik yuz berdi')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleVerifyPin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      // TODO: API call to /api/v1/auth/reset?code={code}&pin={pin}
-      // const response = await fetch(`/api/v1/auth/reset?code=${code}&pin=${pin}`, {
-      //   method: 'POST'
-      // })
-      // const data = await response.json()
-
-      // Mock response
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      const mockToken = 'mock_password_reset_token_' + Math.random()
-
-      setToken(mockToken)
-      setStep('reset')
-      toast.success('PIN kod tasdiqlandi')
-    } catch (error: any) {
-      toast.error(error.message || 'PIN kod xato')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (password !== confirmation) {
-      toast.error('Parollar mos kelmadi')
-      return
-    }
-
-    if (password.length < 8) {
-      toast.error('Parol kamida 8 ta belgidan iborat bo\'lishi kerak')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      // TODO: API call to /api/v1/auth/reset/{token}
-      // const response = await fetch(`/api/v1/auth/reset/${token}`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ password, confirmation })
-      // })
-
-      // Mock response
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      toast.success('Parol muvaffaqiyatli yangilandi')
-      navigate('/login')
-    } catch (error: any) {
-      toast.error(error.message || 'Xatolik yuz berdi')
+      toast.error(error.response?.data?.message || 'Xatolik yuz berdi')
     } finally {
       setLoading(false)
     }
@@ -148,282 +67,156 @@ export default function ForgotPasswordPage() {
         >
           {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-slate-700" />}
         </button>
-
-        <div className={`backdrop-blur-xl rounded-xl border-2 shadow-lg ${
-          theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
-        }`}>
-          <LanguageSwitcher variant="ghost" size="sm" showFlag={true} showName={false} />
-        </div>
+        <LanguageSwitcher variant="outline" size="sm" />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10 w-full">
-        <div className="max-w-md mx-auto w-full">
-          <div className="w-full animate-slide-up">
-            <div className="relative group">
-              {/* Glow Effect */}
-              <div className={`absolute inset-0 rounded-3xl blur-3xl transition-all duration-500 ${
-                theme === 'dark'
-                  ? 'bg-gradient-to-br from-blue-500/30 to-slate-700/30 opacity-50 group-hover:opacity-70'
-                  : 'bg-gradient-to-br from-blue-400/40 to-slate-300/40 opacity-60 group-hover:opacity-80'
-              }`}></div>
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/login')}
+        className={`absolute top-4 left-4 md:top-6 md:left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-xl transition-all animate-slide-up ${
+          theme === 'dark'
+            ? 'bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 text-slate-200'
+            : 'bg-white hover:bg-slate-50 border-2 border-slate-200 shadow-lg text-slate-700'
+        }`}
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="hidden sm:inline">{t('common.back', { defaultValue: 'Orqaga' })}</span>
+      </button>
 
-              {/* Glass Card */}
-              <div className={`relative backdrop-blur-3xl rounded-3xl border-2 shadow-2xl hover:shadow-3xl p-6 md:p-8 transition-all duration-300 ${
-                theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
-              }`}>
-                {/* Back Button */}
-                <button
-                  onClick={() => navigate('/login')}
-                  className={`mb-4 flex items-center gap-2 text-sm font-medium transition-colors ${
-                    theme === 'dark' ? 'text-slate-400 hover:text-blue-400' : 'text-slate-600 hover:text-blue-600'
-                  }`}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Orqaga</span>
-                </button>
-
-                {/* Logo & Title */}
-                <div className="text-center mb-6">
-                  <div className="flex justify-center mb-3">
-                    <div className={`w-16 h-16 rounded-xl flex items-center justify-center shadow-xl border-2 p-2 ${
-                      theme === 'dark'
-                        ? 'bg-slate-700 border-slate-600'
-                        : 'bg-gradient-to-br from-slate-50 via-white to-slate-100 border-slate-200'
-                    }`}>
-                      <img src={DEFAULT_FAVICON} alt="Logo" className="w-full h-full object-contain" />
-                    </div>
-                  </div>
-                  <h1 className={`text-2xl font-bold mb-1.5 ${
-                    theme === 'dark' ? 'text-white' : 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent'
-                  }`}>
-                    Parolni tiklash
-                  </h1>
-                  <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
-                    {step === 'request' && 'Login ma\'lumotingizni kiriting'}
-                    {step === 'verify' && 'PIN kodni kiriting'}
-                    {step === 'reset' && 'Yangi parol yarating'}
-                  </p>
-                </div>
-
-                {/* User Type Tabs - Only for Step 1 */}
-                {step === 'request' && (
-                  <div className={`flex gap-1.5 p-1 rounded-xl mb-4 border ${
-                    theme === 'dark' ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-100/80 border-slate-300/50'
-                  }`}>
-                    <button
-                      type="button"
-                      onClick={() => setUserType('staff')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
-                        userType === 'staff'
-                          ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md scale-[1.02]'
-                          : theme === 'dark'
-                            ? 'text-slate-300 hover:bg-slate-600/50 hover:text-white'
-                            : 'text-slate-600 hover:bg-white/60 hover:text-slate-800'
-                      }`}
-                    >
-                      <User className="w-4 h-4" />
-                      <span>Xodimlar</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUserType('student')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
-                        userType === 'student'
-                          ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md scale-[1.02]'
-                          : theme === 'dark'
-                            ? 'text-slate-300 hover:bg-slate-600/50 hover:text-white'
-                            : 'text-slate-600 hover:bg-white/60 hover:text-slate-800'
-                      }`}
-                    >
-                      <IdCard className="w-4 h-4" />
-                      <span>Talabalar</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* Step 1: Request Reset */}
-                {step === 'request' && (
-                  <form onSubmit={handleRequestReset} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label className={`text-xs font-semibold flex items-center space-x-1.5 ${
-                        theme === 'dark' ? 'text-slate-200' : 'text-slate-700'
-                      }`}>
-                        <User className="w-3.5 h-3.5" />
-                        <span>{userType === 'staff' ? 'Login' : 'Student ID'}</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={login}
-                        onChange={(e) => setLogin(e.target.value)}
-                        placeholder={userType === 'staff' ? 'admin' : 'ST001'}
-                        className={`w-full border-2 rounded-lg px-3 py-2.5 text-sm transition-all shadow-sm ${
-                          theme === 'dark'
-                            ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                            : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600'
-                        } focus:outline-none`}
-                        required
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-2 text-sm bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {loading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Yuborilmoqda...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Mail className="w-4 h-4" />
-                          <span>PIN kod yuborish</span>
-                        </>
-                      )}
-                    </button>
-                  </form>
-                )}
-
-                {/* Step 2: Verify PIN */}
-                {step === 'verify' && (
-                  <form onSubmit={handleVerifyPin} className="space-y-4">
-                    {/* Contact Info Display */}
-                    <div className={`p-3 rounded-lg border text-xs ${
-                      theme === 'dark' ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'
-                    }`}>
-                      <p className={`mb-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
-                        PIN kod quyidagi manzillarga yuborildi:
-                      </p>
-                      {contactInfo.email && (
-                        <div className="flex items-center gap-2 mb-1">
-                          <Mail className="w-3.5 h-3.5 text-blue-500" />
-                          <span className={theme === 'dark' ? 'text-white' : 'text-slate-800'}>{contactInfo.email}</span>
-                        </div>
-                      )}
-                      {contactInfo.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-3.5 h-3.5 text-green-500" />
-                          <span className={theme === 'dark' ? 'text-white' : 'text-slate-800'}>{contactInfo.phone}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-xs font-semibold flex items-center space-x-1.5 ${
-                        theme === 'dark' ? 'text-slate-200' : 'text-slate-700'
-                      }`}>
-                        <KeyRound className="w-3.5 h-3.5" />
-                        <span>PIN kod (6 raqam)</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={pin}
-                        onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder="123456"
-                        maxLength={6}
-                        className={`w-full border-2 rounded-lg px-3 py-2.5 text-sm text-center tracking-widest font-mono transition-all shadow-sm ${
-                          theme === 'dark'
-                            ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                            : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600'
-                        } focus:outline-none`}
-                        required
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loading || pin.length !== 6}
-                      className="w-full font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-2 text-sm bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {loading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Tekshirilmoqda...</span>
-                        </>
-                      ) : (
-                        <>
-                          <KeyRound className="w-4 h-4" />
-                          <span>PIN kodni tasdiqlash</span>
-                        </>
-                      )}
-                    </button>
-                  </form>
-                )}
-
-                {/* Step 3: Reset Password */}
-                {step === 'reset' && (
-                  <form onSubmit={handleResetPassword} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label className={`text-xs font-semibold flex items-center space-x-1.5 ${
-                        theme === 'dark' ? 'text-slate-200' : 'text-slate-700'
-                      }`}>
-                        <Lock className="w-3.5 h-3.5" />
-                        <span>Yangi parol</span>
-                      </label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className={`w-full border-2 rounded-lg px-3 py-2.5 text-sm transition-all shadow-sm ${
-                          theme === 'dark'
-                            ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                            : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600'
-                        } focus:outline-none`}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-xs font-semibold flex items-center space-x-1.5 ${
-                        theme === 'dark' ? 'text-slate-200' : 'text-slate-700'
-                      }`}>
-                        <Lock className="w-3.5 h-3.5" />
-                        <span>Parolni tasdiqlang</span>
-                      </label>
-                      <input
-                        type="password"
-                        value={confirmation}
-                        onChange={(e) => setConfirmation(e.target.value)}
-                        placeholder="••••••••"
-                        className={`w-full border-2 rounded-lg px-3 py-2.5 text-sm transition-all shadow-sm ${
-                          theme === 'dark'
-                            ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                            : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600'
-                        } focus:outline-none`}
-                        required
-                      />
-                    </div>
-
-                    <div className={`text-xs p-3 rounded-lg ${
-                      theme === 'dark' ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700'
-                    }`}>
-                      Parol kamida 8 ta belgi va raqamlardan iborat bo'lishi kerak
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-2 text-sm bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {loading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Saqlanmoqda...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-4 h-4" />
-                          <span>Parolni yangilash</span>
-                        </>
-                      )}
-                    </button>
-                  </form>
-                )}
+      {/* Main Content */}
+      <div className="relative z-10 w-full max-w-md px-4 py-8 animate-fade-up">
+        <div
+          className={`backdrop-blur-xl rounded-3xl border-2 shadow-2xl p-8 ${
+            theme === 'dark'
+              ? 'bg-slate-800/70 border-slate-700/50'
+              : 'bg-white/70 border-slate-200/50'
+          }`}
+        >
+          {/* Logo & Title */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              <div
+                className={`w-20 h-20 rounded-2xl flex items-center justify-center ${
+                  theme === 'dark'
+                    ? 'bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-500/30'
+                    : 'bg-gradient-to-br from-cyan-50 to-blue-100 border-2 border-cyan-200'
+                }`}
+              >
+                <img src={DEFAULT_FAVICON} alt="Logo" className="w-12 h-12" />
               </div>
             </div>
+            <h2 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              {t('auth.reset_password', { defaultValue: 'Parolni tiklash' })}
+            </h2>
+            <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+              {t('auth.reset_password_desc', { defaultValue: 'Emailingizga parolni tiklash havolasi yuboriladi' })}
+            </p>
           </div>
+
+          {/* User Type Toggle */}
+          <div className="flex gap-2 p-1 mb-6 rounded-xl bg-slate-100 dark:bg-slate-900/50">
+            <button
+              type="button"
+              onClick={() => setUserType('staff')}
+              className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
+                userType === 'staff'
+                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-cyan-400 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              {t('roles.staff', { defaultValue: 'Xodim' })}
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserType('student')}
+              className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
+                userType === 'student'
+                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-cyan-400 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              {t('roles.student', { defaultValue: 'Talaba' })}
+            </button>
+          </div>
+
+          {!submitted ? (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Identifier Input (Login/EmployeeID or Student ID) */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                  {userType === 'staff'
+                    ? t('auth.reset_prompt_staff', { defaultValue: 'Xodim ID yoki akkaunt loginini kiriting' })
+                    : t('auth.reset_prompt_student', { defaultValue: 'Talaba ID (Student ID) ni kiriting' })}
+                </label>
+                <div className="relative">
+                  {userType === 'staff' ? (
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  ) : (
+                    <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  )}
+                  <input
+                    type="text"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder={userType === 'staff'
+                      ? t('auth.login_or_employee_id', { defaultValue: 'Login / Xodim ID' })
+                      : t('auth.student_id', { defaultValue: 'Student ID' })}
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all outline-none ${
+                      theme === 'dark'
+                        ? 'bg-slate-900/50 border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500/50'
+                        : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-blue-500'
+                    }`}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-xl font-semibold transition-all bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    {t('common.sending', { defaultValue: 'Yuborilmoqda...' })}
+                  </>
+                ) : (
+                  t('auth.reset_password', { defaultValue: 'Parolni tiklash' })
+                )}
+              </button>
+            </form>
+          ) : (
+            <div className="text-center space-y-4">
+              <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-green-500/10 border border-green-500/20' : 'bg-green-50 border border-green-200'}`}>
+                <p className={`text-sm ${theme === 'dark' ? 'text-green-400' : 'text-green-700'}`}>
+                  {t('auth.reset_link_sent', { defaultValue: 'Parolni tiklash havolasi quyidagi manzilga yuborildi:' })} <strong>{email}</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full py-3 rounded-xl font-semibold transition-all bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl"
+              >
+                {t('auth.back_to_login', { defaultValue: 'Kirish sahifasiga qaytish' })}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+            {t('auth.remember_password', { defaultValue: 'Parolingiz eslab qoldingizmi?' })}{' '}
+            <button
+              onClick={() => navigate('/login')}
+              className={`font-semibold hover:underline ${
+                theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
+              }`}
+            >
+              {t('auth.login', { defaultValue: 'Kirish' })}
+            </button>
+          </p>
         </div>
       </div>
     </div>

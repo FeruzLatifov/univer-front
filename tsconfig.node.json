@@ -3,11 +3,11 @@
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
+    "composite": true,
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "noEmit": true,
     "isolatedModules": true,
     "esModuleInterop": true
   },

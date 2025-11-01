@@ -9,7 +9,22 @@ export const apiClient = axios.create({
   },
 })
 
-// Request interceptor for adding auth token and language parameter
+// Initialize language headers from persisted store (early)
+try {
+  if (typeof window !== 'undefined') {
+    const persisted = localStorage.getItem('language-storage')
+    if (persisted) {
+      const parsed = JSON.parse(persisted)
+      const locale = parsed?.state?.locale
+      if (locale) {
+        apiClient.defaults.headers.common['Accept-Language'] = locale
+        apiClient.defaults.headers.common['X-Locale'] = locale
+      }
+    }
+  }
+} catch (_) {}
+
+// Request interceptor for adding auth token
 apiClient.interceptors.request.use(
   (config) => {
     // Add authorization token from sessionStorage (more secure)
@@ -18,13 +33,8 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
 
-    // Add language parameter (Yii2 compatible: ?l=ru-RU)
-    // Language can stay in localStorage (not sensitive data)
-    const apiLocale = localStorage.getItem('api_locale') || 'uz-UZ'
-    if (!config.params) {
-      config.params = {}
-    }
-    config.params.l = apiLocale
+    // Note: Language headers (X-Locale, Accept-Language) are set by languageStore
+    // No need to add ?l= parameter here
 
     return config
   },
@@ -36,12 +46,19 @@ apiClient.interceptors.request.use(
 // Response interceptor for handling errors and unwrapping Laravel format
 apiClient.interceptors.response.use(
   (response) => {
-    // Unwrap Laravel {success: true, data: ...} format
-    // This makes Laravel API compatible with existing Yii2 frontend code
+    // Smart unwrap: Only unwrap Laravel {success: true, data: ...} format
+    // This makes the API transparent - callers don't need to know about wrapping
     if (response.data && typeof response.data === 'object') {
       if ('success' in response.data && 'data' in response.data) {
-        // Extract the actual data from the wrapper
-        response.data = response.data.data
+        // Laravel format detected - unwrap it
+        // But keep success status accessible
+        const unwrapped = response.data.data
+        // Add success flag to the unwrapped data if it's an object
+        if (unwrapped && typeof unwrapped === 'object' && !Array.isArray(unwrapped)) {
+          unwrapped._success = response.data.success
+          unwrapped._message = response.data.message
+        }
+        response.data = unwrapped
       }
     }
     return response

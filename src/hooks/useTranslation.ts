@@ -73,14 +73,15 @@ export function useTranslation() {
     field: keyof T
   ): Record<LanguageCode, string> => {
     if (!obj) {
-      return { uz: '', ru: '', en: '' }
+      return { uz: '', oz: '', ru: '', en: '' } as Record<LanguageCode, string>
     }
 
     return {
       uz: t(obj, field, 'uz'),
+      oz: t(obj, field, 'oz'),
       ru: t(obj, field, 'ru'),
       en: t(obj, field, 'en'),
-    }
+    } as Record<LanguageCode, string>
   }
 
   /**

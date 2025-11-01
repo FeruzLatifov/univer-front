@@ -1,5 +1,4 @@
-import { useTranslation } from 'react-i18next'
-import { Languages } from 'lucide-react'
+import { Languages, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -7,19 +6,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useLanguageStore } from '@/stores/languageStore'
 import {
-  languageFlags,
-  languageNames,
-  availableLanguages,
-  getFullLocaleCode,
-  type AvailableLanguage,
-} from '@/i18n'
+  LANGUAGE_CODES,
+  LANGUAGE_NAMES,
+  type LanguageCode,
+} from '@/lib/api/language'
+import { toast } from 'sonner'
 
 /**
  * Language Switcher Component
  *
- * Foydalanuvchi tilni o'zgartirish uchun dropdown
- * Xuddi Yii2 dagi kabi - navbar da chiqadi
+ * Single canonical component (backend-synced, no duplicates)
+ * Uses languageStore with single-fetch pattern
+ * - Renders from store's languages when loaded
+ * - Falls back to constants if not loaded
+ * - Shows active checkmark for current locale
+ * - Syncs with backend API
  */
 
 interface LanguageSwitcherProps {
@@ -34,11 +37,6 @@ interface LanguageSwitcherProps {
   size?: 'default' | 'sm' | 'lg' | 'icon'
 
   /**
-   * Show flag emoji
-   */
-  showFlag?: boolean
-
-  /**
    * Show language name
    */
   showName?: boolean
@@ -47,56 +45,73 @@ interface LanguageSwitcherProps {
 export function LanguageSwitcher({
   variant = 'ghost',
   size = 'sm',
-  showFlag = true,
   showName = true,
 }: LanguageSwitcherProps) {
-  const { i18n } = useTranslation()
+  const { locale, setLocale, isChanging, languages, languagesLoaded } = useLanguageStore()
 
-  const currentLanguage = i18n.language as AvailableLanguage
+  const handleLanguageChange = async (newLocale: LanguageCode) => {
+    if (newLocale === locale || isChanging) return
 
-  const changeLanguage = (lng: AvailableLanguage) => {
-    // React i18n tilni o'zgartirish
-    i18n.changeLanguage(lng)
+    try {
+      await setLocale(newLocale)
 
-    // localStorage ga saqlash (i18n.ts da avtomatik, lekin shu yerda ham qo'shamiz)
-    localStorage.setItem('language', lng)
-
-    // API so'rovlar uchun to'liq til kodi
-    const fullLocaleCode = getFullLocaleCode(lng)
-    localStorage.setItem('api_locale', fullLocaleCode)
-
-    // Sahifani qayta yuklash (agar kerak bo'lsa)
-    // Odatda kerak emas, chunki React i18n avtomatik yangilaydi
-    // window.location.reload()
+      // Get language name from database if available
+      const dbLang = languages.find(l => l.code === newLocale)
+      const name = dbLang?.native_name || dbLang?.name || LANGUAGE_NAMES[newLocale]
+      toast.success('Til o\'zgartirildi', {
+        description: `${name} tiliga o'tkazildi`,
+      })
+    } catch (error) {
+      toast.error('Tilni o\'zgartishda xatolik', {
+        description: 'Iltimos qaytadan urinib ko\'ring',
+      })
+    }
   }
+
+  // Use languages from store if loaded, otherwise fallback to constants
+  // Filter only active languages from database
+  const displayLanguages = languagesLoaded && languages.length > 0
+    ? languages
+        .filter(lang => lang.active) // Faqat active tillar
+        .map(lang => ({
+          code: lang.code as LanguageCode,
+          name: lang.native_name || lang.name,
+        }))
+    : LANGUAGE_CODES.map(code => ({
+        code,
+        name: LANGUAGE_NAMES[code],
+      }))
+
+  // Get current language display name from database
+  const currentLangName = (() => {
+    const dbLang = languages.find(l => l.code === locale)
+    return dbLang?.native_name || dbLang?.name || LANGUAGE_NAMES[locale]
+  })()
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={variant} size={size} className="gap-2">
-          {showFlag && (
-            <span className="text-lg">{languageFlags[currentLanguage]}</span>
+        <Button
+          variant={variant}
+          size={size}
+          className="gap-2"
+          disabled={isChanging}
+        >
+          {showName && (
+            <span>{currentLangName}</span>
           )}
-          {showName && <span>{languageNames[currentLanguage]}</span>}
-          <Languages className="h-4 w-4" />
+          {!showName && <Languages className="h-4 w-4" />}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {availableLanguages.map((lng) => (
+      <DropdownMenuContent align="end" className="w-48">
+        {displayLanguages.map(({ code, name }) => (
           <DropdownMenuItem
-            key={lng}
-            onClick={() => changeLanguage(lng)}
-            className={
-              lng === currentLanguage
-                ? 'bg-accent font-medium'
-                : ''
-            }
+            key={code}
+            onClick={() => handleLanguageChange(code)}
+            className="flex items-center justify-between cursor-pointer"
           >
-            <span className="mr-2 text-lg">{languageFlags[lng]}</span>
-            <span>{languageNames[lng]}</span>
-            {lng === currentLanguage && (
-              <span className="ml-auto text-xs text-muted-foreground">✓</span>
-            )}
+            <span>{name}</span>
+            {locale === code && <Check className="h-4 w-4 text-primary" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -112,7 +127,6 @@ export function LanguageSwitcherIcon() {
     <LanguageSwitcher
       variant="ghost"
       size="icon"
-      showFlag={false}
       showName={false}
     />
   )
@@ -122,33 +136,49 @@ export function LanguageSwitcherIcon() {
  * Compact Language Switcher (Flag + Code)
  */
 export function LanguageSwitcherCompact() {
-  const { i18n } = useTranslation()
-  const currentLanguage = i18n.language as AvailableLanguage
+  const { locale, setLocale, isChanging, languages } = useLanguageStore()
 
-  const changeLanguage = (lng: AvailableLanguage) => {
-    i18n.changeLanguage(lng)
-    localStorage.setItem('language', lng)
-    localStorage.setItem('api_locale', getFullLocaleCode(lng))
+  const handleLanguageChange = async (newLocale: LanguageCode) => {
+    if (newLocale === locale || isChanging) return
+
+    try {
+      await setLocale(newLocale)
+
+      // Get language name from database if available
+      const dbLang = languages.find(l => l.code === newLocale)
+      const name = dbLang?.native_name || dbLang?.name || LANGUAGE_NAMES[newLocale]
+      toast.success('Til o\'zgartirildi', {
+        description: `${name} tiliga o'tkazildi`,
+      })
+    } catch (error) {
+      toast.error('Tilni o\'zgartishda xatolik', {
+        description: 'Iltimos qaytadan urinib ko\'ring',
+      })
+    }
   }
+
+  // Get current language name
+  const currentLangName = (() => {
+    const dbLang = languages.find(l => l.code === locale)
+    return dbLang?.native_name || dbLang?.name || LANGUAGE_NAMES[locale]
+  })()
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1 px-2">
-          <span className="text-base">{languageFlags[currentLanguage]}</span>
-          <span className="text-xs uppercase">{currentLanguage}</span>
+        <Button variant="outline" size="sm" className="gap-1 px-2" disabled={isChanging}>
+          <span className="text-sm">{currentLangName}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {availableLanguages.map((lng) => (
+      <DropdownMenuContent align="end" className="w-48">
+        {LANGUAGE_CODES.map((code) => (
           <DropdownMenuItem
-            key={lng}
-            onClick={() => changeLanguage(lng)}
-            className={lng === currentLanguage ? 'bg-accent' : ''}
+            key={code}
+            onClick={() => handleLanguageChange(code)}
+            className="flex items-center justify-between cursor-pointer"
           >
-            <span className="mr-2 text-base">{languageFlags[lng]}</span>
-            <span className="text-xs uppercase">{lng}</span>
-            <span className="ml-2 flex-1 text-sm">{languageNames[lng]}</span>
+            <span className="text-sm">{LANGUAGE_NAMES[code]}</span>
+            {locale === code && <Check className="h-4 w-4 text-primary" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

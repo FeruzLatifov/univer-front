@@ -23,7 +23,10 @@
     "success": "Успешно",
     "error": "Ошибка",
     "confirm": "Подтвердить",
-    "back": "Назад"
+    "back": "Назад",
+    "version": "Версия",
+    "uid": "UID",
+    "date": "Дата"
   },
   "nav": {
     "dashboard": "Главная",
@@ -91,7 +94,12 @@
     "forgot_password": "Забыли пароль?",
     "login_button": "Войти в систему",
     "welcome_back": "Добро пожаловать!",
-    "login_to_continue": "Войдите для продолжения"
+    "login_to_continue": "Войдите для продолжения",
+    "login_or_employee_id": "Логин / ID сотрудника"
+  },
+  "roles": {
+    "staff": "Сотрудник",
+    "student": "Студент"
   },
   "student": {
     "portal": "Портал студента",

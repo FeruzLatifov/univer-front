@@ -26,6 +26,10 @@ export interface AuthResponse {
       email?: string
       phone?: string
       role?: string
+      role_id?: number
+      role_code?: string | null
+      role_name?: string | null
+      roles?: Array<{ id: number; code?: string | null; name: string }>
       active: boolean
       employee?: {
         id: number
@@ -69,22 +73,33 @@ export interface UserProfileResponse {
  * Staff Login
  */
 export const staffLogin = async (login: string, password: string): Promise<AuthResponse> => {
-  const response = await apiClient.post<AuthResponse>('/v1/staff/auth/login', {
+  const response = await apiClient.post('/v1/staff/auth/login', {
     login,
     password,
   })
-  return response.data
+  // Interceptor already unwrapped {success, data} → data
+  // But we need to return {success, data} format for AuthResponse
+  return {
+    success: response.data._success ?? true,
+    data: response.data,
+    message: response.data._message
+  }
 }
 
 /**
  * Student Login
  */
 export const studentLogin = async (studentId: string, password: string): Promise<AuthResponse> => {
-  const response = await apiClient.post<AuthResponse>('/v1/student/auth/login', {
+  const response = await apiClient.post('/v1/student/auth/login', {
     student_id: studentId,
     password,
   })
-  return response.data
+  // Interceptor already unwrapped {success, data} → data
+  return {
+    success: response.data._success ?? true,
+    data: response.data,
+    message: response.data._message
+  }
 }
 
 /**
@@ -129,32 +144,48 @@ export const logout = async (userType: 'staff' | 'student'): Promise<void> => {
  * Refresh Token (Staff)
  */
 export const staffRefreshToken = async (): Promise<RefreshResponse> => {
-  const response = await apiClient.post<RefreshResponse>('/v1/staff/auth/refresh')
-  return response.data
+  const response = await apiClient.post('/v1/staff/auth/refresh')
+  // Interceptor unwraps {success, data} → data
+  return {
+    success: response.data._success ?? true,
+    data: response.data
+  }
 }
 
 /**
  * Refresh Token (Student)
  */
 export const studentRefreshToken = async (): Promise<RefreshResponse> => {
-  const response = await apiClient.post<RefreshResponse>('/v1/student/auth/refresh')
-  return response.data
+  const response = await apiClient.post('/v1/student/auth/refresh')
+  // Interceptor unwraps {success, data} → data
+  return {
+    success: response.data._success ?? true,
+    data: response.data
+  }
 }
 
 /**
  * Get Current User (Staff)
  */
 export const getStaffProfile = async (): Promise<UserProfileResponse> => {
-  const response = await apiClient.get<UserProfileResponse>('/v1/staff/auth/me')
-  return response.data
+  const response = await apiClient.get('/v1/staff/auth/me')
+  // Interceptor unwraps {success, data} → data
+  return {
+    success: response.data._success ?? true,
+    data: response.data
+  }
 }
 
 /**
  * Get Current User (Student)
  */
 export const getStudentProfile = async (): Promise<UserProfileResponse> => {
-  const response = await apiClient.get<UserProfileResponse>('/v1/student/auth/me')
-  return response.data
+  const response = await apiClient.get('/v1/student/auth/me')
+  // Interceptor unwraps {success, data} → data
+  return {
+    success: response.data._success ?? true,
+    data: response.data
+  }
 }
 
 /**
@@ -165,6 +196,18 @@ export const getCurrentUser = async (userType: 'staff' | 'student'): Promise<Use
     return getStaffProfile()
   } else {
     return getStudentProfile()
+  }
+}
+
+/**
+ * Switch active role (Staff)
+ */
+export const switchStaffRole = async (role: number): Promise<AuthResponse> => {
+  const response = await apiClient.post('/v1/staff/auth/role/switch', { role })
+  return {
+    success: response.data._success ?? true,
+    data: response.data,
+    message: response.data._message
   }
 }
 
@@ -221,4 +264,103 @@ export const uploadStudentAvatar = async (file: File): Promise<{ success: boolea
     },
   })
   return response.data
+}
+
+/**
+ * Password Reset Types
+ */
+export interface ForgotPasswordResponse {
+  success: boolean
+  message: string
+  debug?: {
+    token: string
+    reset_link: string
+  }
+}
+
+export interface ResetPasswordResponse {
+  success: boolean
+  message: string
+}
+
+/**
+ * Forgot Password - Student
+ */
+export const studentForgotPassword = async (identifier: string): Promise<ForgotPasswordResponse> => {
+  const payload: any = /@/.test(identifier) ? { email: identifier } : { login: identifier }
+  const response = await apiClient.post<ForgotPasswordResponse>('/v1/student/auth/forgot-password', payload)
+  return response.data
+}
+
+/**
+ * Forgot Password - Staff
+ */
+export const staffForgotPassword = async (identifier: string): Promise<ForgotPasswordResponse> => {
+  const payload: any = /@/.test(identifier) ? { email: identifier } : { login: identifier }
+  const response = await apiClient.post<ForgotPasswordResponse>('/v1/staff/auth/forgot-password', payload)
+  return response.data
+}
+
+/**
+ * Forgot Password - Universal
+ */
+export const forgotPassword = async (identifier: string, userType: 'staff' | 'student'): Promise<ForgotPasswordResponse> => {
+  if (userType === 'staff') {
+    return staffForgotPassword(identifier)
+  } else {
+    return studentForgotPassword(identifier)
+  }
+}
+
+/**
+ * Reset Password - Student
+ */
+export const studentResetPassword = async (
+  email: string,
+  token: string,
+  password: string,
+  password_confirmation: string
+): Promise<ResetPasswordResponse> => {
+  const response = await apiClient.post<ResetPasswordResponse>('/student/auth/reset-password', {
+    email,
+    token,
+    password,
+    password_confirmation,
+  })
+  return response.data
+}
+
+/**
+ * Reset Password - Staff
+ */
+export const staffResetPassword = async (
+  email: string,
+  token: string,
+  password: string,
+  password_confirmation: string
+): Promise<ResetPasswordResponse> => {
+  const response = await apiClient.post<ResetPasswordResponse>('/admin/auth/reset-password', {
+    email,
+    token,
+    password,
+    password_confirmation,
+  })
+  return response.data
+}
+
+/**
+ * Reset Password - Universal
+ */
+export const resetPassword = async (
+  email: string,
+  token: string,
+  password: string,
+  password_confirmation: string,
+  userType: 'staff' | 'student'
+): Promise<ResetPasswordResponse> => {
+  if (userType === 'staff') {
+    return staffResetPassword(email, token, password, password_confirmation)
+  } else {
+    return studentResetPassword(email, token, password, password_confirmation)
+  }
 }

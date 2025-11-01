@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { useThemeStore } from '@/stores/themeStore'
+import { useLanguageStore } from '@/stores/languageStore'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import {
-  LogIn, Lock, GraduationCap, User, IdCard, Moon, Sun, Sparkles
+  LogIn, Lock, GraduationCap, User, IdCard, Moon, Sun, Sparkles, Eye, EyeOff,
+  FileText, Award, FileCheck, BarChart3, MoreVertical, KeyRound, Calendar, Code
 } from 'lucide-react'
 import { toast } from 'sonner'
 import * as systemApi from '@/lib/api/system'
@@ -18,31 +20,41 @@ export default function LoginPage() {
   const { t } = useTranslation()
   const { login, loading, error, clearError } = useAuthStore()
   const { theme, toggleTheme } = useThemeStore()
+  const { locale } = useLanguageStore()
   const [userType, setUserType] = useState<UserType>('staff')
-  const [loginField, setLoginField] = useState('admin')
-  const [studentId, setStudentId] = useState('ST001')
-  const [password, setPassword] = useState('admin123')
+  const [loginField, setLoginField] = useState('')
+  const [studentId, setStudentId] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
 
   // System configuration
   const [systemConfig, setSystemConfig] = useState<systemApi.SystemLoginConfig>({
     logo: null,
-    name: 'UNIVER',
-    description: 'Universitet Boshqaruv Tizimi'
+    name: 'HEMIS Universitet axborot tizimi',
+    description: 'Universitet Boshqaruv Tizimi',
+    universityCode: null,
+    appVersion: '1.0.0'
   })
   const [configLoading, setConfigLoading] = useState(true)
+
+  // Current date/time for footer
+  const [currentDateTime, setCurrentDateTime] = useState(new Date())
 
   // Set page meta (title & favicon)
   useEffect(() => {
     setPageMeta(PAGE_META.login)
   }, [])
 
-  // Fetch system configuration on mount
+  // Fetch system configuration on mount and when language changes
   useEffect(() => {
     const fetchConfig = async () => {
       try {
+        setConfigLoading(true)
         const config = await systemApi.getLoginConfig()
         setSystemConfig(config)
-        // Just update description if available, title stays as "Kirish"
+        // Update description if available
         if (config.description) {
           setPageMeta({
             description: config.description
@@ -57,6 +69,15 @@ export default function LoginPage() {
     }
 
     fetchConfig()
+  }, [locale]) // Refetch when language changes
+
+  // Update current date/time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date())
+    }, 1000)
+
+    return () => clearInterval(timer)
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,12 +102,25 @@ export default function LoginPage() {
     setUserType(type)
     clearError()
     if (type === 'staff') {
-      setLoginField('admin')
-      setPassword('admin123')
+      setLoginField('')
+      setPassword('')
     } else {
-      setStudentId('ST001')
-      setPassword('student123')
+      setStudentId('')
+      setPassword('')
     }
+  }
+
+  // Format date/time for footer
+  const formatDateTime = (date: Date) => {
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(date)
   }
 
   return (
@@ -147,6 +181,96 @@ export default function LoginPage() {
             : 'bg-white border-slate-200'
         }`}>
           <LanguageSwitcher variant="ghost" size="sm" showFlag={true} showName={false} />
+        </div>
+
+        {/* More Menu (Dropdown) */}
+        <div className="relative">
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all ${
+              theme === 'dark'
+                ? 'bg-slate-800 hover:bg-slate-700 border-2 border-slate-700'
+                : 'bg-white hover:bg-slate-50 border-2 border-slate-200 shadow-lg'
+            }`}
+            aria-label="Ko'proq"
+          >
+            <MoreVertical className={`w-5 h-5 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`} />
+          </button>
+
+          {/* Dropdown Menu */}
+          {showDropdown && (
+            <>
+              {/* Backdrop to close dropdown */}
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setShowDropdown(false)}
+              ></div>
+              <div className={`absolute right-0 mt-2 w-56 rounded-xl border-2 shadow-2xl z-40 overflow-hidden ${
+                theme === 'dark'
+                  ? 'bg-slate-800 border-slate-700'
+                  : 'bg-white border-slate-200'
+              }`}>
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      setShowDropdown(false)
+                      navigate('/dashboard/reset')
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      theme === 'dark'
+                        ? 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    <span>Parolni tiklash</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDropdown(false)
+                      navigate('/find-diploma')
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      theme === 'dark'
+                        ? 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
+                    <Award className="w-4 h-4" />
+                    <span>Diplom topish</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDropdown(false)
+                      navigate('/find-contract')
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      theme === 'dark'
+                        ? 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
+                    <FileCheck className="w-4 h-4" />
+                    <span>Shartnoma topish</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDropdown(false)
+                      window.open('https://data.univer.uz', '_blank')
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      theme === 'dark'
+                        ? 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                    <span>Ochiq ma'lumotlar</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -229,7 +353,7 @@ export default function LoginPage() {
                           ? 'text-white'
                           : 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent'
                       }`}>
-                        {systemConfig.name}
+                        {systemConfig.name || 'HEMIS Universitet axborot tizimi'}
                       </h1>
                       <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
                         {systemConfig.description}
@@ -256,7 +380,7 @@ export default function LoginPage() {
                     }`}
                   >
                     <User className="w-4 h-4" />
-                    <span>Xodimlar</span>
+                    <span>{systemConfig.loginTypes?.staff?.label || t('roles.staff', { defaultValue: 'Xodim' })}</span>
                   </button>
                   <button
                     type="button"
@@ -270,32 +394,23 @@ export default function LoginPage() {
                     }`}
                   >
                     <GraduationCap className="w-4 h-4" />
-                    <span>Talabalar</span>
+                    <span>{systemConfig.loginTypes?.student?.label || t('roles.student', { defaultValue: 'Talaba' })}</span>
                   </button>
                 </div>
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Login Field */}
+                  {/* Login Field (match Yii2: placeholder-based, icon on the right) */}
                   <div className="space-y-1.5">
-                    <label className={`text-xs font-semibold flex items-center space-x-1.5 ${
-                      theme === 'dark' ? 'text-slate-200' : 'text-slate-700'
-                    }`}>
-                      {userType === 'staff' ? (
-                        <User className="w-3.5 h-3.5" />
-                      ) : (
-                        <IdCard className="w-3.5 h-3.5" />
-                      )}
-                      <span>{userType === 'staff' ? 'Login' : t('auth.student_id')}</span>
-                    </label>
                     <div className="relative group">
                       {userType === 'staff' ? (
                         <input
                           type="text"
                           value={loginField}
                           onChange={(e) => setLoginField(e.target.value)}
-                          placeholder="admin"
-                          className={`relative w-full border-2 rounded-lg px-3 py-2.5 pl-10 text-sm transition-all shadow-sm ${
+                          placeholder={t('auth.login_or_employee_id', { defaultValue: 'Login / Xodim ID' })}
+                          aria-label={t('auth.login_or_employee_id', { defaultValue: 'Login / Xodim ID' })}
+                          className={`relative w-full border-2 rounded-lg px-3 py-2.5 pr-10 text-sm transition-all shadow-sm ${
                             theme === 'dark'
                               ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-slate-500'
                               : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 hover:border-slate-300'
@@ -307,8 +422,9 @@ export default function LoginPage() {
                           type="text"
                           value={studentId}
                           onChange={(e) => setStudentId(e.target.value)}
-                          placeholder="ST001"
-                          className={`relative w-full border-2 rounded-lg px-3 py-2.5 pl-10 text-sm transition-all shadow-sm ${
+                          placeholder={t('auth.student_id', { defaultValue: 'Student ID' })}
+                          aria-label={t('auth.student_id', { defaultValue: 'Student ID' })}
+                          className={`relative w-full border-2 rounded-lg px-3 py-2.5 pr-10 text-sm transition-all shadow-sm ${
                             theme === 'dark'
                               ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-slate-500'
                               : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 hover:border-slate-300'
@@ -317,13 +433,13 @@ export default function LoginPage() {
                         />
                       )}
                       {userType === 'staff' ? (
-                        <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
+                        <User className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
                           theme === 'dark'
                             ? 'text-slate-400 group-focus-within:text-blue-400'
                             : 'text-slate-400 group-focus-within:text-blue-600'
                         }`} />
                       ) : (
-                        <IdCard className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
+                        <IdCard className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
                           theme === 'dark'
                             ? 'text-slate-400 group-focus-within:text-blue-400'
                             : 'text-slate-400 group-focus-within:text-blue-600'
@@ -332,33 +448,62 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  {/* Password */}
+                  {/* Password (match Yii2: placeholder-based, eye toggle on right) */}
                   <div className="space-y-1.5">
-                    <label className={`text-xs font-semibold flex items-center space-x-1.5 ${
-                      theme === 'dark' ? 'text-slate-200' : 'text-slate-700'
-                    }`}>
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>{t('auth.password')}</span>
-                    </label>
                     <div className="relative group">
                       <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className={`relative w-full border-2 rounded-lg px-3 py-2.5 pl-10 text-sm transition-all shadow-sm ${
+                        placeholder={t('auth.password', { defaultValue: 'Password' })}
+                        aria-label={t('auth.password', { defaultValue: 'Password' })}
+                        className={`relative w-full border-2 rounded-lg px-3 py-2.5 pr-10 text-sm transition-all shadow-sm ${
                           theme === 'dark'
                             ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-slate-500'
                             : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 hover:border-slate-300'
                         } focus:outline-none`}
                         required
                       />
-                      <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
-                        theme === 'dark'
-                          ? 'text-slate-400 group-focus-within:text-blue-400'
-                          : 'text-slate-400 group-focus-within:text-blue-600'
-                      }`} />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:scale-110 ${
+                          theme === 'dark'
+                            ? 'text-slate-400 hover:text-slate-200'
+                            : 'text-slate-400 hover:text-slate-600'
+                        }`}
+                        aria-label={showPassword ? 'Parolni yashirish' : 'Parolni ko\'rsatish'}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
                     </div>
+                  </div>
+
+                  {/* Remember Me */}
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="remember-me"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className={`w-4 h-4 rounded border-2 transition-all ${
+                        theme === 'dark'
+                          ? 'bg-slate-700 border-slate-600 text-blue-500 focus:ring-blue-500 focus:ring-offset-slate-800'
+                          : 'bg-white border-slate-300 text-blue-600 focus:ring-blue-600 focus:ring-offset-white'
+                      } focus:ring-2 focus:ring-offset-2`}
+                    />
+                    <label
+                      htmlFor="remember-me"
+                      className={`ml-2 text-xs font-medium cursor-pointer select-none ${
+                        theme === 'dark' ? 'text-slate-300' : 'text-slate-600'
+                      }`}
+                    >
+                      {t('auth.remember_me')}
+                    </label>
                   </div>
 
                   {/* Submit Button - Compact */}
@@ -389,29 +534,50 @@ export default function LoginPage() {
                   <div className="text-center">
                     <button
                       type="button"
-                      onClick={() => navigate('/forgot-password')}
+                      onClick={() => navigate('/dashboard/reset')}
                       className={`text-xs font-medium transition-colors hover:underline ${
                         theme === 'dark'
                           ? 'text-slate-400 hover:text-blue-400'
                           : 'text-slate-600 hover:text-blue-600'
                       }`}
                     >
-                      Parolni unutdingizmi?
+                      {t('auth.forgot_password')}
                     </button>
                   </div>
 
-                  {/* Error Message - Compact */}
-                  {error && (
-                    <div className={`border rounded-lg p-3 text-xs animate-slide-up flex items-start space-x-2 ${
-                      theme === 'dark'
-                        ? 'bg-red-900/30 border-red-700 text-red-300'
-                        : 'bg-red-50 border-red-300 text-red-700'
-                    }`}>
-                      <Lock className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      <span className="font-semibold">{error}</span>
-                    </div>
-                  )}
+                  {/* Error message removed; toast already shows feedback */}
                 </form>
+
+                {/* Footer - App Version, UID, Date */}
+                {!configLoading && (
+                  <div className={`mt-6 pt-4 border-t ${
+                    theme === 'dark' ? 'border-slate-700' : 'border-slate-200'
+                  }`}>
+                    <div className={`text-center text-xs space-y-1 ${
+                      theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                    }`}>
+                      <div className="flex items-center justify-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <FileText className="w-3 h-3" />
+                          <span className="font-semibold">{t('common.version')}:</span>
+                          <span>{systemConfig.appVersion}</span>
+                        </div>
+                        {systemConfig.universityCode && (
+                          <div className="flex items-center gap-1.5">
+                            <Code className="w-3 h-3" />
+                            <span className="font-semibold">{t('common.uid')}:</span>
+                            <span>{systemConfig.universityCode}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Calendar className="w-3 h-3" />
+                        <span className="font-semibold">{t('common.date')}:</span>
+                        <span>{formatDateTime(currentDateTime)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

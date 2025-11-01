@@ -20,7 +20,10 @@ export interface User {
   name: string
   email?: string
   phone?: string
-  role: 'admin' | 'dean' | 'teacher' | 'student' | 'accountant' | 'rector' | 'hr'
+  role: string
+  roleId?: number | null
+  roleName?: string | null
+  roles?: Array<{ id?: number; code?: string | null; name: string }>
   type: 'staff' | 'student'
   avatar?: string
   department?: string
@@ -65,6 +68,8 @@ interface AuthState {
   updateProfile: (data: any) => Promise<void>
   uploadAvatar: (file: File) => Promise<void>
   clearError: () => void
+  switchRole: (roleId: number) => Promise<void>
+  refreshUserSilent: () => Promise<void>
 
   // JWT Verification Methods (F12-proof security)
   getJWTPermissions: () => string[] | null
@@ -117,31 +122,12 @@ export const useAuthStore = create<AuthState>()(
         set({ loading: true, error: null })
 
         try {
+          // authApi.login() returns AuthResponse (already unwrapped by auth.ts)
           const response = await authApi.login(credentials)
-
           if (response.success) {
             const { user, access_token } = response.data
 
-            // Map Laravel user to frontend User type
-            const mappedUser: User = {
-              id: user.id,
-              name: user.full_name,
-              email: user.email,
-              phone: user.phone,
-              role: mapRole(user.role, user.type),
-              type: user.type === 'admin' ? 'staff' : 'student',
-              avatar: user.type === 'admin'
-                ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.full_name}`
-                : undefined,
-              department: user.employee?.department || user.meta?.specialty?.name,
-              faculty: user.meta?.specialty?.name,
-              login: user.login,
-              student_id: user.student_id_number,
-              active: user.active,
-              permissions: user.permissions || [], // Backend'dan kelgan permissions
-              employee: user.employee,
-              meta: user.meta,
-            }
+            const mappedUser = buildUserFromApi(user)
 
             // Store token in sessionStorage (browser yopilsa o'chadi)
             sessionStorage.setItem('access_token', access_token)
@@ -156,10 +142,10 @@ export const useAuthStore = create<AuthState>()(
               permissionsCachedAt: Date.now(), // ← Set cache timestamp on login
             })
           } else {
-            throw new Error('Login failed')
+            throw new Error(response.message || 'Login failed')
           }
         } catch (error: any) {
-          const errorMessage = error.response?.data?.message || 'Login yoki parol noto\'g\'ri'
+          const errorMessage = error.message || error.response?.data?.message || 'Login yoki parol noto\'g\'ri'
           set({
             loading: false,
             error: errorMessage,
@@ -239,26 +225,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await authApi.getCurrentUser(userType)
 
           if (response.success) {
-            const { data: user } = response
-
-            const mappedUser: User = {
-              id: user.id,
-              name: user.full_name,
-              email: user.email,
-              phone: user.phone,
-              role: mapRole(user.role, user.type),
-              type: user.type === 'admin' ? 'staff' : 'student',
-              avatar: user.type === 'admin'
-                ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.full_name}`
-                : undefined,
-              department: user.employee?.department || user.meta?.specialty?.name,
-              faculty: user.meta?.specialty?.name,
-              login: user.login,
-              student_id: user.student_id_number,
-              active: user.active,
-              employee: user.employee,
-              meta: user.meta,
-            }
+            const mappedUser = buildUserFromApi(response.data)
 
             set({
               user: mappedUser,
@@ -271,6 +238,57 @@ export const useAuthStore = create<AuthState>()(
           set({ loading: false })
           // If fetch fails, logout
           get().logout()
+        }
+      },
+
+      /**
+       * Refresh current user WITHOUT toggling global loading state
+       * Used for locale-change rehydration so UI doesn't get stuck
+       */
+      refreshUserSilent: async () => {
+        const userType = sessionStorage.getItem('user_type') as 'staff' | 'student'
+        if (!userType) {
+          return
+        }
+        try {
+          const response = await authApi.getCurrentUser(userType)
+          if (response.success) {
+            const mappedUser = buildUserFromApi(response.data)
+            set({ user: mappedUser, isAuthenticated: true })
+          }
+        } catch (error) {
+          // Fail silently - do not disrupt UI
+          console.warn('[auth] refreshUserSilent failed:', error)
+        }
+      },
+
+      /**
+       * Switch active role (staff only)
+       */
+      switchRole: async (roleId: number) => {
+        const { user } = get()
+        if (!user || user.type !== 'staff') return
+        set({ loading: true, error: null })
+        try {
+          const response = await authApi.switchStaffRole(roleId)
+          if (response.success) {
+            const { user: apiUser, access_token } = response.data
+            const mappedUser = buildUserFromApi(apiUser)
+
+            sessionStorage.setItem('access_token', access_token)
+
+            set({
+              user: mappedUser,
+              token: access_token,
+              isAuthenticated: true,
+              loading: false,
+              permissionsCachedAt: Date.now(),
+            })
+          } else {
+            set({ loading: false, error: response.message ?? 'Rolni o\'zgartirishda xatolik' })
+          }
+        } catch (e: any) {
+          set({ loading: false, error: e.response?.data?.message || 'Rolni o\'zgartirishda xatolik' })
         }
       },
 
@@ -558,23 +576,74 @@ export const useAuthStore = create<AuthState>()(
 /**
  * Helper: Map Laravel role to frontend role
  */
-function mapRole(role: string | undefined, type: string): User['role'] {
-  if (type === 'student') return 'student'
+function mapRole(role: string | number | undefined, type: string): string {
+  if (typeof role === 'string' && role.trim().length > 0) {
+    return role
+  }
+  if (typeof role === 'number') {
+    return String(role)
+  }
+  return type === 'student' ? 'student' : 'admin'
+}
 
-  switch (role) {
-    case 'admin':
-      return 'admin'
-    case 'rector':
-      return 'rector'
-    case 'dean':
-      return 'dean'
-    case 'teacher':
-      return 'teacher'
-    case 'accountant':
-      return 'accountant'
-    case 'hr':
-      return 'hr'
-    default:
-      return 'admin'
+const resolveApiOrigin = () => {
+  const apiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api'
+  try {
+    return new URL(apiUrl).origin
+  } catch (e) {
+    return 'http://localhost:8080'
+  }
+}
+
+const normalizeAvatarUrl = (value?: string | null): string | undefined => {
+  if (!value) return undefined
+  if (/^https?:\/\//i.test(value)) return value
+  const origin = resolveApiOrigin()
+  return `${origin}/${value.replace(/^\/+/, '')}`
+}
+
+const mapRolesArray = (roles: any[] | undefined): Array<{ id?: number; code?: string | null; name: string }> => {
+  if (!Array.isArray(roles)) return []
+  return roles
+    .filter((role) => role)
+    .map((role) => ({
+      id: typeof role.id === 'number' ? role.id : (typeof role.code === 'number' ? role.code : undefined),
+      code: role.code ?? null,
+      name: role.name ?? role.code ?? `#${role.id ?? role.code ?? ''}`,
+    }))
+}
+
+const buildUserFromApi = (apiUser: any): User => {
+  const type = apiUser?.type === 'admin' ? 'staff' : apiUser?.type ?? 'staff'
+  const roles = mapRolesArray(apiUser?.roles)
+  const roleCode = apiUser?.role_code ?? (typeof apiUser?.role === 'string' ? apiUser.role : undefined) ?? roles[0]?.code
+  const roleId = apiUser?.role_id ?? roles.find((r) => (roleCode ? r.code === roleCode : false))?.id ?? roles[0]?.id ?? null
+  const roleName = apiUser?.role_name ?? roles.find((r) => (roleId ? r.id === roleId : false) || (roleCode ? r.code === roleCode : false))?.name ?? null
+  const resolvedRole = mapRole(roleCode, type)
+  const resolvedRoleName = roleName ?? resolvedRole
+
+  const employee = apiUser?.employee
+  const avatarCandidate = apiUser?.avatar_url || employee?.avatar_url || employee?.image
+  const avatar = normalizeAvatarUrl(avatarCandidate) ?? (type === 'staff' ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(apiUser?.full_name ?? 'user')}` : undefined)
+
+  return {
+    id: apiUser?.id,
+    name: apiUser?.full_name ?? '',
+    email: apiUser?.email ?? undefined,
+    phone: apiUser?.phone ?? undefined,
+    role: resolvedRole,
+    roleId,
+    roleName: resolvedRoleName,
+    roles,
+    type,
+    avatar,
+    department: employee?.department ?? undefined,
+    faculty: apiUser?.meta?.specialty?.name ?? undefined,
+    login: apiUser?.login ?? undefined,
+    student_id: apiUser?.student_id_number ?? undefined,
+    active: Boolean(apiUser?.active),
+    permissions: apiUser?.permissions ?? [],
+    employee,
+    meta: apiUser?.meta,
   }
 }
