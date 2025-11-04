@@ -2,20 +2,20 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useThemeStore } from '@/stores/themeStore'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import { ArrowLeft, User, IdCard, Moon, Sun, Loader2 } from 'lucide-react'
+import { ArrowLeft, User, IdCard, Moon, Sun, Loader2, GraduationCap } from 'lucide-react'
 import { toast } from 'sonner'
 import { forgotPassword } from '@/lib/api/auth'
 import { DEFAULT_FAVICON } from '@/utils/favicon'
 import { useTranslation } from 'react-i18next'
 
-type UserType = 'staff' | 'student'
+type UserType = 'employee' | 'student'
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate()
   const { theme, toggleTheme } = useThemeStore()
   const { t } = useTranslation()
 
-  const [userType, setUserType] = useState<UserType>('staff')
+  const [userType, setUserType] = useState<UserType>('employee')
   const [identifier, setIdentifier] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -113,29 +113,39 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
 
-          {/* User Type Toggle */}
-          <div className="flex gap-2 p-1 mb-6 rounded-xl bg-slate-100 dark:bg-slate-900/50">
+          {/* User Type Tabs - Match Login Style */}
+          <div className={`flex gap-1.5 p-1 rounded-xl mb-6 border ${
+            theme === 'dark'
+              ? 'bg-slate-700/30 border-slate-600/50'
+              : 'bg-slate-100/80 border-slate-300/50'
+          }`}>
             <button
               type="button"
-              onClick={() => setUserType('staff')}
-              className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
-                userType === 'staff'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-cyan-400 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              onClick={() => setUserType('employee')}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                userType === 'employee'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md scale-[1.02]'
+                  : theme === 'dark'
+                    ? 'text-slate-300 hover:bg-slate-600/50 hover:text-white'
+                    : 'text-slate-600 hover:bg-white/60 hover:text-slate-800'
               }`}
             >
-              {t('roles.staff', { defaultValue: 'Xodim' })}
+              <User className="w-4 h-4" />
+              <span>{t('roles.staff', { defaultValue: 'Xodim' })}</span>
             </button>
             <button
               type="button"
               onClick={() => setUserType('student')}
-              className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
                 userType === 'student'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-cyan-400 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md scale-[1.02]'
+                  : theme === 'dark'
+                    ? 'text-slate-300 hover:bg-slate-600/50 hover:text-white'
+                    : 'text-slate-600 hover:bg-white/60 hover:text-slate-800'
               }`}
             >
-              {t('roles.student', { defaultValue: 'Talaba' })}
+              <GraduationCap className="w-4 h-4" />
+              <span>{t('roles.student', { defaultValue: 'Talaba' })}</span>
             </button>
           </div>
 
@@ -144,12 +154,12 @@ export default function ForgotPasswordPage() {
               {/* Identifier Input (Login/EmployeeID or Student ID) */}
               <div>
                 <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                  {userType === 'staff'
+                  {userType === 'employee'
                     ? t('auth.reset_prompt_staff', { defaultValue: 'Xodim ID yoki akkaunt loginini kiriting' })
                     : t('auth.reset_prompt_student', { defaultValue: 'Talaba ID (Student ID) ni kiriting' })}
                 </label>
                 <div className="relative">
-                  {userType === 'staff' ? (
+                  {userType === 'employee' ? (
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   ) : (
                     <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -158,7 +168,7 @@ export default function ForgotPasswordPage() {
                     type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder={userType === 'staff'
+                    placeholder={userType === 'employee'
                       ? t('auth.login_or_employee_id', { defaultValue: 'Login / Xodim ID' })
                       : t('auth.student_id', { defaultValue: 'Student ID' })}
                     className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all outline-none ${
@@ -171,11 +181,13 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
 
-              {/* Submit Button */}
+              {/* Submit Button - Match Login Button Style */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl font-semibold transition-all bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className={`w-full font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-2 text-sm ${
+                  theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
               >
                 {loading ? (
                   <>

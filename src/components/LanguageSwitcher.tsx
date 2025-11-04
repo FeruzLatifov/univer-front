@@ -40,12 +40,18 @@ interface LanguageSwitcherProps {
    * Show language name
    */
   showName?: boolean
+
+  /**
+   * Additional CSS classes
+   */
+  className?: string
 }
 
 export function LanguageSwitcher({
   variant = 'ghost',
   size = 'sm',
   showName = true,
+  className = '',
 }: LanguageSwitcherProps) {
   const { locale, setLocale, isChanging, languages, languagesLoaded } = useLanguageStore()
 
@@ -89,33 +95,45 @@ export function LanguageSwitcher({
   })()
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant={variant}
-          size={size}
-          className="gap-2"
+    <div className={className}>
+      <DropdownMenu>
+        <DropdownMenuTrigger
           disabled={isChanging}
+          className={[
+            'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium',
+            'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+            'disabled:pointer-events-none disabled:opacity-50',
+            // size
+            size === 'icon' ? 'h-10 w-10' : size === 'sm' ? 'h-9 px-3' : size === 'lg' ? 'h-11 px-8' : 'h-10 px-4',
+            // variant
+            variant === 'outline'
+              ? 'border border-gray-300 bg-white hover:bg-gray-100 hover:text-gray-900'
+              : variant === 'ghost'
+              ? 'hover:bg-gray-100 hover:text-gray-900'
+              : 'bg-blue-600 text-white hover:bg-blue-700',
+            'gap-2'
+          ].join(' ')}
         >
-          {showName && (
+          {showName ? (
             <span>{currentLangName}</span>
+          ) : (
+            <Languages className="h-4 w-4" />
           )}
-          {!showName && <Languages className="h-4 w-4" />}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        {displayLanguages.map(({ code, name }) => (
-          <DropdownMenuItem
-            key={code}
-            onClick={() => handleLanguageChange(code)}
-            className="flex items-center justify-between cursor-pointer"
-          >
-            <span>{name}</span>
-            {locale === code && <Check className="h-4 w-4 text-primary" />}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          {displayLanguages.map(({ code, name }) => (
+            <DropdownMenuItem
+              key={code}
+              onClick={() => handleLanguageChange(code)}
+              className="flex items-center justify-between cursor-pointer"
+            >
+              <span>{name}</span>
+              {locale === code && <Check className="h-4 w-4 text-primary" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }
 
@@ -165,10 +183,11 @@ export function LanguageSwitcherCompact() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1 px-2" disabled={isChanging}>
-          <span className="text-sm">{currentLangName}</span>
-        </Button>
+      <DropdownMenuTrigger
+        disabled={isChanging}
+        className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium h-9 px-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 bg-white hover:bg-gray-100 hover:text-gray-900 gap-1 px-2"
+      >
+        <span className="text-sm">{currentLangName}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {LANGUAGE_CODES.map((code) => (

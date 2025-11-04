@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
-import { ChevronDown, X, GraduationCap } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
 import { menuItems } from '@/config/menu'
 import { useThemeStore } from '@/stores/themeStore'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
+import { DEFAULT_FAVICON } from '@/utils/favicon'
 
 export default function Sidebar() {
   const location = useLocation()
@@ -24,23 +25,32 @@ export default function Sidebar() {
 
   if (sidebarCollapsed) {
     return (
-      <div className="w-16 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        <div className="h-12 flex items-center justify-center border-b border-gray-200 dark:border-gray-700">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white">
-            <GraduationCap className="w-5 h-5" />
+      <div className="w-16 flex flex-col" style={{ backgroundColor: 'var(--card-bg)', borderRight: '1px solid var(--border-color)' }}>
+        <div className="h-14 flex items-center justify-center" style={{ borderBottom: '1px solid var(--border-color)' }}>
+          <div className="w-10 h-10 rounded-lg p-1" style={{ backgroundColor: 'var(--active-bg)', border: '1px solid var(--primary)' }}>
+            <img
+              src={DEFAULT_FAVICON}
+              alt="Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
         </div>
-        <nav className="flex-1 py-2 space-y-1 px-2">
+        <nav className="flex-1 py-3 space-y-1 px-2">
           {menuItems.map(item => (
             <Link
               key={item.id}
               to={item.path}
               className={cn(
                 'flex items-center justify-center p-2 rounded-lg transition-colors',
-                isActiveLink(item.path)
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-100'
+                isActiveLink(item.path) ? 'border-l-2' : ''
               )}
+              style={isActiveLink(item.path) ? {
+                backgroundColor: 'var(--active-bg)',
+                color: 'var(--primary)',
+                borderLeftColor: 'var(--primary)'
+              } : {
+                color: 'var(--text-secondary)'
+              }}
               title={item.label}
             >
               {item.icon}
@@ -52,29 +62,34 @@ export default function Sidebar() {
   }
 
   return (
-    <div className="w-52 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-      {/* Ultra-Dense Header */}
-      <div className="h-10 flex items-center justify-between px-2.5 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-1.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white">
-            <GraduationCap className="w-4 h-4" />
+    <div className="w-60 flex flex-col" style={{ backgroundColor: 'var(--card-bg)', borderRight: '1px solid var(--border-color)' }}>
+      {/* Header */}
+      <div className="h-14 flex items-center justify-between px-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg p-1" style={{ backgroundColor: 'var(--active-bg)', border: '1px solid var(--primary)' }}>
+            <img
+              src={DEFAULT_FAVICON}
+              alt="Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
-            <div className="font-bold text-xs text-gray-900 dark:text-white">HEMIS</div>
-            <div className="text-[10px] text-gray-500 dark:text-gray-400 leading-none">2025</div>
+            <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>HEMIS</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>2025</div>
           </div>
         </div>
         <button
           onClick={toggleSidebar}
-          className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500"
+          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          style={{ color: 'var(--text-secondary)' }}
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Ultra-Dense Navigation */}
-      <nav className="flex-1 py-1.5 px-1.5 overflow-y-auto scrollbar-hide">
-        <div className="space-y-0.5">
+      {/* Navigation */}
+      <nav className="flex-1 py-3 px-2 overflow-y-auto scrollbar-hide">
+        <div className="space-y-1">
           {menuItems.map(item => (
             <div key={item.id}>
               {item.children ? (
@@ -82,38 +97,52 @@ export default function Sidebar() {
                   <button
                     onClick={() => toggleMenu(item.id)}
                     className={cn(
-                      'w-full flex items-center justify-between px-2.5 py-1.5 rounded-md transition-colors text-xs',
+                      'w-full flex items-center justify-between px-3 py-2 rounded-md transition-colors text-sm',
                       isActiveLink(item.path)
-                        ? 'bg-blue-50 text-blue-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'border-l-2'
+                        : ''
                     )}
+                    style={isActiveLink(item.path) ? {
+                      backgroundColor: 'var(--active-bg)',
+                      color: 'var(--primary)',
+                      borderLeftColor: 'var(--primary)',
+                      fontWeight: 500
+                    } : {
+                      color: 'var(--text-primary)'
+                    }}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <div className={item.color}>{item.icon}</div>
-                      <span className="text-xs">{item.label}</span>
+                    <div className="flex items-center gap-2.5">
+                      {item.icon}
+                      <span>{item.label}</span>
                     </div>
                     <ChevronDown
                       className={cn(
-                        'w-3 h-3 transition-transform flex-shrink-0',
+                        'w-4 h-4 transition-transform',
                         expandedMenus.includes(item.id) && 'rotate-180'
                       )}
                     />
                   </button>
                   {expandedMenus.includes(item.id) && (
-                    <div className="ml-2.5 mt-0.5 space-y-0.5">
+                    <div className="ml-4 mt-1 space-y-1">
                       {item.children.map(child => (
                         <Link
                           key={child.id}
                           to={child.path}
                           className={cn(
-                            'flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors text-xs',
-                            isActiveLink(child.path)
-                              ? 'bg-blue-50 text-blue-700 font-medium'
-                              : 'text-gray-600 hover:bg-gray-50'
+                            'flex items-center gap-2.5 px-3 py-2 rounded-md transition-colors text-sm',
+                            isActiveLink(child.path) ? 'border-l-2' : ''
                           )}
+                          style={isActiveLink(child.path) ? {
+                            backgroundColor: 'var(--active-bg)',
+                            color: 'var(--primary)',
+                            borderLeftColor: 'var(--primary)',
+                            fontWeight: 500
+                          } : {
+                            color: 'var(--text-secondary)'
+                          }}
                         >
                           {child.icon}
-                          <span className="text-[11px]">{child.label}</span>
+                          <span>{child.label}</span>
                         </Link>
                       ))}
                     </div>
@@ -123,13 +152,19 @@ export default function Sidebar() {
                 <Link
                   to={item.path}
                   className={cn(
-                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors text-xs',
-                    isActiveLink(item.path)
-                      ? 'bg-blue-50 text-blue-700 font-medium'
-                      : 'text-gray-700 hover:bg-gray-50'
+                    'flex items-center gap-2.5 px-3 py-2 rounded-md transition-colors text-sm',
+                    isActiveLink(item.path) ? 'border-l-2' : ''
                   )}
+                  style={isActiveLink(item.path) ? {
+                    backgroundColor: 'var(--active-bg)',
+                    color: 'var(--primary)',
+                    borderLeftColor: 'var(--primary)',
+                    fontWeight: 500
+                  } : {
+                    color: 'var(--text-primary)'
+                  }}
                 >
-                  <div className={item.color}>{item.icon}</div>
+                  {item.icon}
                   <span>{item.label}</span>
                 </Link>
               )}
@@ -138,9 +173,9 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      {/* Ultra-Dense Footer */}
-      <div className="p-1.5 border-t border-gray-200">
-        <div className="text-[10px] text-center text-gray-500">
+      {/* Footer */}
+      <div className="p-3" style={{ borderTop: '1px solid var(--border-color)' }}>
+        <div className="text-xs text-center" style={{ color: 'var(--text-secondary)' }}>
           v1.0 • 2025
         </div>
       </div>

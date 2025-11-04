@@ -4,14 +4,14 @@ import { apiClient } from './client'
  * Auth API Service
  *
  * Connects to Laravel backend authentication endpoints
- * Supports both staff and student authentication
+ * Supports both employee and student authentication
  */
 
 export interface LoginCredentials {
-  login?: string        // For staff (admin, teacher, etc.)
+  login?: string        // For employee (admin, teacher, etc.)
   student_id?: string   // For students
   password: string
-  userType: 'staff' | 'student'
+  userType: 'employee' | 'student'
 }
 
 export interface AuthResponse {
@@ -70,10 +70,10 @@ export interface UserProfileResponse {
 }
 
 /**
- * Staff Login
+ * Employee Login
  */
-export const staffLogin = async (login: string, password: string): Promise<AuthResponse> => {
-  const response = await apiClient.post('/v1/staff/auth/login', {
+export const employeeLogin = async (login: string, password: string): Promise<AuthResponse> => {
+  const response = await apiClient.post('/v1/employee/auth/login', {
     login,
     password,
   })
@@ -85,6 +85,7 @@ export const staffLogin = async (login: string, password: string): Promise<AuthR
     message: response.data._message
   }
 }
+
 
 /**
  * Student Login
@@ -106,8 +107,8 @@ export const studentLogin = async (studentId: string, password: string): Promise
  * Universal Login (determines user type automatically)
  */
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-  if (credentials.userType === 'staff' && credentials.login) {
-    return staffLogin(credentials.login, credentials.password)
+  if (credentials.userType === 'employee' && credentials.login) {
+    return employeeLogin(credentials.login, credentials.password)
   } else if (credentials.userType === 'student' && credentials.student_id) {
     return studentLogin(credentials.student_id, credentials.password)
   } else {
@@ -116,11 +117,12 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 }
 
 /**
- * Staff Logout
+ * Employee Logout
  */
-export const staffLogout = async (): Promise<void> => {
-  await apiClient.post('/v1/staff/auth/logout')
+export const employeeLogout = async (): Promise<void> => {
+  await apiClient.post('/v1/employee/auth/logout')
 }
+
 
 /**
  * Student Logout
@@ -132,25 +134,26 @@ export const studentLogout = async (): Promise<void> => {
 /**
  * Logout (universal)
  */
-export const logout = async (userType: 'staff' | 'student'): Promise<void> => {
-  if (userType === 'staff') {
-    await staffLogout()
+export const logout = async (userType: 'employee' | 'student'): Promise<void> => {
+  if (userType === 'employee') {
+    await employeeLogout()
   } else {
     await studentLogout()
   }
 }
 
 /**
- * Refresh Token (Staff)
+ * Refresh Token (Employee)
  */
-export const staffRefreshToken = async (): Promise<RefreshResponse> => {
-  const response = await apiClient.post('/v1/staff/auth/refresh')
+export const employeeRefreshToken = async (): Promise<RefreshResponse> => {
+  const response = await apiClient.post('/v1/employee/auth/refresh')
   // Interceptor unwraps {success, data} → data
   return {
     success: response.data._success ?? true,
     data: response.data
   }
 }
+
 
 /**
  * Refresh Token (Student)
@@ -165,16 +168,17 @@ export const studentRefreshToken = async (): Promise<RefreshResponse> => {
 }
 
 /**
- * Get Current User (Staff)
+ * Get Current User (Employee)
  */
-export const getStaffProfile = async (): Promise<UserProfileResponse> => {
-  const response = await apiClient.get('/v1/staff/auth/me')
+export const getEmployeeProfile = async (): Promise<UserProfileResponse> => {
+  const response = await apiClient.get('/v1/employee/auth/me')
   // Interceptor unwraps {success, data} → data
   return {
     success: response.data._success ?? true,
     data: response.data
   }
 }
+
 
 /**
  * Get Current User (Student)
@@ -191,19 +195,19 @@ export const getStudentProfile = async (): Promise<UserProfileResponse> => {
 /**
  * Get Current User Profile (universal)
  */
-export const getCurrentUser = async (userType: 'staff' | 'student'): Promise<UserProfileResponse> => {
-  if (userType === 'staff') {
-    return getStaffProfile()
+export const getCurrentUser = async (userType: 'employee' | 'student'): Promise<UserProfileResponse> => {
+  if (userType === 'employee') {
+    return getEmployeeProfile()
   } else {
     return getStudentProfile()
   }
 }
 
 /**
- * Switch active role (Staff)
+ * Switch active role (Employee)
  */
-export const switchStaffRole = async (role: number): Promise<AuthResponse> => {
-  const response = await apiClient.post('/v1/staff/auth/role/switch', { role })
+export const switchEmployeeRole = async (role: number): Promise<AuthResponse> => {
+  const response = await apiClient.post('/v1/employee/auth/role/switch', { role })
   return {
     success: response.data._success ?? true,
     data: response.data,
@@ -211,17 +215,19 @@ export const switchStaffRole = async (role: number): Promise<AuthResponse> => {
   }
 }
 
+
 /**
- * Update Staff Profile
+ * Update Employee Profile
  */
-export const updateStaffProfile = async (data: {
+export const updateEmployeeProfile = async (data: {
   phone?: string
   email?: string
   telegram_username?: string
 }): Promise<UserProfileResponse> => {
-  const response = await apiClient.put<UserProfileResponse>('/v1/staff/profile', data)
+  const response = await apiClient.put<UserProfileResponse>('/v1/employee/profile', data)
   return response.data
 }
+
 
 /**
  * Update Student Profile
@@ -237,19 +243,20 @@ export const updateStudentProfile = async (data: {
 }
 
 /**
- * Upload Avatar (Staff)
+ * Upload Avatar (Employee)
  */
-export const uploadStaffAvatar = async (file: File): Promise<{ success: boolean; data: { image: string; image_url: string } }> => {
+export const uploadEmployeeAvatar = async (file: File): Promise<{ success: boolean; data: { image: string; image_url: string } }> => {
   const formData = new FormData()
   formData.append('image', file)
 
-  const response = await apiClient.post('/v1/staff/profile/avatar', formData, {
+  const response = await apiClient.post('/v1/employee/profile/avatar', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   })
   return response.data
 }
+
 
 /**
  * Upload Avatar (Student)
@@ -293,20 +300,21 @@ export const studentForgotPassword = async (identifier: string): Promise<ForgotP
 }
 
 /**
- * Forgot Password - Staff
+ * Forgot Password - Employee
  */
-export const staffForgotPassword = async (identifier: string): Promise<ForgotPasswordResponse> => {
+export const employeeForgotPassword = async (identifier: string): Promise<ForgotPasswordResponse> => {
   const payload: any = /@/.test(identifier) ? { email: identifier } : { login: identifier }
-  const response = await apiClient.post<ForgotPasswordResponse>('/v1/staff/auth/forgot-password', payload)
+  const response = await apiClient.post<ForgotPasswordResponse>('/v1/employee/auth/forgot-password', payload)
   return response.data
 }
+
 
 /**
  * Forgot Password - Universal
  */
-export const forgotPassword = async (identifier: string, userType: 'staff' | 'student'): Promise<ForgotPasswordResponse> => {
-  if (userType === 'staff') {
-    return staffForgotPassword(identifier)
+export const forgotPassword = async (identifier: string, userType: 'employee' | 'student'): Promise<ForgotPasswordResponse> => {
+  if (userType === 'employee') {
+    return employeeForgotPassword(identifier)
   } else {
     return studentForgotPassword(identifier)
   }
@@ -331,15 +339,15 @@ export const studentResetPassword = async (
 }
 
 /**
- * Reset Password - Staff
+ * Reset Password - Employee
  */
-export const staffResetPassword = async (
+export const employeeResetPassword = async (
   email: string,
   token: string,
   password: string,
   password_confirmation: string
 ): Promise<ResetPasswordResponse> => {
-  const response = await apiClient.post<ResetPasswordResponse>('/admin/auth/reset-password', {
+  const response = await apiClient.post<ResetPasswordResponse>('/v1/employee/auth/reset-password', {
     email,
     token,
     password,
@@ -347,6 +355,7 @@ export const staffResetPassword = async (
   })
   return response.data
 }
+
 
 /**
  * Reset Password - Universal
@@ -356,10 +365,10 @@ export const resetPassword = async (
   token: string,
   password: string,
   password_confirmation: string,
-  userType: 'staff' | 'student'
+  userType: 'employee' | 'student'
 ): Promise<ResetPasswordResponse> => {
-  if (userType === 'staff') {
-    return staffResetPassword(email, token, password, password_confirmation)
+  if (userType === 'employee') {
+    return employeeResetPassword(email, token, password, password_confirmation)
   } else {
     return studentResetPassword(email, token, password, password_confirmation)
   }

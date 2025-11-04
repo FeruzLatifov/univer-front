@@ -3,14 +3,24 @@ import { useEffect, useRef } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { useThemeStore } from '@/stores/themeStore'
 import { useLanguageStore } from '@/stores/languageStore'
+import { useMenuStore } from '@/stores/menuStore'
 import { getInitials } from '@/lib/utils'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import NotificationsDropdown from '@/components/NotificationsDropdown'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
 
 export default function Header() {
   const { user, logout, switchRole, refreshUserSilent, isAuthenticated } = useAuthStore()
   const { theme, toggleTheme, toggleSidebar } = useThemeStore()
   const { locale } = useLanguageStore()
+  const { fetchMenu } = useMenuStore()
   const isInitialMount = useRef(true)
 
   // Refetch user when language changes to get translated role names
@@ -53,114 +63,142 @@ export default function Header() {
   }
 
   return (
-    <header className="h-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-3">
+    <header className="h-14 flex items-center justify-between px-4" style={{ backgroundColor: 'var(--card-bg)', borderBottom: '1px solid var(--border-color)' }}>
       {/* Left */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <button
           onClick={toggleSidebar}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          style={{ color: 'var(--text-secondary)' }}
         >
-          <Menu className="w-3.5 h-3.5" />
+          <Menu className="w-4 h-4" />
         </button>
 
-        {/* Ultra-Dense Search */}
+        {/* Search - Responsive width */}
         <div className="relative hidden md:block">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
           <input
             type="text"
             placeholder="Qidiruv..."
-            className="pl-7 pr-2 py-1 w-48 text-xs rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="pl-9 pr-3 py-2 w-40 md:w-52 lg:w-64 text-sm rounded-md border focus:outline-none focus:ring-1"
+            style={{
+              borderColor: 'var(--border-color)',
+              backgroundColor: 'var(--card-bg)',
+              color: 'var(--text-primary)',
+              '--tw-ring-color': 'var(--primary)'
+            } as any}
           />
         </div>
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-1.5">
-        {/* Language Switcher */}
-        <LanguageSwitcher />
+      <div className="flex items-center gap-2">
+        {/* Language Switcher - Responsive (show name on larger screens, icon on small) */}
+        <LanguageSwitcher showName={true} className="hidden sm:block" />
+        <LanguageSwitcher showName={false} size="icon" className="block sm:hidden" />
 
-        {/* Ultra-Dense Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          style={{ color: 'var(--text-secondary)' }}
           title={theme === 'light' ? 'Qorong\'i rejim' : 'Yorug\' rejim'}
         >
-          {theme === 'light' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+          {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
         </button>
 
-        {/* Notifications Dropdown */}
-        <NotificationsDropdown />
+        {/* Temporarily disabled to test menu system */}
+        {/* <NotificationsDropdown /> */}
 
-        {/* Ultra-Dense User Menu (Avatar + Name + Role) */}
-        <div className="relative group">
-          <button className="flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
-            {user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-6 h-6 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold text-[10px]">
-                {user ? getInitials(user.name) : 'AA'}
+        {/* User Menu - Click-based Dropdown (Mobile-friendly) */}
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center gap-2 px-1.5 sm:px-2 py-1.5 h-auto rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-0 bg-transparent">
+            <div className="flex items-center gap-2">
+              {/* Avatar - always a single div element */}
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs"
+                style={user?.avatar ? {
+                  backgroundImage: `url(${user.avatar})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                } : {
+                  backgroundColor: 'var(--primary)'
+                }}
+              >
+                {!user?.avatar && (user ? getInitials(user.name) : 'AA')}
               </div>
-            )}
-            <div className="hidden lg:block text-left">
-              <div className="text-[11px] font-medium text-gray-900 dark:text-white leading-tight">
-                {getShortName(user?.name)}
-              </div>
-              <div className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                {(() => {
-                  const active = user?.roles?.find(r => r.id === user.roleId || r.code === user.role)
-                  const name = active?.name || user?.roleName
-                  const code = (active?.code || user?.role || '').toString()
-                  const fallback = roleI18n[(useLanguageStore.getState().locale) as keyof typeof roleI18n]?.[code]
-                  return name || fallback || code || 'Admin'
-                })()}
+              {/* Show name and role only on large screens */}
+              <div className="hidden lg:block text-left">
+                <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                  {getShortName(user?.name)}
+                </div>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  {(() => {
+                    const active = user?.roles?.find(r => r.id === user.roleId || r.code === user.role)
+                    const name = active?.name || user?.roleName
+                    const code = (active?.code || user?.role || '').toString()
+                    const fallback = roleI18n[(useLanguageStore.getState().locale) as keyof typeof roleI18n]?.[code]
+                    return name || fallback || code || 'Admin'
+                  })()}
+                </div>
               </div>
             </div>
-          </button>
+          </DropdownMenuTrigger>
 
-          {/* Ultra-Dense Dropdown */}
-          <div className="absolute right-0 mt-0.5 w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-            <div className="p-1">
-              <button className="w-full flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
-                <User className="w-3 h-3" />
-                <span className="text-[11px]">Profil</span>
-              </button>
-              {/* Roles list (if multiple roles available in future) */}
-              {user?.roles && user.roles.length > 0 && (
-                <div className="mt-1 border-t border-gray-200 dark:border-gray-700 pt-1">
-                  <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">Foydalanuvchi rollari</div>
-                  {user.roles.map((r, idx) => {
-                    const active = user.roleId === r.id
-                    const roleKey = r.id ?? idx
-                    return (
-                    <button
+          <DropdownMenuContent align="end" className="w-56">
+            {/* Profile */}
+            <DropdownMenuItem className="cursor-pointer">
+              <User className="w-4 h-4 mr-2" />
+              <span>Profil</span>
+            </DropdownMenuItem>
+
+            {/* Roles Section */}
+            {user?.roles && user.roles.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                  ROLLAR
+                </div>
+                {user.roles.map((r, idx) => {
+                  const active = user.roleId === r.id
+                  const roleKey = r.id ?? idx
+                  return (
+                    <DropdownMenuItem
                       key={String(roleKey)}
-                      className={`w-full flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 ${active ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
-                      onClick={() => {
+                      className={`cursor-pointer ${active ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
+                      onClick={async () => {
                         if (!active && r.id) {
-                          switchRole(r.id)
+                          console.log('🔄 [Header] Role switching to:', r.id, r.name)
+                          await switchRole(r.id)
+                          console.log('✅ [Header] Role switched, now fetching menu...')
+                          await fetchMenu()
+                          console.log('✅ [Header] Menu fetched!')
                         }
                       }}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-green-500' : 'bg-gray-400'}`} />
-                      <span className="text-[11px]">{r.name || roleI18n[(useLanguageStore.getState().locale) as keyof typeof roleI18n]?.[String(r.code)] || String(r.code)}</span>
-                    </button>
-                  )})}
-                </div>
-              )}
-              <button
-                onClick={logout}
-                className="w-full flex items-center gap-1.5 px-2 py-1 rounded hover:bg-red-50 text-red-700"
-              >
-                <LogOut className="w-3 h-3" />
-                <span className="text-[11px]">Chiqish</span>
-              </button>
-            </div>
-          </div>
-        </div>
+                      <span
+                        className="w-2 h-2 rounded-full mr-2"
+                        style={{ backgroundColor: active ? 'var(--success)' : 'var(--border-color)' }}
+                      />
+                      <span className="text-sm">
+                        {r.name || roleI18n[(useLanguageStore.getState().locale) as keyof typeof roleI18n]?.[String(r.code)] || String(r.code)}
+                      </span>
+                    </DropdownMenuItem>
+                  )
+                })}
+              </>
+            )}
+
+            {/* Logout */}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={logout}
+              className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 focus:bg-red-50"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              <span>Chiqish</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   )

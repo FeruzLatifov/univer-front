@@ -15,7 +15,7 @@ import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import UnauthorizedPage from '@/pages/auth/UnauthorizedPage'
 
 // Pages
-import DashboardPage from '@/pages/dashboard/DashboardUltra'
+import DashboardPage from '@/pages/dashboard/RoleDashboard'
 
 // Structure
 import UniversityPage from '@/pages/structure/UniversityPage'
@@ -26,6 +26,9 @@ import DepartmentsPage from '@/pages/structure/DepartmentsPageNew'
 import EmployeesPage from '@/pages/employees/EmployeesPage'
 import TeachersWorkloadPage from '@/pages/employees/TeachersWorkloadPage'
 import AcademicDegreesPage from '@/pages/employees/AcademicDegreesPage'
+
+// Employee
+import TeacherLoadPage from '@/pages/employee/TeacherLoadPage'
 
 // Decrees & Transfers
 import DecreesPage from '@/pages/decrees/DecreesPage'
@@ -113,6 +116,7 @@ import DiplomasPage from '@/pages/archive/DiplomasPage'
 
 // Reports
 import ReportsPage from '@/pages/reports/ReportsPage'
+import SignDocumentsPage from '@/pages/documents/SignDocumentsPage'
 
 // System
 import SystemUsersPage from '@/pages/system/UsersPage'
@@ -218,6 +222,15 @@ function App() {
             <AcademicDegreesPage />
           </ProtectedRoute>
         } />
+
+        {/* Staff - Personal Work Plan (legacy Yii2 path only) */}
+
+        {/* Legacy Yii2 path alias */}
+        <Route path="/employee/teacher-load-formation" element={
+          <ProtectedRoute allowedRoles={['teacher', 'admin']} permission="employee.load.view" resourcePath="employee/teacher-load-formation">
+            <TeacherLoadPage />
+          </ProtectedRoute>
+        } />
         
         {/* Decrees & Transfers */}
         <Route path="/decrees" element={
@@ -267,6 +280,13 @@ function App() {
 
         {/* Teachers */}
         <Route path="/teachers" element={<TeachersPage />} />
+
+        {/* E-Documents */}
+        <Route path="/document/sign-documents" element={
+          <ProtectedRoute permission="document.sign.view" resourcePath="document/sign-documents">
+            <SignDocumentsPage />
+          </ProtectedRoute>
+        } />
 
         {/* Teacher Assignments */}
         <Route path="/teacher/assignments" element={<AssignmentsPage />} />

@@ -409,3 +409,28 @@ export interface ChartData {
   color?: string
 }
 
+// ============================================
+// MENU TYPES
+// ============================================
+
+export interface MenuItem {
+  id: string
+  label: string
+  url: string
+  icon: string
+  permission?: string | null
+  items: MenuItem[]
+  active: boolean
+  order?: number | null
+}
+
+export interface MenuState {
+  menu: MenuItem[]
+  permissions: string[]
+  locale: string
+  loading: boolean
+  error: string | null
+  cached: boolean
+  cacheExpiresAt: number | null
+}
+

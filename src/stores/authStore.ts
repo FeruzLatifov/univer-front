@@ -24,7 +24,7 @@ export interface User {
   roleId?: number | null
   roleName?: string | null
   roles?: Array<{ id?: number; code?: string | null; name: string }>
-  type: 'staff' | 'student'
+  type: 'employee' | 'student'
   avatar?: string
   department?: string
   faculty?: string
@@ -85,7 +85,7 @@ interface AuthState {
  * Auth Store - Connected to Laravel Backend
  *
  * Manages authentication state using Zustand with persistence
- * Supports both staff and student authentication
+ * Supports both employee and student authentication
  */
 /**
  * Custom session storage for Zustand
@@ -116,7 +116,7 @@ export const useAuthStore = create<AuthState>()(
 
       /**
        * Login
-       * Supports both staff and student login
+       * Supports both employee and student login
        */
       login: async (credentials: authApi.LoginCredentials) => {
         set({ loading: true, error: null })
@@ -129,9 +129,18 @@ export const useAuthStore = create<AuthState>()(
 
             const mappedUser = buildUserFromApi(user)
 
-            // Store token in sessionStorage (browser yopilsa o'chadi)
-            sessionStorage.setItem('access_token', access_token)
-            sessionStorage.setItem('user_type', credentials.userType)
+            console.log('[AuthStore] Login successful', {
+              userId: user.id,
+              userName: user.name,
+              userType: credentials.userType,
+              tokenLength: access_token?.length
+            })
+
+            // Store tokens in sessionStorage (browser yopilsa o'chadi)
+          // JWT uses same token for access and refresh
+          sessionStorage.setItem('access_token', access_token)
+          sessionStorage.setItem('refresh_token', access_token) // ← JWT same token for refresh
+          sessionStorage.setItem('user_type', credentials.userType as string)
 
             set({
               user: mappedUser,
@@ -169,6 +178,7 @@ export const useAuthStore = create<AuthState>()(
         } finally {
           // Clear state and sessionStorage
           sessionStorage.removeItem('access_token')
+          sessionStorage.removeItem('refresh_token')
           sessionStorage.removeItem('user_type')
 
           set({
@@ -177,6 +187,9 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             error: null,
           })
+
+          // Redirect to login page
+          window.location.href = '/login'
         }
       },
 
@@ -184,15 +197,15 @@ export const useAuthStore = create<AuthState>()(
        * Refresh Token
        */
       refreshToken: async () => {
-        const userType = sessionStorage.getItem('user_type') as 'staff' | 'student'
+        const userType = sessionStorage.getItem('user_type') as 'employee' | 'student'
 
         if (!userType) {
           throw new Error('User type not found')
         }
 
         try {
-          const response = userType === 'staff'
-            ? await authApi.staffRefreshToken()
+          const response = userType === 'employee'
+            ? await authApi.employeeRefreshToken()
             : await authApi.studentRefreshToken()
 
           if (response.success) {
@@ -213,7 +226,7 @@ export const useAuthStore = create<AuthState>()(
        * Fetch Current User
        */
       fetchCurrentUser: async () => {
-        const userType = sessionStorage.getItem('user_type') as 'staff' | 'student'
+        const userType = sessionStorage.getItem('user_type') as 'employee' | 'student'
 
         if (!userType) {
           return
@@ -246,7 +259,7 @@ export const useAuthStore = create<AuthState>()(
        * Used for locale-change rehydration so UI doesn't get stuck
        */
       refreshUserSilent: async () => {
-        const userType = sessionStorage.getItem('user_type') as 'staff' | 'student'
+        const userType = sessionStorage.getItem('user_type') as 'employee' | 'student'
         if (!userType) {
           return
         }
@@ -263,14 +276,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       /**
-       * Switch active role (staff only)
+       * Switch active role (employee only)
        */
       switchRole: async (roleId: number) => {
         const { user } = get()
-        if (!user || user.type !== 'staff') return
+        if (!user || user.type !== 'employee') return
         set({ loading: true, error: null })
         try {
-          const response = await authApi.switchStaffRole(roleId)
+          const response = await authApi.switchEmployeeRole(roleId)
           if (response.success) {
             const { user: apiUser, access_token } = response.data
             const mappedUser = buildUserFromApi(apiUser)
@@ -312,8 +325,8 @@ export const useAuthStore = create<AuthState>()(
         set({ loading: true, error: null })
 
         try {
-          const response = user.type === 'staff'
-            ? await authApi.updateStaffProfile(data)
+          const response = user.type === 'employee'
+            ? await authApi.updateEmployeeProfile(data)
             : await authApi.updateStudentProfile(data)
 
           if (response.success) {
@@ -345,8 +358,8 @@ export const useAuthStore = create<AuthState>()(
         set({ loading: true, error: null })
 
         try {
-          const response = user.type === 'staff'
-            ? await authApi.uploadStaffAvatar(file)
+          const response = user.type === 'employee'
+            ? await authApi.uploadEmployeeAvatar(file)
             : await authApi.uploadStudentAvatar(file)
 
           if (response.success) {
@@ -614,7 +627,7 @@ const mapRolesArray = (roles: any[] | undefined): Array<{ id?: number; code?: st
 }
 
 const buildUserFromApi = (apiUser: any): User => {
-  const type = apiUser?.type === 'admin' ? 'staff' : apiUser?.type ?? 'staff'
+  const type = apiUser?.type === 'admin' ? 'employee' : apiUser?.type ?? 'employee'
   const roles = mapRolesArray(apiUser?.roles)
   const roleCode = apiUser?.role_code ?? (typeof apiUser?.role === 'string' ? apiUser.role : undefined) ?? roles[0]?.code
   const roleId = apiUser?.role_id ?? roles.find((r) => (roleCode ? r.code === roleCode : false))?.id ?? roles[0]?.id ?? null
@@ -624,7 +637,7 @@ const buildUserFromApi = (apiUser: any): User => {
 
   const employee = apiUser?.employee
   const avatarCandidate = apiUser?.avatar_url || employee?.avatar_url || employee?.image
-  const avatar = normalizeAvatarUrl(avatarCandidate) ?? (type === 'staff' ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(apiUser?.full_name ?? 'user')}` : undefined)
+  const avatar = normalizeAvatarUrl(avatarCandidate) ?? (type === 'employee' ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(apiUser?.full_name ?? 'user')}` : undefined)
 
   return {
     id: apiUser?.id,

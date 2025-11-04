@@ -86,10 +86,8 @@ export function TestCard({ test, onView, onEdit, onViewQuestions, onViewResults 
 
             {/* Actions dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
+              <DropdownMenuTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-lg h-10 w-10 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900">
+                <MoreVertical className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onView(test.id)}>

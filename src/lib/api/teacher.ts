@@ -1288,3 +1288,114 @@ export const ATTEMPT_STATUS_NAMES = {
 
 export const LETTER_GRADES = ['A', 'B', 'C', 'D', 'E', 'F'] as const
 export const NUMERIC_GRADES = ['5', '4', '3', '2'] as const
+
+// ==========================================
+// DASHBOARD TYPES & API
+// ==========================================
+
+export interface DashboardData {
+  summary: {
+    today_classes: number
+    total_students: number
+    total_subjects: number
+    total_groups: number
+    pending_assignments: number
+    pending_attendance: number
+    weekly_classes: number
+  }
+  today_schedule: {
+    date: string
+    day_name: string
+    classes: TodayClass[]
+  }
+  pending_attendance_classes: PendingAttendanceClass[]
+  quick_stats: {
+    attendance_rate: number
+    upcoming_exams: number
+  }
+}
+
+export interface PendingAttendanceClass {
+  id: number
+  lesson_date: string
+  days_ago: number
+  subject: {
+    id: number
+    name: string
+    code: string
+  }
+  group: {
+    id: number
+    name: string
+  }
+  training_type: string
+}
+
+export interface TodayClass {
+  id: number
+  subject: {
+    id: number
+    name: string
+    code: string
+  }
+  group: {
+    id: number
+    name: string
+  }
+  time: {
+    start: string | null
+    end: string | null
+    pair_number: number | null
+  }
+  training_type: string
+  auditorium: string | number | null
+}
+
+export interface DashboardActivity {
+  type: string
+  date: string
+  description: string
+  student?: string
+}
+
+export interface DashboardStats {
+  subjects: {
+    total: number
+  }
+  groups: {
+    total: number
+  }
+  students: {
+    total: number
+  }
+  workload: {
+    weekly_hours: number
+    total_classes: number
+  }
+}
+
+/**
+ * Get teacher dashboard data
+ */
+export const getDashboard = async () => {
+  const response = await apiClient.get('/v1/teacher/dashboard')
+  return response.data
+}
+
+/**
+ * Get recent activities
+ */
+export const getDashboardActivities = async (limit = 10) => {
+  const response = await apiClient.get('/v1/teacher/dashboard/activities', {
+    params: { limit },
+  })
+  return response.data
+}
+
+/**
+ * Get dashboard statistics
+ */
+export const getDashboardStats = async () => {
+  const response = await apiClient.get('/v1/teacher/dashboard/stats')
+  return response.data
+}

@@ -9,6 +9,7 @@ import {
 import { api } from '@/lib/api/client'
 import i18n from '@/i18n'
 import { useAuthStore } from '@/stores/authStore'
+import { useMenuStore } from '@/stores/menuStore'
 
 interface LanguageState {
   locale: LanguageCode
@@ -83,13 +84,29 @@ export const useLanguageStore = create<LanguageState>()(
           // Update store
           set({ locale, isChanging: false })
 
-          // Soft refresh authenticated user to get localized fields (roles, profile labels)
-          try {
-            console.log('[LOCALE] Refreshing user data with new locale:', locale)
-            await useAuthStore.getState().refreshUserSilent()
-            console.log('[LOCALE] User data refreshed successfully')
-          } catch (err) {
-            console.error('[LOCALE] Failed to refresh user data:', err)
+          // Only refresh user data and menu if user is authenticated
+          const isAuthenticated = useAuthStore.getState().isAuthenticated
+
+          if (isAuthenticated) {
+            // Soft refresh authenticated user to get localized fields (roles, profile labels)
+            try {
+              console.log('[LOCALE] Refreshing user data with new locale:', locale)
+              await useAuthStore.getState().refreshUserSilent()
+              console.log('[LOCALE] User data refreshed successfully')
+            } catch (err) {
+              console.error('[LOCALE] Failed to refresh user data:', err)
+            }
+
+            // ✅ Refresh menu with new locale (to get translated menu labels)
+            try {
+              console.log('[LOCALE] Refreshing menu with new locale:', locale)
+              await useMenuStore.getState().fetchMenu(locale)
+              console.log('[LOCALE] Menu refreshed successfully')
+            } catch (err) {
+              console.error('[LOCALE] Failed to refresh menu:', err)
+            }
+          } else {
+            console.log('[LOCALE] User not authenticated, skipping user/menu refresh')
           }
         } catch (error) {
           console.error('Failed to change language:', error)

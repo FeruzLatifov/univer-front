@@ -14,7 +14,7 @@ export interface SystemLoginConfig {
   appVersion: string
   loginTypes?: {
     student: { label: string, enabled: boolean }
-    staff: { label: string, enabled: boolean }
+    employee: { label: string, enabled: boolean }
   }
 }
 
@@ -33,7 +33,7 @@ export interface SystemLoginConfigBackendResponse {
       icon: string
       endpoint: string
     }
-    staff: {
+    employee: {
       enabled: boolean
       label: string
       icon: string
@@ -89,7 +89,7 @@ export const getLoginConfig = async (): Promise<SystemLoginConfig> => {
     appVersion: data.app_version || '2.0.0',
     loginTypes: data.login_types ? {
       student: { label: data.login_types.student?.label || 'Talaba', enabled: !!data.login_types.student?.enabled },
-      staff: { label: data.login_types.staff?.label || 'Xodim', enabled: !!data.login_types.staff?.enabled },
+      employee: { label: data.login_types.employee?.label || 'Xodim', enabled: !!data.login_types.employee?.enabled },
     } : undefined
   }
 }

@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Create axios instance with default config
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -51,12 +51,16 @@ apiClient.interceptors.response.use(
     if (response.data && typeof response.data === 'object') {
       if ('success' in response.data && 'data' in response.data) {
         // Laravel format detected - unwrap it
-        // But keep success status accessible
+        // But keep success status and meta accessible
         const unwrapped = response.data.data
-        // Add success flag to the unwrapped data if it's an object
+        // Add success flag and meta to the unwrapped data if it's an object
         if (unwrapped && typeof unwrapped === 'object' && !Array.isArray(unwrapped)) {
           unwrapped._success = response.data.success
           unwrapped._message = response.data.message
+          // Preserve meta field if it exists
+          if (response.data.meta) {
+            unwrapped._meta = response.data.meta
+          }
         }
         response.data = unwrapped
       }
@@ -66,31 +70,70 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    // Handle 401 Unauthorized - token expired
+    // Handle 401 Unauthorized - token expired or invalid
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
-      try {
-        const refreshToken = sessionStorage.getItem('refresh_token')
-        const userType = sessionStorage.getItem('user_type') || 'student'
-        if (refreshToken) {
-          // Try to refresh the token (Laravel format)
-          const response = await axios.post(
-            `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/v1/${userType}/auth/refresh`,
-            { refresh_token: refreshToken }
-          )
+      const refreshToken = sessionStorage.getItem('refresh_token')
 
-          const { access_token } = response.data
-          sessionStorage.setItem('access_token', access_token)
-
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${access_token}`
-          return apiClient(originalRequest)
-        }
-      } catch (refreshError) {
-        // Refresh failed, logout user
+      // If no refresh token, immediately redirect to login
+      if (!refreshToken) {
+        console.log('[API] 401 error: No refresh token, redirecting to login')
         sessionStorage.removeItem('access_token')
         sessionStorage.removeItem('refresh_token')
+        window.location.href = '/login'
+        return Promise.reject(error)
+      }
+
+      // Try to refresh the token
+      try {
+        const userType = sessionStorage.getItem('user_type') || 'student'
+        console.log('[API] 401 error: Attempting token refresh', {
+          userType,
+          hasRefreshToken: !!refreshToken,
+          refreshTokenLength: refreshToken?.length
+        })
+
+        // JWT refresh requires token in Authorization header
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/v1/${userType}/auth/refresh`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${refreshToken}`
+            }
+          }
+        )
+
+        console.log('[API] Refresh response:', response.data)
+
+        const newToken = response.data?.data?.access_token || response.data?.access_token
+
+        if (!newToken) {
+          console.error('[API] No access_token in refresh response:', response.data)
+          throw new Error('No access_token in response')
+        }
+
+        sessionStorage.setItem('access_token', newToken)
+        console.log('[API] Token refreshed successfully', {
+          newTokenLength: newToken.length
+        })
+
+        // Retry original request with new token
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
+        return apiClient(originalRequest)
+      } catch (refreshError: any) {
+        // Refresh failed, logout user and redirect to login
+        console.error('[API] Token refresh failed', {
+          error: refreshError?.message,
+          status: refreshError?.response?.status,
+          data: refreshError?.response?.data
+        })
+        console.log('[API] Redirecting to login...')
+
+        sessionStorage.removeItem('access_token')
+        sessionStorage.removeItem('refresh_token')
+        sessionStorage.removeItem('user_type')
         window.location.href = '/login'
         return Promise.reject(refreshError)
       }
@@ -108,6 +151,17 @@ apiClient.interceptors.response.use(
       // Extract validation errors
       if (errorData.errors) {
         error.validationErrors = errorData.errors
+      }
+
+      // Log API errors to console (except 401 - already logged above)
+      if (error.response.status !== 401) {
+        console.error('[API] Request failed', {
+          url: error.config?.url,
+          method: error.config?.method,
+          status: error.response.status,
+          message: error.message,
+          data: errorData
+        })
       }
     }
 
