@@ -1,4 +1,5 @@
 import { apiClient } from './client'
+import { getApiOrigin } from '@/config/api'
 
 /**
  * System API Service
@@ -71,10 +72,7 @@ export const getLoginConfig = async (): Promise<SystemLoginConfig> => {
   const data = response.data
 
   // Map backend response to frontend format
-  const apiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api'
-  const origin = (() => {
-    try { return new URL(apiUrl).origin } catch { return 'http://localhost:8080' }
-  })()
+  const origin = getApiOrigin()
 
   let logo = data.university_logo || data.favicon || '/images/hemis-logo.png'
   if (logo && logo.startsWith('/')) {

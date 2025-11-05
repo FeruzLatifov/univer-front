@@ -1,12 +1,14 @@
-import { Bell, Menu, Moon, Sun, Search, User, LogOut } from 'lucide-react'
-import { useEffect, useRef } from 'react'
-import { useAuthStore } from '@/stores/authStore'
+import { Bell, Menu, Moon, Sun, Search, User, LogOut, RefreshCw } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { useAuthStore, useUserStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/themeStore'
 import { useLanguageStore } from '@/stores/languageStore'
 import { useMenuStore } from '@/stores/menuStore'
 import { getInitials } from '@/lib/utils'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import NotificationsDropdown from '@/components/NotificationsDropdown'
+import { useToast } from '@/hooks/use-toast'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,13 +17,50 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
+import { api } from '@/lib/api/client'
 
 export default function Header() {
-  const { user, logout, switchRole, refreshUserSilent, isAuthenticated } = useAuthStore()
+  const { logout, isAuthenticated } = useAuthStore()
+  const { user, switchRole, refreshUserSilent } = useUserStore()
   const { theme, toggleTheme, toggleSidebar } = useThemeStore()
   const { locale } = useLanguageStore()
   const { fetchMenu } = useMenuStore()
+  const { toast } = useToast()
   const isInitialMount = useRef(true)
+  const [isClearingCache, setIsClearingCache] = useState(false)
+
+  // Cache clear mutation
+  const clearCacheMutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.post('/v1/employee/menu/clear-cache')
+      return response.data
+    },
+    onSuccess: async (data) => {
+      // Refresh menu and user data after clearing cache
+      await fetchMenu()
+      await refreshUserSilent()
+
+      toast({
+        title: 'Muvaffaqiyat',
+        description: data.message || 'Tizim keshi tozalandi',
+        variant: 'default',
+      })
+      setIsClearingCache(false)
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Xatolik',
+        description: error.response?.data?.message || 'Keshni tozalashda xatolik yuz berdi',
+        variant: 'destructive',
+      })
+      setIsClearingCache(false)
+    },
+  })
+
+  const handleClearCache = () => {
+    setIsClearingCache(true)
+    clearCacheMutation.mutate()
+  }
 
   // Refetch user when language changes to get translated role names
   useEffect(() => {
@@ -104,6 +143,17 @@ export default function Header() {
           title={theme === 'light' ? 'Qorong\'i rejim' : 'Yorug\' rejim'}
         >
           {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+        </button>
+
+        {/* Cache Clear Button */}
+        <button
+          onClick={handleClearCache}
+          disabled={isClearingCache}
+          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ color: 'var(--text-secondary)' }}
+          title="Tizim keshini tozalash"
+        >
+          <RefreshCw className={`w-4 h-4 ${isClearingCache ? 'animate-spin' : ''}`} />
         </button>
 
         {/* Temporarily disabled to test menu system */}

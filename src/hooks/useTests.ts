@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { teacherTestService } from '@/services'
 import * as teacherApi from '../lib/api/teacher'
 import type {
   Test,
@@ -67,7 +68,7 @@ export function useTests(params?: {
 }) {
   return useQuery<{ success: boolean; data: { data: Test[]; total: number }; message: string }>({
     queryKey: testKeys.list(params || {}),
-    queryFn: () => teacherApi.getTests(params),
+    queryFn: () => teacherTestService.getTests(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 }
@@ -78,7 +79,7 @@ export function useTests(params?: {
 export function useTest(id: number | undefined) {
   return useQuery<{ success: boolean; data: TestDetail; message: string }>({
     queryKey: testKeys.detail(id!),
-    queryFn: () => teacherApi.getTest(id!),
+    queryFn: () => teacherTestService.getTest(id!),
     enabled: !!id,
     staleTime: 1000 * 60 * 5,
   })
@@ -91,7 +92,7 @@ export function useCreateTest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: CreateTestRequest) => teacherApi.createTest(data),
+    mutationFn: (data: CreateTestRequest) => teacherTestService.createTest(data as any),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       toast.success(response.message || 'Test yaratildi')
@@ -110,7 +111,7 @@ export function useUpdateTest() {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateTestRequest }) =>
-      teacherApi.updateTest(id, data),
+      teacherTestService.updateTest(id, data as any),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.id) })
@@ -129,7 +130,7 @@ export function useDeleteTest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherApi.deleteTest(id),
+    mutationFn: (id: number) => teacherTestService.deleteTest(id),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       toast.success(response.message || "Test o'chirildi")
@@ -165,7 +166,7 @@ export function usePublishTest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherApi.publishTest(id),
+    mutationFn: (id: number) => teacherTestService.publishTest(id),
     onSuccess: (response, id) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(id) })
@@ -184,7 +185,7 @@ export function useUnpublishTest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherApi.unpublishTest(id),
+    mutationFn: (id: number) => teacherTestService.unpublishTest(id),
     onSuccess: (response, id) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(id) })
@@ -206,7 +207,7 @@ export function useUnpublishTest() {
 export function useTestQuestions(testId: number | undefined) {
   return useQuery<{ success: boolean; data: Question[]; message: string }>({
     queryKey: testKeys.questions(testId!),
-    queryFn: () => teacherApi.getTestQuestions(testId!),
+    queryFn: () => teacherTestService.getTestQuestions(testId!),
     enabled: !!testId,
     staleTime: 1000 * 60 * 5,
   })
@@ -232,7 +233,7 @@ export function useAddQuestion() {
 
   return useMutation({
     mutationFn: ({ testId, data }: { testId: number; data: CreateQuestionRequest }) =>
-      teacherApi.addQuestion(testId, data),
+      teacherTestService.addQuestion(testId, data as any),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.testId) })
@@ -259,7 +260,7 @@ export function useUpdateQuestion() {
       testId: number
       questionId: number
       data: UpdateQuestionRequest
-    }) => teacherApi.updateQuestion(testId, questionId, data),
+    }) => teacherTestService.updateQuestion(testId, questionId, data as any),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       queryClient.invalidateQueries({
@@ -282,7 +283,7 @@ export function useDeleteQuestion() {
 
   return useMutation({
     mutationFn: ({ testId, questionId }: { testId: number; questionId: number }) =>
-      teacherApi.deleteQuestion(testId, questionId),
+      teacherTestService.deleteQuestion(testId, questionId),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.testId) })
@@ -302,7 +303,7 @@ export function useReorderQuestions() {
 
   return useMutation({
     mutationFn: ({ testId, order }: { testId: number; order: number[] }) =>
-      teacherApi.reorderQuestions(testId, order),
+      teacherTestService.reorderQuestions(testId, order.map((id, index) => ({ id, order: index }))),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       toast.success(response.message || 'Savollar tartibi o\'zgartirildi')

@@ -8,7 +8,7 @@ import {
 } from '@/lib/api/language'
 import { api } from '@/lib/api/client'
 import i18n from '@/i18n'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore, useUserStore } from '@/stores/auth'
 import { useMenuStore } from '@/stores/menuStore'
 
 interface LanguageState {
@@ -91,7 +91,7 @@ export const useLanguageStore = create<LanguageState>()(
             // Soft refresh authenticated user to get localized fields (roles, profile labels)
             try {
               console.log('[LOCALE] Refreshing user data with new locale:', locale)
-              await useAuthStore.getState().refreshUserSilent()
+              await useUserStore.getState().refreshUserSilent()
               console.log('[LOCALE] User data refreshed successfully')
             } catch (err) {
               console.error('[LOCALE] Failed to refresh user data:', err)

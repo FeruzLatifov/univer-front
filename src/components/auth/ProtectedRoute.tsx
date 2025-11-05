@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuthStore, User } from '@/stores/authStore'
+import { useAuthStore, useUserStore, usePermissionStore, type User } from '@/stores/auth'
 import { useMenuStore, usePermission } from '@/stores/menuStore'
-import { NotFoundPage } from '@/pages/NotFoundPage'
+import { NotFoundPage } from '@/modules/shared/pages/NotFoundPage'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -33,7 +33,9 @@ export function ProtectedRoute({
   permission,
   redirectTo = '/login'
 }: ProtectedRouteProps) {
-  const { isAuthenticated, user, loading, canAccessPath } = useAuthStore()
+  const { isAuthenticated, loading } = useAuthStore()
+  const { user } = useUserStore()
+  const { canAccessPath } = usePermissionStore()
   const { canAccessPath: canAccessMenuPath } = useMenuStore()
   const location = useLocation()
 

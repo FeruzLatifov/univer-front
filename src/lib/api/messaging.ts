@@ -1,4 +1,5 @@
 import { api } from './client';
+import { buildAttachmentUrl } from '@/config/api';
 
 // ==================== TYPES ====================
 
@@ -223,5 +224,5 @@ export async function getUnreadCount(): Promise<UnreadCount> {
  * Download attachment
  */
 export function getAttachmentDownloadUrl(attachmentId: number): string {
-  return `${import.meta.env.VITE_API_URL}/attachments/${attachmentId}/download`;
+  return buildAttachmentUrl(attachmentId);
 }

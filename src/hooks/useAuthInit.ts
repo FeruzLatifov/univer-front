@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore, useUserStore } from '@/stores/auth'
 
 /**
  * Initialize authentication on app load
@@ -7,7 +7,8 @@ import { useAuthStore } from '@/stores/authStore'
  */
 export function useAuthInit() {
   const [isInitialized, setIsInitialized] = useState(false)
-  const { token, fetchCurrentUser, isAuthenticated } = useAuthStore()
+  const { token, isAuthenticated } = useAuthStore()
+  const { fetchCurrentUser } = useUserStore()
 
   useEffect(() => {
     const initAuth = async () => {

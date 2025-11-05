@@ -1,13 +1,8 @@
 import axios from 'axios'
+import { API_CONFIG } from '@/config/api'
 
 // Create axios instance with default config
-export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+export const apiClient = axios.create(API_CONFIG)
 
 // Initialize language headers from persisted store (early)
 try {
@@ -96,7 +91,7 @@ apiClient.interceptors.response.use(
 
         // JWT refresh requires token in Authorization header
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/v1/${userType}/auth/refresh`,
+          `${API_CONFIG.baseURL}/v1/${userType}/auth/refresh`,
           {},
           {
             headers: {

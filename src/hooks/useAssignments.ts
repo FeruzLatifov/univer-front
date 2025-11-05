@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { teacherAssignmentService } from '@/services'
 import * as teacherApi from '../lib/api/teacher'
 import type {
   Assignment,
@@ -49,7 +50,7 @@ export function useAssignments(params?: {
 }) {
   return useQuery<{ success: boolean; data: Assignment[]; message: string }>({
     queryKey: assignmentKeys.list(params || {}),
-    queryFn: () => teacherApi.getAssignments(params),
+    queryFn: () => teacherAssignmentService.getAssignments(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 }
@@ -60,7 +61,7 @@ export function useAssignments(params?: {
 export function useMySubjects() {
   return useQuery<{ success: boolean; data: { id: number; name: string; code?: string }[]; message: string }>({
     queryKey: ['mySubjects'],
-    queryFn: () => teacherApi.getMySubjects(),
+    queryFn: () => teacherAssignmentService.getMySubjects(),
     staleTime: 1000 * 60 * 10, // 10 minutes (subjects don't change often)
   })
 }
@@ -72,7 +73,7 @@ export function useMySubjects() {
 export function useMyGroups(subjectId?: number) {
   return useQuery<{ success: boolean; data: { id: number; name: string; code?: string }[]; message: string }>({
     queryKey: ['myGroups', subjectId],
-    queryFn: () => teacherApi.getMyGroups(subjectId),
+    queryFn: () => teacherAssignmentService.getMyGroups(subjectId!),
     staleTime: 1000 * 60 * 10, // 10 minutes
     enabled: subjectId === undefined || subjectId > 0, // Only fetch if subjectId is valid or not provided
   })
@@ -84,7 +85,7 @@ export function useMyGroups(subjectId?: number) {
 export function useAssignment(id: number | undefined) {
   return useQuery<{ success: boolean; data: AssignmentDetail; message: string }>({
     queryKey: assignmentKeys.detail(id!),
-    queryFn: () => teacherApi.getAssignment(id!),
+    queryFn: () => teacherAssignmentService.getAssignment(id!),
     enabled: !!id,
     staleTime: 1000 * 60 * 5,
   })
@@ -97,7 +98,7 @@ export function useCreateAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: CreateAssignmentRequest) => teacherApi.createAssignment(data),
+    mutationFn: (data: CreateAssignmentRequest) => teacherAssignmentService.createAssignment(data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       toast.success(response.message || 'Topshiriq yaratildi')
@@ -116,7 +117,7 @@ export function useUpdateAssignment() {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateAssignmentRequest }) =>
-      teacherApi.updateAssignment(id, data),
+      teacherAssignmentService.updateAssignment(id, data),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(variables.id) })
@@ -135,7 +136,7 @@ export function useDeleteAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherApi.deleteAssignment(id),
+    mutationFn: (id: number) => teacherAssignmentService.deleteAssignment(id),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       toast.success(response.message || 'Topshiriq o\'chirildi')
@@ -153,7 +154,7 @@ export function usePublishAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherApi.publishAssignment(id),
+    mutationFn: (id: number) => teacherAssignmentService.publishAssignment(id),
     onSuccess: (response, id) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(id) })
@@ -172,7 +173,7 @@ export function useUnpublishAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherApi.unpublishAssignment(id),
+    mutationFn: (id: number) => teacherAssignmentService.unpublishAssignment(id),
     onSuccess: (response, id) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(id) })
@@ -190,7 +191,7 @@ export function useUnpublishAssignment() {
 export function useSubmissions(assignmentId: number | undefined, status?: SubmissionStatusFilter) {
   return useQuery<{ success: boolean; data: SubmissionsResponse; message: string }>({
     queryKey: [...assignmentKeys.submissions(assignmentId!), status],
-    queryFn: () => teacherApi.getSubmissions(assignmentId!, status),
+    queryFn: () => teacherAssignmentService.getSubmissions(assignmentId!, status),
     enabled: !!assignmentId,
     staleTime: 1000 * 60 * 2, // 2 minutes (more frequent updates)
   })
@@ -202,7 +203,7 @@ export function useSubmissions(assignmentId: number | undefined, status?: Submis
 export function useSubmissionDetail(submissionId: number | undefined) {
   return useQuery<{ success: boolean; data: SubmissionDetail; message: string }>({
     queryKey: assignmentKeys.submissionDetail(submissionId!),
-    queryFn: () => teacherApi.getSubmissionDetail(submissionId!),
+    queryFn: () => teacherAssignmentService.getSubmissionDetail(submissionId!),
     enabled: !!submissionId,
   })
 }
@@ -215,7 +216,7 @@ export function useGradeSubmission() {
 
   return useMutation({
     mutationFn: ({ submissionId, data }: { submissionId: number; data: GradeSubmissionRequest }) =>
-      teacherApi.gradeSubmission(submissionId, data),
+      teacherAssignmentService.gradeSubmission(submissionId, data),
     onSuccess: (response, variables) => {
       // Invalidate submission detail
       queryClient.invalidateQueries({
@@ -249,30 +250,9 @@ export function useGradeSubmission() {
 export function useDownloadSubmissionFile() {
   return useMutation({
     mutationFn: ({ submissionId, fileIndex }: { submissionId: number; fileIndex?: number }) =>
-      teacherApi.downloadSubmissionFile(submissionId, fileIndex),
+      teacherAssignmentService.downloadSubmissionFile(submissionId, fileIndex),
     onSuccess: (response, variables) => {
-      // Create blob URL and trigger download
-      const blob = new Blob([response.data])
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-
-      // Get filename from Content-Disposition header
-      const contentDisposition = response.headers['content-disposition']
-      let filename = 'download'
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/)
-        if (filenameMatch) {
-          filename = filenameMatch[1]
-        }
-      }
-
-      link.setAttribute('download', filename)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(url)
-
+      // Download is already handled by the service
       toast.success('Fayl yuklab olindi')
     },
     onError: (error: any) => {
@@ -287,7 +267,7 @@ export function useDownloadSubmissionFile() {
 export function useAssignmentStatistics(assignmentId: number | undefined) {
   return useQuery<{ success: boolean; data: AssignmentStatistics; message?: string }>({
     queryKey: assignmentKeys.statistics(assignmentId!),
-    queryFn: () => teacherApi.getAssignmentStatistics(assignmentId!),
+    queryFn: () => teacherAssignmentService.getAssignmentStatistics(assignmentId!),
     enabled: !!assignmentId,
     staleTime: 1000 * 60 * 5,
   })
@@ -299,7 +279,7 @@ export function useAssignmentStatistics(assignmentId: number | undefined) {
 export function useAssignmentActivities(assignmentId: number | undefined, days = 7) {
   return useQuery<{ success: boolean; data: Activity[]; message: string }>({
     queryKey: [...assignmentKeys.activities(assignmentId!), days],
-    queryFn: () => teacherApi.getAssignmentActivities(assignmentId!, days),
+    queryFn: () => teacherAssignmentService.getAssignmentActivities(assignmentId!, days),
     enabled: !!assignmentId,
     staleTime: 1000 * 60 * 2,
   })

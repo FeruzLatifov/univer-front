@@ -1,8 +1,7 @@
 /**
  * Date Range Picker Component
  *
- * Simplified date range picker using native inputs
- * Easy to use for filtering by date ranges
+ * Modern date range picker with government-friendly styling
  */
 
 import { Calendar as CalendarIcon } from 'lucide-react'
@@ -51,22 +50,23 @@ export function DatePickerWithRange({
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <div className="relative flex-1">
-        <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+        <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#2F80ED] pointer-events-none" />
         <Input
           type="date"
           value={formatDateForInput(date?.from)}
           onChange={handleFromChange}
-          className="pl-10"
+          className="pl-10 border-[#E5E7EB] focus:border-[#2F80ED] focus:ring-[#2F80ED]"
           placeholder="Dan"
         />
       </div>
-      <span className="text-muted-foreground">-</span>
+      <span className="text-[#6B7280] font-medium">—</span>
       <div className="flex-1">
         <Input
           type="date"
           value={formatDateForInput(date?.to)}
           onChange={handleToChange}
           disabled={!date?.from}
+          className="border-[#E5E7EB] focus:border-[#2F80ED] focus:ring-[#2F80ED] disabled:bg-gray-50 disabled:text-[#6B7280]"
           placeholder="Gacha"
         />
       </div>

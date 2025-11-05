@@ -2,6 +2,8 @@
  * Utility for dynamically changing page favicon and title
  */
 
+import { API_BASE_URL } from '@/config/api'
+
 // Default favicon path from index.html
 export const DEFAULT_FAVICON = '/hemis-logo.png'
 
@@ -64,8 +66,7 @@ export const setPageMeta = (options: {
 export const initGlobalFavicon = async () => {
   try {
     // Fetch system config from backend
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
-    const response = await fetch(`${apiUrl}/system/login-config?l=uz-UZ`)
+    const response = await fetch(`${API_BASE_URL}/system/login-config?l=uz-UZ`)
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)

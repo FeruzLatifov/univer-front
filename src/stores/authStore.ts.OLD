@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { jwtDecode } from 'jwt-decode'
 import * as authApi from '@/lib/api/auth'
+import { API_BASE_URL, getApiOrigin } from '@/config/api'
 
 /**
  * JWT Payload Interface
@@ -490,7 +491,7 @@ export const useAuthStore = create<AuthState>()(
           console.log('🔄 Refreshing permissions in background...')
 
           // Non-blocking API call
-          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/v1/user/permissions`, {
+          const response = await fetch(`${API_BASE_URL}/v1/user/permissions`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -600,12 +601,7 @@ function mapRole(role: string | number | undefined, type: string): string {
 }
 
 const resolveApiOrigin = () => {
-  const apiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api'
-  try {
-    return new URL(apiUrl).origin
-  } catch (e) {
-    return 'http://localhost:8080'
-  }
+  return getApiOrigin()
 }
 
 const normalizeAvatarUrl = (value?: string | null): string | undefined => {

@@ -9,119 +9,122 @@ import MainLayout from '@/components/layouts/MainLayout'
 import AuthLayout from '@/components/layouts/AuthLayout'
 
 // Auth Pages
-import LoginPage from '@/pages/auth/LoginPage'
-import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
-import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
-import UnauthorizedPage from '@/pages/auth/UnauthorizedPage'
+import LoginPage from '@/modules/shared/pages/auth/LoginPage'
+import ForgotPasswordPage from '@/modules/shared/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/modules/shared/pages/auth/ResetPasswordPage'
+import UnauthorizedPage from '@/modules/shared/pages/auth/UnauthorizedPage'
 
 // Pages
-import DashboardPage from '@/pages/dashboard/RoleDashboard'
+import DashboardPage from '@/modules/shared/pages/dashboard/RoleDashboard'
 
 // Structure
-import UniversityPage from '@/pages/structure/UniversityPage'
-import FacultiesPage from '@/pages/structure/FacultiesPageNew'
-import DepartmentsPage from '@/pages/structure/DepartmentsPageNew'
+import UniversityPage from '@/modules/admin/pages/structure/UniversityPage'
+import FacultiesPage from '@/modules/admin/pages/structure/FacultiesPageNew'
+import DepartmentsPage from '@/modules/admin/pages/structure/DepartmentsPageNew'
 
 // Employees
-import EmployeesPage from '@/pages/employees/EmployeesPage'
-import TeachersWorkloadPage from '@/pages/employees/TeachersWorkloadPage'
-import AcademicDegreesPage from '@/pages/employees/AcademicDegreesPage'
+import EmployeesPage from '@/modules/admin/pages/employees/EmployeesPage'
+import TeachersWorkloadPage from '@/modules/admin/pages/employees/TeachersWorkloadPage'
+import AcademicDegreesPage from '@/modules/admin/pages/employees/AcademicDegreesPage'
 
 // Employee
-import TeacherLoadPage from '@/pages/employee/TeacherLoadPage'
+import TeacherLoadPage from '@/modules/admin/pages/employee/TeacherLoadPage'
 
 // Decrees & Transfers
-import DecreesPage from '@/pages/decrees/DecreesPage'
-import TransfersPage from '@/pages/decrees/TransfersPage'
+import DecreesPage from '@/modules/admin/pages/decrees/DecreesPage'
+import TransfersPage from '@/modules/admin/pages/decrees/TransfersPage'
 
 // Students
-import StudentsPage from '@/pages/students/StudentsPageCompact'
-import StudentDetailPage from '@/pages/students/StudentDetailPage'
-import GroupsPage from '@/pages/students/GroupsPage'
+import StudentsPage from '@/modules/admin/pages/students/StudentsPageCompact'
+import StudentDetailPage from '@/modules/admin/pages/students/StudentDetailPage'
+import GroupsPage from '@/modules/admin/pages/students/GroupsPage'
 
 // Performance
-import PerformancePage from '@/pages/performance/PerformancePageCompact'
-import GPAPage from '@/pages/performance/GPAPage'
+import PerformancePage from '@/modules/admin/pages/performance/PerformancePageCompact'
+import GPAPage from '@/modules/admin/pages/performance/GPAPage'
 
 // Attendance
-import AttendancePage from '@/pages/attendance/AttendancePage'
+import AttendancePage from '@/modules/admin/pages/attendance/AttendancePage'
 
 // Finance
-import FinancePage from '@/pages/finance/FinancePage'
-import ContractsPage from '@/pages/finance/ContractsPage'
-import PaymentsPage from '@/pages/finance/PaymentsPage'
+import FinancePage from '@/modules/admin/pages/finance/FinancePage'
+import ContractsPage from '@/modules/admin/pages/finance/ContractsPage'
+import PaymentsPage from '@/modules/admin/pages/finance/PaymentsPage'
 
 // Curriculum
-import CurriculumPage from '@/pages/curriculum/CurriculumPage'
-import SubjectsPage from '@/pages/curriculum/SubjectsPage'
-import SchedulePage from '@/pages/curriculum/SchedulePage'
+import CurriculumPage from '@/modules/admin/pages/curriculum/CurriculumPage'
+import SubjectsPage from '@/modules/admin/pages/curriculum/SubjectsPage'
+import SchedulePage from '@/modules/admin/pages/curriculum/SchedulePage'
 
-// Teachers
-import TeachersPage from '@/pages/teachers/TeachersPage'
-import { AssignmentsPage } from '@/pages/teachers/assignments/AssignmentsPage'
-import { CreateAssignmentPage } from '@/pages/teachers/assignments/CreateAssignmentPage'
-import { AssignmentDetailPage } from '@/pages/teachers/assignments/AssignmentDetailPage'
-import { TestsPage } from '@/pages/teachers/tests'
-import { CreateEditTestPage } from '@/pages/teachers/tests/CreateEditTestPage'
-import { QuestionsPage } from '@/pages/teachers/tests/QuestionsPage'
-import { TestResultsPage } from '@/pages/teachers/tests/TestResultsPage'
-import { AttemptDetailPage } from '@/pages/teachers/tests/AttemptDetailPage'
+// Teachers (Admin section)
+import TeachersPage from '@/modules/admin/pages/employees/TeachersPage'
+import { AssignmentsPage } from '@/modules/teacher/pages/assignments/AssignmentsPage'
+import { CreateAssignmentPage } from '@/modules/teacher/pages/assignments/CreateAssignmentPage'
+import { AssignmentDetailPage } from '@/modules/teacher/pages/assignments/AssignmentDetailPage'
+import { TestsPage } from '@/modules/teacher/pages/tests'
+import { CreateEditTestPage } from '@/modules/teacher/pages/tests/CreateEditTestPage'
+import { QuestionsPage } from '@/modules/teacher/pages/tests/QuestionsPage'
+import { TestResultsPage } from '@/modules/teacher/pages/tests/TestResultsPage'
+import { AttemptDetailPage } from '@/modules/teacher/pages/tests/AttemptDetailPage'
 
 // Teacher - New Pages
-import TeacherSubjectsPage from '@/pages/teacher/SubjectsPage'
-import TeacherSubjectDetailPage from '@/pages/teacher/SubjectDetailPage'
-import TeacherSchedulePage from '@/pages/teacher/SchedulePage'
-import TeacherWorkloadPage from '@/pages/teacher/WorkloadPage'
-import TeacherAttendancePage from '@/pages/teacher/AttendancePage'
-import TeacherGradesPage from '@/pages/teacher/GradesPage'
-import TeacherResourcesPage from '@/pages/teacher/ResourcesPage'
-import TeacherTopicsPage from '@/pages/teacher/TopicsPage'
-import TeacherExamsPage from '@/pages/teacher/ExamsPage'
-import TeacherReportsPage from '@/pages/teacher/ReportsPage'
+import TeacherSubjectsPage from '@/modules/teacher/pages/SubjectsPage'
+import TeacherSubjectDetailPage from '@/modules/teacher/pages/SubjectDetailPage'
+import TeacherSchedulePage from '@/modules/teacher/pages/SchedulePage'
+import TeacherWorkloadPage from '@/modules/teacher/pages/WorkloadPage'
+import TeacherAttendancePage from '@/modules/teacher/pages/AttendancePage'
+import TeacherGradesPage from '@/modules/teacher/pages/GradesPage'
+import TeacherResourcesPage from '@/modules/teacher/pages/ResourcesPage'
+import TeacherTopicsPage from '@/modules/teacher/pages/TopicsPage'
+import TeacherExamsPage from '@/modules/teacher/pages/ExamsPage'
+import TeacherReportsPage from '@/modules/teacher/pages/ReportsPage'
 
 // Messaging & Notifications
-import MessagesPage from '@/pages/teacher/MessagesPage'
-import ComposeMessagePage from '@/pages/teacher/ComposeMessagePage'
-import MessageDetailPage from '@/pages/teacher/MessageDetailPage'
-import NotificationsPage from '@/pages/teacher/NotificationsPage'
-import NotificationSettingsPage from '@/pages/teacher/NotificationSettingsPage'
+import MessagesPage from '@/modules/teacher/pages/MessagesPage'
+import ComposeMessagePage from '@/modules/teacher/pages/ComposeMessagePage'
+import MessageDetailPage from '@/modules/teacher/pages/MessageDetailPage'
+import NotificationsPage from '@/modules/teacher/pages/NotificationsPage'
+import NotificationSettingsPage from '@/modules/teacher/pages/NotificationSettingsPage'
 
 // Forum/Discussion
-import ForumCategoriesPage from '@/pages/teacher/ForumCategoriesPage'
-import ForumTopicsPage from '@/pages/teacher/ForumTopicsPage'
-import ForumTopicDetailPage from '@/pages/teacher/ForumTopicDetailPage'
-import CreateTopicPage from '@/pages/teacher/CreateTopicPage'
+import ForumCategoriesPage from '@/modules/teacher/pages/ForumCategoriesPage'
+import ForumTopicsPage from '@/modules/teacher/pages/ForumTopicsPage'
+import ForumTopicDetailPage from '@/modules/teacher/pages/ForumTopicDetailPage'
+import CreateTopicPage from '@/modules/teacher/pages/CreateTopicPage'
 
 // Student Portal
-import StudentDashboard from '@/pages/student/StudentDashboard'
-import StudentSubjectsPage from '@/pages/student/StudentSubjectsPage'
-import StudentAssignmentsPage from '@/pages/student/StudentAssignmentsPage'
-import StudentGradesPage from '@/pages/student/StudentGradesPage'
-import StudentTestsPage from '@/pages/student/StudentTestsPage'
-import StudentAttendancePage from '@/pages/student/StudentAttendancePage'
-import StudentSchedulePage from '@/pages/student/StudentSchedulePage'
-import StudentDocumentsPage from '@/pages/student/StudentDocumentsPage'
-import StudentResourcesPage from '@/pages/student/StudentResourcesPage'
-import StudentExamsPage from '@/pages/student/StudentExamsPage'
-import StudentProfilePage from '@/pages/student/StudentProfilePage'
-import StudentSemestersPage from '@/pages/student/StudentSemestersPage'
-import StudentGPADetailPage from '@/pages/student/StudentGPADetailPage'
+import StudentDashboard from '@/modules/student/pages/StudentDashboard'
+import StudentSubjectsPage from '@/modules/student/pages/StudentSubjectsPage'
+import StudentAssignmentsPage from '@/modules/student/pages/StudentAssignmentsPage'
+import StudentGradesPage from '@/modules/student/pages/StudentGradesPage'
+import StudentTestsPage from '@/modules/student/pages/StudentTestsPage'
+import StudentAttendancePage from '@/modules/student/pages/StudentAttendancePage'
+import StudentSchedulePage from '@/modules/student/pages/StudentSchedulePage'
+import StudentDocumentsPage from '@/modules/student/pages/StudentDocumentsPage'
+import StudentResourcesPage from '@/modules/student/pages/StudentResourcesPage'
+import StudentExamsPage from '@/modules/student/pages/StudentExamsPage'
+import StudentProfilePage from '@/modules/student/pages/StudentProfilePage'
+import StudentSemestersPage from '@/modules/student/pages/StudentSemestersPage'
+import StudentGPADetailPage from '@/modules/student/pages/StudentGPADetailPage'
 
 // Exams
-import ExamsPage from '@/pages/exams/ExamsPage'
+import ExamsPage from '@/modules/admin/pages/exams/ExamsPage'
 
 // Archive
-import ArchivePage from '@/pages/archive/ArchivePage'
-import DiplomasPage from '@/pages/archive/DiplomasPage'
+import ArchivePage from '@/modules/admin/pages/archive/ArchivePage'
+import DiplomasPage from '@/modules/admin/pages/archive/DiplomasPage'
 
 // Reports
-import ReportsPage from '@/pages/reports/ReportsPage'
-import SignDocumentsPage from '@/pages/documents/SignDocumentsPage'
+import ReportsPage from '@/modules/admin/pages/reports/ReportsPage'
+import SignDocumentsPage from '@/modules/admin/pages/documents/SignDocumentsPage'
+
+// Employee - Document Signing
+import DocumentSignPage from '@/pages/employee/DocumentSignPage'
 
 // System
-import SystemUsersPage from '@/pages/system/UsersPage'
-import SystemRolesPage from '@/pages/system/RolesPage'
-import SettingsPage from '@/pages/settings/SettingsPage'
+import SystemUsersPage from '@/modules/admin/pages/system/UsersPage'
+import SystemRolesPage from '@/modules/admin/pages/system/RolesPage'
+import SettingsPage from '@/modules/admin/pages/SettingsPage'
 
 function App() {
   // Initialize authentication on app load
@@ -283,8 +286,8 @@ function App() {
 
         {/* E-Documents */}
         <Route path="/document/sign-documents" element={
-          <ProtectedRoute permission="document.sign.view" resourcePath="document/sign-documents">
-            <SignDocumentsPage />
+          <ProtectedRoute>
+            <DocumentSignPage />
           </ProtectedRoute>
         } />
 
