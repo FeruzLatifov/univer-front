@@ -355,7 +355,9 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
 
-    # CSP Header (more flexible than meta tag)
+    # CSP Header (more flexible and secure than meta tag)
+    # PRODUCTION NOTE: Remove 'unsafe-inline' and 'unsafe-eval' for better security
+    # Use nonce-based CSP: script-src 'self' 'nonce-{random}';
     add_header Content-Security-Policy "
         default-src 'self';
         script-src 'self' 'unsafe-inline' 'unsafe-eval';

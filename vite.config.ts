@@ -17,7 +17,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     // Disable source maps in production for security
-    sourcemap: process.env.NODE_ENV === 'development',
+    sourcemap: process.env.NODE_ENV !== 'production',
     minify: 'terser',
     terserOptions: {
       compress: {
