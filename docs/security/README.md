@@ -6,7 +6,7 @@ This directory contains comprehensive security analysis and implementation docum
 
 ## 📚 Documentation Files
 
-### 1. [SECURITY_ANALYSIS_UZ.md](./SECURITY_ANALYSIS_UZ.md) (20KB)
+### 1. [ANALYSIS_UZ.md](./ANALYSIS_UZ.md) (20KB)
 **Language:** O'zbek tili (Uzbek)  
 **Audience:** All team members, stakeholders
 
@@ -27,7 +27,7 @@ This directory contains comprehensive security analysis and implementation docum
 
 ---
 
-### 2. [SECURITY_BEST_PRACTICES.md](./SECURITY_BEST_PRACTICES.md) (17KB)
+### 2. [BEST_PRACTICES.md](./BEST_PRACTICES.md) (17KB)
 **Language:** English  
 **Audience:** Developers, DevOps engineers
 
@@ -49,7 +49,7 @@ This directory contains comprehensive security analysis and implementation docum
 
 ---
 
-### 3. [SECURITY_TESTING_CHECKLIST.md](./SECURITY_TESTING_CHECKLIST.md) (14KB)
+### 3. [TESTING_CHECKLIST.md](./TESTING_CHECKLIST.md) (14KB)
 **Language:** English  
 **Audience:** QA engineers, security testers
 
@@ -73,7 +73,7 @@ This directory contains comprehensive security analysis and implementation docum
 
 ---
 
-### 4. [SECURITY_IMPLEMENTATION_SUMMARY.md](./SECURITY_IMPLEMENTATION_SUMMARY.md) (10KB)
+### 4. [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) (10KB)
 **Language:** English  
 **Audience:** Technical leads, architects
 
