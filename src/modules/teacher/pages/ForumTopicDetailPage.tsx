@@ -52,6 +52,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { uz } from 'date-fns/locale';
+import { sanitizeRichText } from '@/utils/sanitize';
 
 export default function ForumTopicDetailPage() {
   const { topicId } = useParams<{ topicId: string }>();
@@ -279,9 +280,11 @@ export default function ForumTopicDetailPage() {
           <div
             className="prose dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{
-              __html: (topic._translations?.uz?.body || topic.body).replace(
-                /\n/g,
-                '<br />'
+              __html: sanitizeRichText(
+                (topic._translations?.uz?.body || topic.body).replace(
+                  /\n/g,
+                  '<br />'
+                )
               ),
             }}
           />
@@ -469,9 +472,11 @@ function PostCard({
                 <div
                   className="prose dark:prose-invert prose-sm max-w-none mb-3"
                   dangerouslySetInnerHTML={{
-                    __html: (post._translations?.uz?.body || post.body).replace(
-                      /\n/g,
-                      '<br />'
+                    __html: sanitizeRichText(
+                      (post._translations?.uz?.body || post.body).replace(
+                        /\n/g,
+                        '<br />'
+                      )
                     ),
                   }}
                 />
@@ -532,9 +537,12 @@ function PostCard({
                     <div
                       className="prose dark:prose-invert prose-sm"
                       dangerouslySetInnerHTML={{
-                        __html: (
-                          reply._translations?.uz?.body || reply.body
-                        ).replace(/\n/g, '<br />'),
+                        __html: sanitizeRichText(
+                          (reply._translations?.uz?.body || reply.body).replace(
+                            /\n/g,
+                            '<br />'
+                          )
+                        ),
                       }}
                     />
                   </div>

@@ -13,6 +13,7 @@ import { persist } from 'zustand/middleware'
 import * as authApi from '@/lib/api/auth'
 import { sessionStorageAdapter } from '@/stores/types/auth.types'
 import { useUserStore } from './userStore'
+import { logger } from '@/utils/logger'
 
 interface AuthState {
   // State
@@ -54,11 +55,10 @@ export const useAuthStore = create<AuthState>()(
           if (response.success) {
             const { user, access_token } = response.data
 
-            console.log('[AuthStore] Login successful', {
+            logger.debug('[AuthStore] Login successful', {
               userId: user.id,
               userName: user.name,
               userType: credentials.userType,
-              tokenLength: access_token?.length
             })
 
             // Store tokens in sessionStorage (browser yopilsa o'chadi)

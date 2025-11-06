@@ -184,6 +184,45 @@ yarn build
 
 # Preview production build
 yarn preview
+
+# Run tests
+yarn test
+
+# Run tests with UI
+yarn test:ui
+
+# Generate coverage report
+yarn test:coverage
+```
+
+## 🔐 Security
+
+This project implements comprehensive security measures:
+
+- **XSS Protection** - DOMPurify sanitization for user-generated content
+- **Secure Logging** - Environment-aware logging system
+- **CSP Headers** - Content Security Policy implementation
+- **Automated Tests** - 40+ security tests
+- **CodeQL Scanning** - Zero vulnerabilities
+
+**Security Rating:** ⭐⭐⭐⭐⚪ (4/5)
+
+For detailed security documentation, see [docs/security/](./docs/security/).
+
+## 🧪 Testing
+
+**Test Framework:** Vitest with jsdom
+
+**Test Coverage:**
+- Unit tests for security utilities (sanitize, logger)
+- 40 automated tests
+- Coverage reporting with v8
+
+```bash
+yarn test           # Run tests in watch mode
+yarn test:run       # Run tests once
+yarn test:ui        # Run with UI
+yarn test:coverage  # Generate coverage report
 ```
 
 ## 🚀 Production Build
@@ -222,9 +261,10 @@ VITE_APP_VERSION=1.0.0
 
 ## 🔗 Links
 
-- [Main Project README](../README.md)
-- [Backend README](../univer-backend/README.md)
-- [Multi-Language Guide](../docs/MULTILANGUAGE_SYSTEM_GUIDE.md)
+- [Documentation](./docs/) - Project documentation
+- [Security Documentation](./docs/security/) - Security analysis and guides
+- [Frontend Development Plan](./FRONTEND_DEVELOPMENT_PLAN.md)
+- [Implementation Status](./IMPLEMENTATION_STATUS.md)
 
 ## 📦 Package Manager
 

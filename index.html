@@ -4,6 +4,26 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/hemis-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Content Security Policy for XSS Protection 
+         Note: 'unsafe-inline' and 'unsafe-eval' are required for:
+         - Vite/React hot module replacement in development
+         - React's inline styles and some third-party libraries
+         - For production, consider implementing nonce-based CSP at server level
+         Production CSP should be configured in Nginx/Apache headers for better control
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' data: https: blob:;
+      font-src 'self' data: https://fonts.gstatic.com;
+      connect-src 'self' http://localhost:8000 https://api.dicebear.com https://sentry.io;
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+    ">
+    
     <title>HEMIS - Universitet Boshqaruv Tizimi 2025</title>
     <meta name="description" content="Zamonaviy universitet boshqaruv tizimi - React 19, TypeScript 5.9, Vite 7" />
   </head>
