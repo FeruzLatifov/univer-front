@@ -664,6 +664,416 @@ Create: `SECURITY_TESTING_CHECKLIST.md`
 
 ---
 
+## 🧪 Automated Testing Setup and Examples
+
+### 1. Install Test Framework
+
+```bash
+# Install Vitest (recommended for Vite projects)
+yarn add -D vitest @vitest/ui jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event
+
+# Or install Jest
+yarn add -D jest @types/jest ts-jest @testing-library/react @testing-library/jest-dom
+```
+
+### 2. Configure Vitest
+
+**File:** `vitest.config.ts`
+
+```typescript
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+})
+```
+
+**File:** `src/test/setup.ts`
+
+```typescript
+import '@testing-library/jest-dom'
+import { expect, afterEach } from 'vitest'
+import { cleanup } from '@testing-library/react'
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup()
+})
+```
+
+### 3. Update package.json
+
+```json
+{
+  "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  }
+}
+```
+
+### 4. Unit Tests for Security Utilities
+
+**File:** `src/utils/__tests__/sanitize.test.ts`
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { sanitizeHtml, sanitizeRichText, sanitizeBasicText, stripHtml } from '../sanitize'
+
+describe('sanitizeHtml', () => {
+  it('should remove script tags', () => {
+    const input = '<script>alert("XSS")</script><p>Safe content</p>'
+    const output = sanitizeHtml(input)
+    
+    expect(output).not.toContain('<script>')
+    expect(output).not.toContain('alert')
+    expect(output).toContain('<p>Safe content</p>')
+  })
+
+  it('should remove event handlers', () => {
+    const input = '<a href="#" onclick="alert(\'XSS\')">Click</a>'
+    const output = sanitizeHtml(input)
+    
+    expect(output).not.toContain('onclick')
+    expect(output).toContain('<a')
+  })
+
+  it('should remove iframe tags', () => {
+    const input = '<iframe src="https://evil.com"></iframe>'
+    const output = sanitizeHtml(input)
+    
+    expect(output).not.toContain('iframe')
+  })
+
+  it('should allow safe HTML tags', () => {
+    const input = '<p><strong>Bold</strong> and <em>italic</em></p>'
+    const output = sanitizeHtml(input)
+    
+    expect(output).toContain('<strong>')
+    expect(output).toContain('<em>')
+    expect(output).toContain('Bold')
+  })
+
+  it('should handle empty input', () => {
+    expect(sanitizeHtml('')).toBe('')
+    expect(sanitizeHtml(null as any)).toBe('')
+  })
+})
+
+describe('sanitizeRichText', () => {
+  it('should allow rich text tags', () => {
+    const input = '<h1>Title</h1><p>Text with <a href="/link">link</a></p><ul><li>Item</li></ul>'
+    const output = sanitizeRichText(input)
+    
+    expect(output).toContain('<h1>')
+    expect(output).toContain('<a href="/link">')
+    expect(output).toContain('<ul>')
+  })
+
+  it('should still remove dangerous content', () => {
+    const input = '<h1>Title</h1><script>alert("XSS")</script>'
+    const output = sanitizeRichText(input)
+    
+    expect(output).toContain('<h1>')
+    expect(output).not.toContain('<script>')
+  })
+})
+
+describe('stripHtml', () => {
+  it('should remove all HTML tags', () => {
+    const input = '<p>Hello <strong>World</strong></p>'
+    const output = stripHtml(input)
+    
+    expect(output).toBe('Hello World')
+    expect(output).not.toContain('<')
+    expect(output).not.toContain('>')
+  })
+})
+```
+
+**File:** `src/utils/__tests__/logger.test.ts`
+
+```typescript
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { logger, sanitizeForLog } from '../logger'
+
+describe('logger', () => {
+  let consoleLogSpy: any
+  let consoleErrorSpy: any
+  let consoleWarnSpy: any
+
+  beforeEach(() => {
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should call console.error for errors', () => {
+    logger.error('Test error')
+    expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR]', 'Test error')
+  })
+
+  it('should call console.warn for warnings', () => {
+    logger.warn('Test warning')
+    expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN]', 'Test warning')
+  })
+
+  // Note: debug and info tests depend on import.meta.env.DEV
+  // In production, these should not log
+})
+
+describe('sanitizeForLog', () => {
+  it('should redact token fields', () => {
+    const data = {
+      user: 'john',
+      access_token: 'secret123',
+      password: 'pass123',
+    }
+    
+    const sanitized = sanitizeForLog(data)
+    
+    expect(sanitized.user).toBe('john')
+    expect(sanitized.access_token).toBe('***REDACTED***')
+    expect(sanitized.password).toBe('***REDACTED***')
+  })
+
+  it('should handle null and undefined', () => {
+    expect(sanitizeForLog(null)).toBeNull()
+    expect(sanitizeForLog(undefined)).toBeUndefined()
+  })
+})
+```
+
+### 5. Integration Tests for Components
+
+**File:** `src/components/auth/__tests__/ProtectedRoute.test.tsx`
+
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
+import { ProtectedRoute } from '../ProtectedRoute'
+
+// Mock stores
+vi.mock('@/stores/auth', () => ({
+  useAuthStore: () => ({ isAuthenticated: true, loading: false }),
+  useUserStore: () => ({ user: { id: 1, role: 'student' } }),
+  usePermissionStore: () => ({ canAccessPath: () => true }),
+}))
+
+vi.mock('@/stores/menuStore', () => ({
+  useMenuStore: () => ({ canAccessPath: () => true }),
+  usePermission: () => true,
+}))
+
+describe('ProtectedRoute', () => {
+  it('should render children when authenticated', () => {
+    render(
+      <BrowserRouter>
+        <ProtectedRoute>
+          <div>Protected Content</div>
+        </ProtectedRoute>
+      </BrowserRouter>
+    )
+    
+    expect(screen.getByText('Protected Content')).toBeInTheDocument()
+  })
+
+  // Add more tests for:
+  // - Redirects when not authenticated
+  // - Shows 404 for unauthorized roles
+  // - Checks permissions correctly
+})
+```
+
+### 6. API Client Tests
+
+**File:** `src/lib/api/__tests__/client.test.ts`
+
+```typescript
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { apiClient } from '../client'
+import axios from 'axios'
+
+vi.mock('axios')
+
+describe('API Client', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    sessionStorage.clear()
+  })
+
+  it('should add authorization token to requests', async () => {
+    sessionStorage.setItem('access_token', 'test-token')
+    
+    const mockRequest = vi.fn()
+    apiClient.interceptors.request.use(mockRequest)
+    
+    // Test that token is added
+    // ... implementation
+  })
+
+  it('should handle 401 errors and refresh token', async () => {
+    // Mock refresh endpoint
+    // Test token refresh flow
+    // ... implementation
+  })
+
+  it('should redirect to login on refresh failure', async () => {
+    // Test logout and redirect
+    // ... implementation
+  })
+})
+```
+
+### 7. E2E Tests with Playwright (Optional)
+
+**Install:**
+```bash
+yarn add -D @playwright/test
+npx playwright install
+```
+
+**File:** `e2e/login.spec.ts`
+
+```typescript
+import { test, expect } from '@playwright/test'
+
+test('login flow', async ({ page }) => {
+  // Navigate to login page
+  await page.goto('http://localhost:3000/login')
+  
+  // Fill in credentials
+  await page.fill('input[name="student_id"]', '123456')
+  await page.fill('input[name="password"]', 'password')
+  
+  // Submit form
+  await page.click('button[type="submit"]')
+  
+  // Should redirect to dashboard
+  await expect(page).toHaveURL(/.*dashboard/)
+  
+  // Should show user info
+  await expect(page.locator('text=Student Portal')).toBeVisible()
+})
+
+test('logout flow', async ({ page, context }) => {
+  // Login first
+  // ... login steps
+  
+  // Click logout
+  await page.click('button:has-text("Logout")')
+  
+  // Should redirect to login
+  await expect(page).toHaveURL(/.*login/)
+  
+  // Session storage should be cleared
+  const storage = await context.storageState()
+  expect(storage.origins[0]?.localStorage).not.toContainEqual(
+    expect.objectContaining({ name: 'access_token' })
+  )
+})
+```
+
+### 8. Security-Specific Tests
+
+**File:** `src/__tests__/security/xss-forum.test.tsx`
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { ForumTopicDetailPage } from '@/modules/teacher/pages/ForumTopicDetailPage'
+
+describe('Forum XSS Protection', () => {
+  it('should sanitize forum post content', () => {
+    const maliciousContent = '<script>alert("XSS")</script><p>Safe text</p>'
+    
+    // Render component with malicious content
+    // ... setup
+    
+    // Check that script is not in DOM
+    const content = screen.getByRole('article')
+    expect(content.innerHTML).not.toContain('<script>')
+    expect(content.innerHTML).toContain('Safe text')
+  })
+})
+```
+
+### 9. Run Tests
+
+```bash
+# Run all tests
+yarn test
+
+# Run tests in watch mode
+yarn test --watch
+
+# Run tests with coverage
+yarn test:coverage
+
+# Run tests with UI
+yarn test:ui
+
+# Run E2E tests
+npx playwright test
+```
+
+### 10. CI/CD Integration
+
+**File:** `.github/workflows/test.yml`
+
+```yaml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: yarn install
+        
+      - name: Run tests
+        run: yarn test:coverage
+        
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+```
+
+---
+
 ## 📚 Additional Resources
 
 ### Security Libraries
