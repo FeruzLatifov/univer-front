@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_CONFIG } from '@/config/api'
+import { logger } from '@/utils/logger'
 
 // Create axios instance with default config
 export const apiClient = axios.create(API_CONFIG)
@@ -73,7 +74,7 @@ apiClient.interceptors.response.use(
 
       // If no refresh token, immediately redirect to login
       if (!refreshToken) {
-        console.log('[API] 401 error: No refresh token, redirecting to login')
+        logger.info('[API] 401 error: No refresh token, redirecting to login')
         sessionStorage.removeItem('access_token')
         sessionStorage.removeItem('refresh_token')
         window.location.href = '/login'
@@ -83,10 +84,9 @@ apiClient.interceptors.response.use(
       // Try to refresh the token
       try {
         const userType = sessionStorage.getItem('user_type') || 'student'
-        console.log('[API] 401 error: Attempting token refresh', {
+        logger.info('[API] 401 error: Attempting token refresh', {
           userType,
           hasRefreshToken: !!refreshToken,
-          refreshTokenLength: refreshToken?.length
         })
 
         // JWT refresh requires token in Authorization header
@@ -100,31 +100,28 @@ apiClient.interceptors.response.use(
           }
         )
 
-        console.log('[API] Refresh response:', response.data)
+        logger.debug('[API] Refresh response received')
 
         const newToken = response.data?.data?.access_token || response.data?.access_token
 
         if (!newToken) {
-          console.error('[API] No access_token in refresh response:', response.data)
+          logger.error('[API] No access_token in refresh response')
           throw new Error('No access_token in response')
         }
 
         sessionStorage.setItem('access_token', newToken)
-        console.log('[API] Token refreshed successfully', {
-          newTokenLength: newToken.length
-        })
+        logger.info('[API] Token refreshed successfully')
 
         // Retry original request with new token
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return apiClient(originalRequest)
       } catch (refreshError: any) {
         // Refresh failed, logout user and redirect to login
-        console.error('[API] Token refresh failed', {
+        logger.error('[API] Token refresh failed', {
           error: refreshError?.message,
           status: refreshError?.response?.status,
-          data: refreshError?.response?.data
         })
-        console.log('[API] Redirecting to login...')
+        logger.info('[API] Redirecting to login...')
 
         sessionStorage.removeItem('access_token')
         sessionStorage.removeItem('refresh_token')
@@ -150,12 +147,11 @@ apiClient.interceptors.response.use(
 
       // Log API errors to console (except 401 - already logged above)
       if (error.response.status !== 401) {
-        console.error('[API] Request failed', {
+        logger.error('[API] Request failed', {
           url: error.config?.url,
           method: error.config?.method,
           status: error.response.status,
           message: error.message,
-          data: errorData
         })
       }
     }

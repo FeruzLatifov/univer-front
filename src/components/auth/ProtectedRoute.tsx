@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore, useUserStore, usePermissionStore, type User } from '@/stores/auth'
 import { useMenuStore, usePermission } from '@/stores/menuStore'
 import { NotFoundPage } from '@/modules/shared/pages/NotFoundPage'
+import { logger } from '@/utils/logger'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -56,7 +57,7 @@ export function ProtectedRoute({
   const hasToken = sessionStorage.getItem('access_token')
 
   if (!isAuthenticated || !user || !hasToken) {
-    console.log('🔒 [ProtectedRoute] Redirecting to login', {
+    logger.info('🔒 [ProtectedRoute] Redirecting to login', {
       isAuthenticated,
       hasUser: !!user,
       hasToken: !!hasToken
@@ -69,7 +70,7 @@ export function ProtectedRoute({
   if (permission) {
     const hasPermission = usePermission(permission)
     if (!hasPermission) {
-      console.warn(`Access denied. Required permission: ${permission}, User role: ${user.role}`)
+      logger.warn(`Access denied. Required permission: ${permission}, User role: ${user.role}`)
       // SECURITY: Show 404 instead of 403/Unauthorized
       // Makes it look like page doesn't exist (safer)
       return <NotFoundPage />
@@ -84,7 +85,7 @@ export function ProtectedRoute({
     const canAccessMenu = canAccessMenuPath(resourcePath)
 
     if (!canAccessAuth && !canAccessMenu) {
-      console.warn(`Access denied to resource: ${resourcePath}. User role: ${user.role}`)
+      logger.warn(`Access denied to resource: ${resourcePath}. User role: ${user.role}`)
       // SECURITY: Show 404 instead of 403/Unauthorized
       // Makes it look like page doesn't exist (safer)
       return <NotFoundPage />
@@ -94,7 +95,7 @@ export function ProtectedRoute({
   // SECONDARY: Frontend role check (UX only - can be bypassed via F12, but backend will reject API calls)
   if (allowedRoles && allowedRoles.length > 0) {
     if (!allowedRoles.includes(user.role)) {
-      console.warn(`Access denied by role. Required: ${allowedRoles.join(', ')}, User: ${user.role}`)
+      logger.warn(`Access denied by role. Required: ${allowedRoles.join(', ')}, User: ${user.role}`)
       // SECURITY: Show 404 instead of 403/Unauthorized
       // Doesn't reveal that page exists
       return <NotFoundPage />
@@ -118,7 +119,7 @@ export function PublicRoute({ children }: { children: React.ReactNode }) {
   const hasToken = sessionStorage.getItem('access_token')
 
   if (isAuthenticated && hasToken) {
-    console.log('🔄 [PublicRoute] User authenticated, redirecting to dashboard')
+    logger.info('🔄 [PublicRoute] User authenticated, redirecting to dashboard')
     return <Navigate to="/dashboard" replace />
   }
 
