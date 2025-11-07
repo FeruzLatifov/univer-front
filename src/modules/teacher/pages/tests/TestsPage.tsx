@@ -250,7 +250,7 @@ export function TestsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-orange-600">
-                {tests.reduce((sum, t) => sum + t.attempt_stats.pending_grading, 0)}
+                {tests.reduce((sum, t) => sum + t.attempt_stats.pending, 0)}
               </p>
               <p className="text-sm text-muted-foreground">Baholanmagan</p>
             </div>

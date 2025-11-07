@@ -54,15 +54,19 @@ export function TestResultsPage() {
 
   // Get status badge
   const getStatusBadge = (status: AttemptStatus) => {
-    const variants: Record<AttemptStatus, 'default' | 'secondary' | 'destructive' | 'success'> = {
-      started: 'secondary',
-      in_progress: 'default',
-      submitted: 'default',
-      graded: 'success',
-      abandoned: 'destructive',
+    const styles: Record<
+      AttemptStatus,
+      { variant: 'default' | 'secondary' | 'destructive'; className?: string }
+    > = {
+      started: { variant: 'secondary' },
+      in_progress: { variant: 'default' },
+      submitted: { variant: 'default' },
+      graded: { variant: 'default', className: 'bg-green-100 text-green-700 border-transparent' },
+      abandoned: { variant: 'destructive' },
     }
+
     return (
-      <Badge variant={variants[status]}>
+      <Badge variant={styles[status].variant} className={styles[status].className}>
         {ATTEMPT_STATUS_NAMES[status]}
       </Badge>
     )
@@ -154,7 +158,7 @@ export function TestResultsPage() {
               </p>
               <p className="text-sm text-muted-foreground">O'rtacha ball</p>
             </div>
-            {summary.pass_rate !== null && (
+            {summary.pass_rate !== null && summary.pass_rate !== undefined && (
               <div>
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Award className="h-5 w-5 text-purple-600" />
@@ -275,7 +279,8 @@ export function TestResultsPage() {
                     <div>
                       <p className="text-sm text-muted-foreground">Ball</p>
                       <p className="text-lg font-semibold">
-                        {attempt.total_score !== null && attempt.max_score !== null ? (
+                        {attempt.total_score !== null &&
+                        attempt.total_score !== undefined ? (
                           <>
                             {attempt.total_score.toFixed(1)} / {attempt.max_score}
                           </>
@@ -288,7 +293,7 @@ export function TestResultsPage() {
                     {/* Percentage */}
                     <div>
                       <p className="text-sm text-muted-foreground">Foiz</p>
-                      {attempt.percentage !== null ? (
+                      {attempt.percentage !== null && attempt.percentage !== undefined ? (
                         <div className="flex items-center gap-2">
                           <div
                             className={`h-2 w-2 rounded-full ${getGradeBadgeColor(attempt.percentage)}`}
@@ -316,10 +321,13 @@ export function TestResultsPage() {
                     </div>
 
                     {/* Pass/Fail */}
-                    {test.passing_score && attempt.passed !== null && (
+                    {test.passing_score && attempt.passed !== null && attempt.passed !== undefined && (
                       <div>
                         <p className="text-sm text-muted-foreground">Natija</p>
-                        <Badge variant={attempt.passed ? 'success' : 'destructive'}>
+                        <Badge
+                          variant={attempt.passed ? 'secondary' : 'destructive'}
+                          className={attempt.passed ? 'bg-green-100 text-green-700 border-transparent' : undefined}
+                        >
                           {attempt.passed ? "O'tdi" : "O'tmadi"}
                         </Badge>
                       </div>
@@ -334,7 +342,7 @@ export function TestResultsPage() {
                         {formatDateTime(attempt.submitted_at)}
                       </div>
                     )}
-                    {attempt.duration_seconds !== null && (
+                    {attempt.duration_seconds !== null && attempt.duration_seconds !== undefined && (
                       <div>
                         <strong>Davomiyligi:</strong> {attempt.duration_formatted}
                       </div>
@@ -348,9 +356,16 @@ export function TestResultsPage() {
                   </div>
 
                   {/* Auto vs Manual Grading */}
-                  {attempt.auto_graded_score !== null || attempt.manual_graded_score !== null ? (
+                  {(
+                    attempt.auto_graded_score !== null &&
+                    attempt.auto_graded_score !== undefined
+                  ) ||
+                  (
+                    attempt.manual_graded_score !== null &&
+                    attempt.manual_graded_score !== undefined
+                  ) ? (
                     <div className="mt-4 flex gap-6 text-sm">
-                      {attempt.auto_graded_score !== null && (
+                      {attempt.auto_graded_score !== null && attempt.auto_graded_score !== undefined && (
                         <div>
                           <span className="text-muted-foreground">Avto:</span>{' '}
                           <strong className="text-blue-600">
@@ -358,7 +373,7 @@ export function TestResultsPage() {
                           </strong>
                         </div>
                       )}
-                      {attempt.manual_graded_score !== null && (
+                      {attempt.manual_graded_score !== null && attempt.manual_graded_score !== undefined && (
                         <div>
                           <span className="text-muted-foreground">Qo'lda:</span>{' '}
                           <strong className="text-purple-600">
@@ -367,7 +382,9 @@ export function TestResultsPage() {
                         </div>
                       )}
                       {attempt.requires_manual_grading && (
-                        <Badge variant="warning">Baholash kerak</Badge>
+                        <Badge className="bg-yellow-100 text-yellow-700">
+                          Baholash kerak
+                        </Badge>
                       )}
                     </div>
                   ) : null}

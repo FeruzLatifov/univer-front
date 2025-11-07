@@ -85,7 +85,11 @@ export default function MessagesPage() {
   const handleDeleteMessage = async (id: number) => {
     if (confirm('Xabarni o\'chirmoqchimisiz?')) {
       await deleteMessage(id);
-      activeTab === 'inbox' ? refetchInbox() : refetchSent();
+      if (activeTab === 'inbox') {
+        refetchInbox();
+      } else {
+        refetchSent();
+      }
     }
   };
 

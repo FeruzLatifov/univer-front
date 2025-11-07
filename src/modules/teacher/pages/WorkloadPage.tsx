@@ -10,19 +10,19 @@ import {
   PieChart
 } from 'lucide-react'
 import { teacherScheduleService } from '@/services'
-import { WEEK_DAYS } from '@/lib/api/schedule'
+import { WEEK_DAYS, type WorkloadData } from '@/lib/api/schedule'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
 
 export default function WorkloadPage() {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<WorkloadData>({
     queryKey: ['teacher', 'schedule', 'workload'],
     queryFn: () => teacherScheduleService.getWorkload(),
   })
 
-  const workload = data?.data
+  const workload = data
 
   if (isLoading) {
     return (

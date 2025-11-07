@@ -20,27 +20,27 @@ export default function StudentDocumentsPage() {
   // Fetch all documents
   const { data: allDocuments, isLoading: allLoading } = useQuery({
     queryKey: ['student', 'documents', 'all'],
-    queryFn: getStudentDocuments,
+    queryFn: () => getStudentDocuments(),
   });
 
   // Fetch decrees
   const { data: decrees, isLoading: decreesLoading } = useQuery({
     queryKey: ['student', 'decrees'],
-    queryFn: getStudentDecrees,
+    queryFn: () => getStudentDecrees(),
     enabled: activeTab === 'decree',
   });
 
   // Fetch references
   const { data: references, isLoading: referencesLoading, refetch: refetchReferences } = useQuery({
     queryKey: ['student', 'references'],
-    queryFn: getStudentReferences,
+    queryFn: () => getStudentReferences(),
     enabled: activeTab === 'reference',
   });
 
   // Fetch contracts
   const { data: contracts, isLoading: contractsLoading } = useQuery({
     queryKey: ['student', 'contracts'],
-    queryFn: getStudentContracts,
+    queryFn: () => getStudentContracts(),
     enabled: activeTab === 'contract',
   });
 

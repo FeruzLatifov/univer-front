@@ -12,6 +12,7 @@ import {
   Mail,
   AlertCircle,
   Settings,
+  type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +20,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -32,6 +32,7 @@ import {
 } from '@/lib/api/notifications';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import type { LucideIcon } from 'lucide-react';
 
 export default function NotificationsDropdown() {
   const { t } = useTranslation();
@@ -67,46 +68,6 @@ export default function NotificationsDropdown() {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
-
-  const getNotificationIcon = (type: string) => {
-    const icons: Record<string, any> = {
-      assignment_due: Clock,
-      assignment_graded: Check,
-      assignment_posted: FileText,
-      test_available: FileText,
-      test_graded: Award,
-      grade_posted: Award,
-      attendance_marked: Calendar,
-      attendance_warning: AlertCircle,
-      announcement: Megaphone,
-      message_received: Mail,
-    };
-
-    const Icon = icons[type] || Bell;
-    return <Icon className="h-4 w-4" />;
-  };
-
-  const getPriorityColor = (priority: string) => {
-    const colors: Record<string, string> = {
-      urgent: 'text-red-500',
-      high: 'text-orange-500',
-      normal: 'text-blue-500',
-      low: 'text-gray-500',
-    };
-    return colors[priority] || colors.normal;
-  };
-
-  const formatTimeAgo = (date: string) => {
-    const now = new Date();
-    const created = new Date(date);
-    const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return 'Hozirgina';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} daqiqa oldin`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} soat oldin`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} kun oldin`;
-    return created.toLocaleDateString('uz-UZ');
-  };
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.is_read) {
@@ -214,7 +175,7 @@ export default function NotificationsDropdown() {
 // Notification Item Component
 function NotificationItem({ notification }: { notification: Notification }) {
   const getNotificationIcon = (type: string) => {
-    const icons: Record<string, any> = {
+    const icons: Record<string, LucideIcon> = {
       assignment_due: Clock,
       assignment_graded: Check,
       assignment_posted: FileText,
@@ -253,7 +214,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
     return created.toLocaleDateString('uz-UZ');
   };
 
-  const Icon = getNotificationIcon(notification.type);
+    const Icon = getNotificationIcon(notification.type);
 
   return (
     <div

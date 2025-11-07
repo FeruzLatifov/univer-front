@@ -122,7 +122,7 @@ export default function StudentsPageCompact() {
                   <td>
                     <div className="flex items-center gap-1.5">
                       <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-                        {student.name?.split(' ').map(n => n[0]).join('') || 'N/A'}
+                        {student.name?.split(' ').map((n: string) => n[0]).join('') || 'N/A'}
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">{student.name}</p>
@@ -132,7 +132,7 @@ export default function StudentsPageCompact() {
                   </td>
                   <td>
                     <Badge className="bg-purple-50 text-purple-700 text-[10px]">
-                      {student.group}
+                      {typeof student.group === 'string' ? student.group : student.group?.name || '—'}
                     </Badge>
                   </td>
                   <td>

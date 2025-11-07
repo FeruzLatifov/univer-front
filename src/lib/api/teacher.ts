@@ -808,12 +808,18 @@ export const getAssignmentActivities = async (assignmentId: number, days = 7) =>
 // TEST/QUIZ TYPES
 // ==========================================
 
-export type QuestionType = 'multiple_choice' | 'true_false' | 'short_answer' | 'essay'
+export type QuestionType =
+  | 'multiple_choice'
+  | 'true_false'
+  | 'short_answer'
+  | 'essay'
+  | number
 export type TestStatus = 'available' | 'upcoming' | 'expired'
 export type AttemptStatus = 'started' | 'in_progress' | 'submitted' | 'graded' | 'abandoned'
 
 export interface Test {
   id: number
+  subject_id?: number
   subject: {
     id: number
     name: string
@@ -822,6 +828,7 @@ export interface Test {
     id: number
     full_name: string
   }
+  group_id?: number
   group?: {
     id: number
     name: string
@@ -831,6 +838,7 @@ export interface Test {
     name: string
   } | null
   title: string
+  name?: string
   description?: string
   duration: number | null
   duration_formatted: string
@@ -838,6 +846,7 @@ export interface Test {
   max_score: number
   question_count: number
   attempt_limit: number
+  max_attempts?: number
   start_date?: string | null
   end_date?: string | null
   is_published: boolean
@@ -848,6 +857,10 @@ export interface Test {
   attempt_stats: AttemptStats
   created_at: string
   updated_at: string
+  shuffle_questions?: boolean
+  shuffle_answers?: boolean
+  show_results?: boolean
+  status?: number | string
 }
 
 export interface AttemptStats {
@@ -991,10 +1004,11 @@ export interface TestResultsSummary {
 
 export interface CreateTestRequest {
   subject_id: number
-  employee_id: number
+  employee_id?: number
   group_id?: number
   subject_topic_id?: number
-  title: string
+  title?: string
+  name?: string
   description?: string
   instructions?: string
   duration?: number
@@ -1002,7 +1016,12 @@ export interface CreateTestRequest {
   randomize_questions?: boolean
   randomize_answers?: boolean
   show_correct_answers?: boolean
+  shuffle_questions?: boolean
+  shuffle_answers?: boolean
+  show_results?: boolean
+  status?: number
   attempt_limit?: number
+  max_attempts?: number
   allow_review?: boolean
   start_date?: string
   end_date?: string
@@ -1015,14 +1034,20 @@ export interface UpdateTestRequest {
   group_id?: number
   subject_topic_id?: number
   title?: string
+  name?: string
   description?: string
   instructions?: string
-  duration?: number
+  duration?: number | null
   passing_score?: number
   randomize_questions?: boolean
   randomize_answers?: boolean
   show_correct_answers?: boolean
+  shuffle_questions?: boolean
+  shuffle_answers?: boolean
+  show_results?: boolean
+  status?: number
   attempt_limit?: number
+  max_attempts?: number
   allow_review?: boolean
   start_date?: string
   end_date?: string

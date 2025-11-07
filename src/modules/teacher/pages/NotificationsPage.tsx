@@ -57,7 +57,7 @@ export default function NotificationsPage() {
   // Fetch stats
   const { data: stats } = useQuery({
     queryKey: ['notifications', 'stats'],
-    queryFn: getNotificationStats,
+    queryFn: () => getNotificationStats(),
   });
 
   // Mark as read mutation

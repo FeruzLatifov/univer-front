@@ -29,6 +29,7 @@ export function AssignmentCard({ assignment, onView, onEdit }: AssignmentCardPro
   const deleteAssignment = useDeleteAssignment()
   const publishAssignment = usePublishAssignment()
   const unpublishAssignment = useUnpublishAssignment()
+  const totalStudents = assignment.submission_stats.total_students
 
   // Status badge variant
   const getStatusBadge = () => {
@@ -105,7 +106,7 @@ export function AssignmentCard({ assignment, onView, onEdit }: AssignmentCardPro
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground">Topshirildi</span>
             <span className="font-semibold">
-              {assignment.submission_stats.submitted} / {assignment.submission_stats.total}
+              {assignment.submission_stats.submitted} / {totalStudents}
               <span className="text-muted-foreground ml-1">
                 ({assignment.submission_stats.submission_rate}%)
               </span>
@@ -127,7 +128,7 @@ export function AssignmentCard({ assignment, onView, onEdit }: AssignmentCardPro
             </div>
             <div>
               <div className="font-semibold text-orange-600">
-                {assignment.submission_stats.pending}
+                {assignment.submission_stats.pending_grading}
               </div>
               <div className="text-xs text-muted-foreground">Kutilmoqda</div>
             </div>

@@ -326,8 +326,12 @@ export const useActiveMenu = (): MenuItem | undefined => {
 /**
  * Hook to check if user can access a permission
  */
-export const usePermission = (permission: string): boolean => {
+export const usePermission = (permission?: string): boolean => {
   const { permissions } = useMenuStore()
+
+  if (!permission) {
+    return true
+  }
 
   // Admin wildcard
   if (permissions.includes('*')) {

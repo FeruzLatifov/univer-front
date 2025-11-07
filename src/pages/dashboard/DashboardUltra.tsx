@@ -272,14 +272,14 @@ export default function DashboardUltra() {
                         <td>
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold">
-                              {student.name?.split(' ').map(n => n[0]).join('') || 'N/A'}
+                              {student.name?.split(' ').map((n: string) => n[0]).join('') || 'N/A'}
                             </div>
                             <span className="text-gray-900 font-medium">{student.name}</span>
                           </div>
                         </td>
                         <td>
                           <Badge className="bg-gray-100 text-gray-700 text-[10px]">
-                            {student.group}
+                            {typeof student.group === 'string' ? student.group : student.group?.name || '—'}
                           </Badge>
                         </td>
                         <td className="text-center">

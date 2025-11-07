@@ -6,6 +6,7 @@
  */
 
 import { apiClient } from './client'
+import type { DocumentDetail } from '@/services/employee/DocumentService'
 
 // ============================================
 // TYPES

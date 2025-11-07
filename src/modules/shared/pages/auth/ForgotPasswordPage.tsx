@@ -203,7 +203,8 @@ export default function ForgotPasswordPage() {
             <div className="text-center space-y-4">
               <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-green-500/10 border border-green-500/20' : 'bg-green-50 border border-green-200'}`}>
                 <p className={`text-sm ${theme === 'dark' ? 'text-green-400' : 'text-green-700'}`}>
-                  {t('auth.reset_link_sent', { defaultValue: 'Parolni tiklash havolasi quyidagi manzilga yuborildi:' })} <strong>{email}</strong>
+                  {t('auth.reset_link_sent', { defaultValue: 'Parolni tiklash havolasi quyidagi manzilga yuborildi:' })}{' '}
+                  <strong>{identifier}</strong>
                 </p>
               </div>
               <button

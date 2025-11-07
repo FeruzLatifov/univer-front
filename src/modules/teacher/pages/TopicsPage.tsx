@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { BookOpen, Plus, Edit, Trash2, GripVertical, Clock, Calendar } from 'lucide-react'
 import { useTranslation } from '@/hooks/useTranslation'
 import { teacherSubjectService, teacherTopicService } from '@/services'
-import type { CreateTopicPayload } from '@/lib/api/topics'
+import type { CreateTopicPayload, Topic } from '@/lib/api/topics'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -31,7 +31,7 @@ export default function TopicsPage() {
     queryFn: () => teacherSubjectService.getSubjects({ per_page: 100 }),
   })
 
-  const { data: topicsData, isLoading } = useQuery({
+  const { data: topicsData, isLoading } = useQuery<Topic[]>({
     queryKey: ['teacher', 'topics', selectedSubject],
     queryFn: () => teacherTopicService.getSubjectTopics(selectedSubject!),
     enabled: !!selectedSubject,
@@ -65,7 +65,7 @@ export default function TopicsPage() {
   })
 
   const subjects = subjectsData?.data || []
-  const topics = topicsData?.data || []
+  const topics = topicsData ?? []
 
   const totalHours = topics.reduce((sum, t) => sum + t.hours, 0)
 

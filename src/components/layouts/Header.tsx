@@ -77,7 +77,7 @@ export default function Header() {
       }, 100)
       return () => clearTimeout(timer)
     }
-  }, [locale])
+  }, [locale, isAuthenticated, user, refreshUserSilent])
 
   const getShortName = (fullName?: string) => {
     if (!fullName) return 'Foydalanuvchi'
@@ -174,12 +174,12 @@ export default function Header() {
                   backgroundColor: 'var(--primary)'
                 }}
               >
-                {!user?.avatar && (user ? getInitials(user.name) : 'AA')}
+                {!user?.avatar && (user ? getInitials(user.name ?? user.full_name ?? 'AA') : 'AA')}
               </div>
               {/* Show name and role only on large screens */}
               <div className="hidden lg:block text-left">
                 <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                  {getShortName(user?.name)}
+                  {getShortName(user?.name ?? user?.full_name ?? '')}
                 </div>
                 <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                   {(() => {
@@ -253,4 +253,3 @@ export default function Header() {
     </header>
   )
 }
-

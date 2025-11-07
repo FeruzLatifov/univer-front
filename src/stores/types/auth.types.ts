@@ -20,10 +20,12 @@ export interface JWTPayload {
  */
 export interface User {
   id: number
-  name: string
+  name?: string
+  full_name?: string
   email?: string
   phone?: string
-  role: string
+  role?: string | null
+  role_code?: string | null
   roleId?: number | null
   roleName?: string | null
   roles?: Array<{ id?: number; code?: string | null; name: string }>

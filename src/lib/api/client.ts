@@ -18,7 +18,9 @@ try {
       }
     }
   }
-} catch (_) {}
+} catch (error) {
+  logger.warn('[API] Failed to initialize language headers', error)
+}
 
 // Request interceptor for adding auth token
 apiClient.interceptors.request.use(

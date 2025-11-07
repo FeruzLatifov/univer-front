@@ -7,7 +7,7 @@ import { getStudentGrades } from '@/lib/api/student';
 export default function StudentGradesPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'grades'],
-    queryFn: getStudentGrades,
+    queryFn: () => getStudentGrades(),
   });
 
   if (isLoading) return <div>Yuklanmoqda...</div>;

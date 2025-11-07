@@ -18,18 +18,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Submission, SubmissionStatusFilter } from '@/lib/api/teacher'
+import type { AssignmentSubmission } from '@/lib/api/teacher'
 import { format } from 'date-fns'
 import { uz } from 'date-fns/locale'
 import { GradingDialog } from './GradingDialog'
 
+type SubmissionFilter = AssignmentSubmission['status'] | 'all'
+
 interface SubmissionsListProps {
-  submissions: Submission[]
-  assignmentId: number
+  submissions: AssignmentSubmission[]
 }
 
-export function SubmissionsList({ submissions, assignmentId }: SubmissionsListProps) {
-  const [statusFilter, setStatusFilter] = useState<SubmissionStatusFilter | 'all'>('all')
+export function SubmissionsList({ submissions }: SubmissionsListProps) {
+  const [statusFilter, setStatusFilter] = useState<SubmissionFilter>('all')
   const [selectedSubmission, setSelectedSubmission] = useState<number | null>(null)
   const [gradingDialogOpen, setGradingDialogOpen] = useState(false)
 
@@ -110,10 +111,7 @@ export function SubmissionsList({ submissions, assignmentId }: SubmissionsListPr
             <h3 className="font-semibold">
               Javoblar ({filteredSubmissions.length})
             </h3>
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as SubmissionStatusFilter | 'all')}
-            >
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as SubmissionFilter)}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -124,6 +122,7 @@ export function SubmissionsList({ submissions, assignmentId }: SubmissionsListPr
                 <SelectItem value="returned">Qaytarildi</SelectItem>
                 <SelectItem value="not_submitted">Topshirilmadi</SelectItem>
                 <SelectItem value="pending">Kutilmoqda</SelectItem>
+                <SelectItem value="viewed">Ko'rildi</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -154,7 +153,7 @@ export function SubmissionsList({ submissions, assignmentId }: SubmissionsListPr
                     <div>
                       <p className="font-medium">{submission.student.full_name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {submission.student.student_id_number}
+                        {submission.student.student_id}
                       </p>
                     </div>
                   </TableCell>
@@ -188,7 +187,7 @@ export function SubmissionsList({ submissions, assignmentId }: SubmissionsListPr
                     )}
                   </TableCell>
                   <TableCell>
-                    {submission.percentage !== null ? (
+                    {submission.percentage !== null && submission.percentage !== undefined ? (
                       <div className="flex items-center gap-2">
                         <Badge variant={getGradeBadgeColor(submission.percentage)}>
                           {submission.letter_grade}

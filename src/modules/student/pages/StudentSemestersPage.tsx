@@ -7,7 +7,7 @@ import { Loader2, Calendar, BookOpen, TrendingUp, Clock } from 'lucide-react'
 export default function StudentSemestersPage() {
   const { data: semesters, isLoading } = useQuery({
     queryKey: ['student', 'semesters'],
-    queryFn: getStudentSemesters,
+    queryFn: () => getStudentSemesters(),
   })
 
   if (isLoading) {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getStudentProfile,
@@ -17,6 +17,24 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import { Loader2, User, Lock, Camera, Trash2, Save, X } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
+
+type StudentProfile = {
+  full_name?: string
+  student_id_number?: string
+  passport_number?: string
+  gender?: number | string
+  phone?: string
+  email?: string
+  telegram_username?: string
+  current_address?: string
+  faculty?: { name?: string }
+  group?: { name?: string }
+  education_form?: { name?: string }
+  year_of_enter?: string | number
+  image?: string
+  first_name?: string
+  second_name?: string
+}
 
 export default function StudentProfilePage() {
   const queryClient = useQueryClient()
@@ -41,18 +59,21 @@ export default function StudentProfilePage() {
   })
 
   // Fetch profile
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading } = useQuery<StudentProfile>({
     queryKey: ['student', 'profile'],
-    queryFn: getStudentProfile,
-    onSuccess: (data) => {
-      setProfileForm({
-        phone: data.phone || '',
-        email: data.email || '',
-        current_address: data.current_address || '',
-        telegram_username: data.telegram_username || '',
-      })
-    },
+    queryFn: () => getStudentProfile(),
   })
+
+  useEffect(() => {
+    if (profile) {
+      setProfileForm({
+        phone: profile.phone || '',
+        email: profile.email || '',
+        current_address: profile.current_address || '',
+        telegram_username: profile.telegram_username || '',
+      })
+    }
+  }, [profile])
 
   // Update profile mutation
   const updateProfileMutation = useMutation({

@@ -77,18 +77,6 @@ export function GradingDialog({ submissionId, open, onOpenChange }: GradingDialo
   // Calculate max score based on submission
   const maxScore = submission?.max_score || 100
 
-  // Validate score against max score
-  useEffect(() => {
-    if (submission) {
-      const schema = gradingSchema.extend({
-        score: z.number()
-          .min(0, 'Ball 0 dan kam bo\'lishi mumkin emas')
-          .max(submission.max_score, `Ball ${submission.max_score} dan oshmasligi kerak`),
-      })
-      form.clearErrors()
-    }
-  }, [submission, form])
-
   // Handle form submission
   const onSubmit = async (values: GradingFormValues) => {
     try {
@@ -163,7 +151,7 @@ export function GradingDialog({ submissionId, open, onOpenChange }: GradingDialo
                     {submission.student.full_name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {submission.student.student_id_number}
+                    {submission.student.student_id}
                   </p>
                 </div>
               </div>
@@ -207,23 +195,23 @@ export function GradingDialog({ submissionId, open, onOpenChange }: GradingDialo
             </div>
 
             {/* Submission Text */}
-            {submission.submission_text && (
+            {submission.text_content && (
               <div>
                 <h4 className="font-semibold mb-2">Javob matni</h4>
                 <div className="p-4 border rounded-lg bg-muted/50">
                   <p className="text-sm whitespace-pre-wrap">
-                    {submission.submission_text}
+                    {submission.text_content}
                   </p>
                 </div>
               </div>
             )}
 
             {/* Files */}
-            {submission.all_files && submission.all_files.length > 0 && (
+            {submission.files && submission.files.length > 0 && (
               <div>
                 <h4 className="font-semibold mb-2">Yuborilgan fayllar</h4>
                 <div className="space-y-2">
-                  {submission.all_files.map((file, index) => (
+                  {submission.files.map((file, index) => (
                     <div
                       key={index}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"

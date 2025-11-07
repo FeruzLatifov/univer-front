@@ -21,6 +21,28 @@ import type {
   AttemptStatus,
 } from '../lib/api/teacher'
 
+const normalizeResponse = <T>(payload: any, fallbackMessage?: string): { success: boolean; data: T; message: string } => {
+  if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
+    const base = payload as { success?: boolean; data: T; message?: string }
+    return {
+      success: base.success ?? true,
+      data: base.data,
+      message: base.message ?? '',
+    }
+  }
+
+  const message =
+    (payload && typeof payload === 'object' && '_message' in payload
+      ? (payload as any)._message
+      : fallbackMessage) || ''
+
+  return {
+    success: true,
+    data: payload as T,
+    message,
+  }
+}
+
 /**
  * React Query hooks for Test/Quiz management
  *
@@ -68,7 +90,8 @@ export function useTests(params?: {
 }) {
   return useQuery<{ success: boolean; data: { data: Test[]; total: number }; message: string }>({
     queryKey: testKeys.list(params || {}),
-    queryFn: () => teacherTestService.getTests(params),
+    queryFn: async () =>
+      normalizeResponse<{ data: Test[]; total: number }>(await teacherTestService.getTests(params)),
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 }
@@ -79,7 +102,7 @@ export function useTests(params?: {
 export function useTest(id: number | undefined) {
   return useQuery<{ success: boolean; data: TestDetail; message: string }>({
     queryKey: testKeys.detail(id!),
-    queryFn: () => teacherTestService.getTest(id!),
+    queryFn: async () => normalizeResponse(await teacherTestService.getTest(id!)),
     enabled: !!id,
     staleTime: 1000 * 60 * 5,
   })
@@ -91,8 +114,9 @@ export function useTest(id: number | undefined) {
 export function useCreateTest() {
   const queryClient = useQueryClient()
 
-  return useMutation({
-    mutationFn: (data: CreateTestRequest) => teacherTestService.createTest(data as any),
+  return useMutation<{ success: boolean; data: Test; message: string }, any, CreateTestRequest>({
+    mutationFn: async (data: CreateTestRequest) =>
+      normalizeResponse<Test>(await teacherTestService.createTest(data as any)),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       toast.success(response.message || 'Test yaratildi')
@@ -110,8 +134,8 @@ export function useUpdateTest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateTestRequest }) =>
-      teacherTestService.updateTest(id, data as any),
+    mutationFn: async ({ id, data }: { id: number; data: UpdateTestRequest }) =>
+      normalizeResponse(await teacherTestService.updateTest(id, data as any)),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.id) })
@@ -130,7 +154,7 @@ export function useDeleteTest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherTestService.deleteTest(id),
+    mutationFn: async (id: number) => normalizeResponse(await teacherTestService.deleteTest(id)),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       toast.success(response.message || "Test o'chirildi")
@@ -166,7 +190,7 @@ export function usePublishTest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherTestService.publishTest(id),
+    mutationFn: async (id: number) => normalizeResponse(await teacherTestService.publishTest(id)),
     onSuccess: (response, id) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(id) })
@@ -185,7 +209,7 @@ export function useUnpublishTest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherTestService.unpublishTest(id),
+    mutationFn: async (id: number) => normalizeResponse(await teacherTestService.unpublishTest(id)),
     onSuccess: (response, id) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(id) })
@@ -205,9 +229,9 @@ export function useUnpublishTest() {
  * Fetch test questions
  */
 export function useTestQuestions(testId: number | undefined) {
-  return useQuery<{ success: boolean; data: Question[]; message: string }>({
+  return useQuery<{ success: boolean; data: QuestionDetail[]; message: string }>({
     queryKey: testKeys.questions(testId!),
-    queryFn: () => teacherTestService.getTestQuestions(testId!),
+    queryFn: async () => normalizeResponse(await teacherTestService.getTestQuestions(testId!)),
     enabled: !!testId,
     staleTime: 1000 * 60 * 5,
   })
@@ -231,9 +255,13 @@ export function useQuestion(testId: number | undefined, questionId: number | und
 export function useAddQuestion() {
   const queryClient = useQueryClient()
 
-  return useMutation({
-    mutationFn: ({ testId, data }: { testId: number; data: CreateQuestionRequest }) =>
-      teacherTestService.addQuestion(testId, data as any),
+  return useMutation<
+    { success: boolean; data: QuestionDetail; message: string },
+    any,
+    { testId: number; data: CreateQuestionRequest }
+  >({
+    mutationFn: async ({ testId, data }) =>
+      normalizeResponse<QuestionDetail>(await teacherTestService.addQuestion(testId, data as any)),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.testId) })
@@ -252,7 +280,7 @@ export function useUpdateQuestion() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       testId,
       questionId,
       data,
@@ -260,7 +288,7 @@ export function useUpdateQuestion() {
       testId: number
       questionId: number
       data: UpdateQuestionRequest
-    }) => teacherTestService.updateQuestion(testId, questionId, data as any),
+    }) => normalizeResponse(await teacherTestService.updateQuestion(testId, questionId, data as any)),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       queryClient.invalidateQueries({
@@ -282,8 +310,8 @@ export function useDeleteQuestion() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ testId, questionId }: { testId: number; questionId: number }) =>
-      teacherTestService.deleteQuestion(testId, questionId),
+    mutationFn: async ({ testId, questionId }: { testId: number; questionId: number }) =>
+      normalizeResponse(await teacherTestService.deleteQuestion(testId, questionId)),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.testId) })
@@ -302,8 +330,10 @@ export function useReorderQuestions() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ testId, order }: { testId: number; order: number[] }) =>
-      teacherTestService.reorderQuestions(testId, order.map((id, index) => ({ id, order: index }))),
+    mutationFn: async ({ testId, order }: { testId: number; order: number[] }) =>
+      normalizeResponse(
+        await teacherTestService.reorderQuestions(testId, order.map((id, index) => ({ id, order: index })))
+      ),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       toast.success(response.message || 'Savollar tartibi o\'zgartirildi')

@@ -12,6 +12,17 @@ import { QUESTION_TYPE_NAMES, ATTEMPT_STATUS_NAMES } from '@/lib/api/teacher'
 import type { StudentAnswer } from '@/lib/api/teacher'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateTime } from '@/lib/utils'
+import { useUserStore } from '@/stores/auth'
+
+const getQuestionTypeLabel = (
+  type: StudentAnswer['question']['question_type']
+): string => {
+  const key =
+    typeof type === 'number'
+      ? 'multiple_choice'
+      : type
+  return QUESTION_TYPE_NAMES[key as keyof typeof QUESTION_TYPE_NAMES] || 'Noma\'lum'
+}
 
 /**
  * Attempt Detail Page
@@ -28,6 +39,7 @@ export function AttemptDetailPage() {
   const { id, attemptId } = useParams<{ id: string; attemptId: string }>()
   const testId = id ? Number(id) : undefined
   const attemptIdNum = attemptId ? Number(attemptId) : undefined
+  const { user } = useUserStore()
 
   // Fetch attempt details
   const { data: attemptData, isLoading } = useAttemptDetail(testId, attemptIdNum)
@@ -83,8 +95,7 @@ export function AttemptDetailPage() {
   const handleSubmitGrading = async () => {
     if (!attempt || !testId || !attemptIdNum) return
 
-    // Get current user ID (you need to get this from auth context)
-    const currentUserId = attempt.test.employee?.id || 1 // TODO: Get from auth
+    const currentUserId = user?.id ?? 1
 
     const answers = Object.entries(gradingData).map(([answerId, data]) => ({
       answer_id: Number(answerId),
@@ -160,7 +171,7 @@ export function AttemptDetailPage() {
             {attempt.student.full_name} - Urinish #{attempt.attempt_number}
           </p>
         </div>
-        <Badge variant={attempt.status === 'graded' ? 'success' : 'default'}>
+        <Badge variant={attempt.status === 'graded' ? 'default' : 'secondary'}>
           {ATTEMPT_STATUS_NAMES[attempt.status]}
         </Badge>
       </div>
@@ -175,14 +186,19 @@ export function AttemptDetailPage() {
             <div>
               <p className="text-sm text-muted-foreground">Ball</p>
               <p className="text-2xl font-bold">
-                {attempt.total_score !== null ? attempt.total_score.toFixed(1) : '-'} /{' '}
+                {attempt.total_score !== null && attempt.total_score !== undefined
+                  ? attempt.total_score.toFixed(1)
+                  : '-'}{' '}
+                /{' '}
                 {attempt.max_score}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Foiz</p>
               <p className="text-2xl font-bold">
-                {attempt.percentage !== null ? `${attempt.percentage.toFixed(1)}%` : '-'}
+                {attempt.percentage !== null && attempt.percentage !== undefined
+                  ? `${attempt.percentage.toFixed(1)}%`
+                  : '-'}
               </p>
             </div>
             <div>
@@ -243,7 +259,7 @@ export function AttemptDetailPage() {
                   <div className="flex items-center gap-3 mb-2">
                     <Badge variant="outline">Savol #{index + 1}</Badge>
                     <Badge variant="secondary">
-                      {QUESTION_TYPE_NAMES[answer.question.question_type]}
+                      {getQuestionTypeLabel(answer.question.question_type)}
                     </Badge>
                     <Badge variant="outline">{answer.points_possible} ball</Badge>
                   </div>
@@ -278,18 +294,21 @@ export function AttemptDetailPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Olingan ball</p>
                   <p className="text-xl font-semibold">
-                    {answer.points_earned !== null ? answer.points_earned.toFixed(1) : '-'} /{' '}
+                    {answer.points_earned !== null && answer.points_earned !== undefined
+                      ? answer.points_earned.toFixed(1)
+                      : '-'}{' '}
+                    /{' '}
                     {answer.points_possible}
                   </p>
                 </div>
-                {answer.percentage !== null && (
+                {answer.percentage !== null && answer.percentage !== undefined && (
                   <div>
                     <p className="text-sm text-muted-foreground">Foiz</p>
                     <p className="text-xl font-semibold">{answer.percentage.toFixed(1)}%</p>
                   </div>
                 )}
                 {answer.is_correct !== null && (
-                  <Badge variant={answer.is_correct ? 'success' : 'destructive'}>
+                  <Badge variant={answer.is_correct ? 'default' : 'destructive'}>
                     {answer.is_correct ? "To'g'ri" : "Noto'g'ri"}
                   </Badge>
                 )}

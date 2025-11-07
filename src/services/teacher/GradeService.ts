@@ -68,10 +68,15 @@ export class GradeService extends BaseApiService {
   /**
    * Export grades (placeholder for future implementation)
    */
-  async exportGrades(subjectId: number, format: 'csv' | 'xlsx' | 'pdf' = 'xlsx') {
-    // This would need to be implemented on the backend
-    // For now, return a placeholder response
-    throw new Error('Export grades feature is not yet implemented on the backend')
+  async exportGrades(
+    subjectId: number,
+    format: 'csv' | 'xlsx' | 'pdf' = 'xlsx'
+  ): Promise<Blob> {
+    const response = await this.client.get(`${this.basePath}/export`, {
+      params: { subject_id: subjectId, format },
+      responseType: 'blob',
+    })
+    return response.data
   }
 }
 

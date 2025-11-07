@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useDeleteTest, useDuplicateTest, usePublishTest, useUnpublishTest } from '@/hooks/useTests'
 import type { Test } from '@/lib/api/teacher'
-import { formatDate, formatDateTime } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 
 interface TestCardProps {
   test: Test
@@ -56,7 +56,11 @@ export function TestCard({ test, onView, onEdit, onViewQuestions, onViewResults 
     if (!test.is_available) {
       return <Badge variant="outline">Kelayotgan</Badge>
     }
-    return <Badge variant="success">Mavjud</Badge>
+    return (
+      <Badge className="bg-green-100 text-green-700 border-transparent">
+        Mavjud
+      </Badge>
+    )
   }
 
   return (
@@ -184,7 +188,7 @@ export function TestCard({ test, onView, onEdit, onViewQuestions, onViewResults 
             </div>
             <div>
               <span className="text-muted-foreground">Kutilmoqda:</span>{' '}
-              <strong className="text-orange-600">{test.attempt_stats.pending_grading}</strong>
+              <strong className="text-orange-600">{test.attempt_stats.pending}</strong>
             </div>
             <div>
               <span className="text-muted-foreground">O'rtacha:</span>{' '}
@@ -192,7 +196,7 @@ export function TestCard({ test, onView, onEdit, onViewQuestions, onViewResults 
                 {test.attempt_stats.average_score.toFixed(1)}%
               </strong>
             </div>
-            {test.attempt_stats.pass_rate !== null && (
+            {test.attempt_stats.pass_rate !== null && test.attempt_stats.pass_rate !== undefined && (
               <div>
                 <span className="text-muted-foreground">O'tganlar:</span>{' '}
                 <strong className="text-purple-600">
@@ -212,7 +216,9 @@ export function TestCard({ test, onView, onEdit, onViewQuestions, onViewResults 
             {test.end_date && (
               <div>
                 <strong>Tugash:</strong> {formatDate(test.end_date)}
-                {test.days_until_end !== null && test.days_until_end > 0 && (
+                {test.days_until_end !== null &&
+                  test.days_until_end !== undefined &&
+                  test.days_until_end > 0 && (
                   <span className="ml-2 text-orange-600">
                     ({test.days_until_end} kun qoldi)
                   </span>

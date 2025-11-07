@@ -8,7 +8,7 @@ import { getStudentSubjects } from '@/lib/api/student';
 export default function StudentSubjectsPage() {
   const { data: subjects, isLoading } = useQuery({
     queryKey: ['student', 'subjects'],
-    queryFn: getStudentSubjects,
+    queryFn: () => getStudentSubjects(),
   });
 
   if (isLoading) return <div>Yuklanmoqda...</div>;

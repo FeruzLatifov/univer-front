@@ -73,7 +73,7 @@ export default function CreateTopicPage() {
   // Create topic mutation
   const createTopicMutation = useMutation({
     mutationFn: forumService.createTopic.bind(forumService),
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: 'Muvaffaqiyatli!',
         description: category?.requires_approval

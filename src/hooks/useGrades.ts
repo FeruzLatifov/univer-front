@@ -135,9 +135,9 @@ export function useExportGrades() {
   return useMutation({
     mutationFn: ({ subjectId, format }: { subjectId: number; format?: 'csv' | 'xlsx' | 'pdf' }) =>
       gradeService.exportGrades(subjectId, format),
-    onSuccess: (response) => {
+    onSuccess: (fileBlob) => {
       // Create blob URL and trigger download
-      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const url = window.URL.createObjectURL(fileBlob)
       const link = document.createElement('a')
       link.href = url
       link.setAttribute('download', `baholar_${Date.now()}.xlsx`)

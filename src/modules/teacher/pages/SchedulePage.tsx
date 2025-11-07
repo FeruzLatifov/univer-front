@@ -6,7 +6,8 @@ import {
   WEEK_DAYS,
   LESSON_PAIRS,
   TRAINING_TYPES,
-  type ScheduleLesson
+  type ScheduleLesson,
+  type WeeklySchedule
 } from '@/lib/api/schedule'
 import { useTranslation } from '@/hooks/useTranslation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,17 +21,20 @@ export default function SchedulePage() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const today = new Date().getDay() || 7 // 0 (Sunday) -> 7
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<WeeklySchedule>({
     queryKey: ['teacher', 'schedule'],
     queryFn: () => teacherScheduleService.getSchedule(),
   })
 
-  const schedule = data?.data || {}
+  const schedule: WeeklySchedule = data ?? {}
 
   // Filter lessons by selected day
-  const displaySchedule = selectedDay
-    ? { [selectedDay]: schedule[selectedDay] || [] }
-    : schedule
+  const displaySchedule: WeeklySchedule =
+    selectedDay !== null
+      ? {
+          [String(selectedDay)]: schedule[String(selectedDay)] ?? [],
+        }
+      : schedule
 
   // Calculate statistics
   const totalLessons = Object.values(schedule).flat().length

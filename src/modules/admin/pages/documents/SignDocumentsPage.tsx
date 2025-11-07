@@ -65,7 +65,7 @@ export default function SignDocumentsPage() {
   // Fetch stats
   const { data: stats } = useQuery({
     queryKey: ['document-stats'],
-    queryFn: getDocumentStats,
+    queryFn: () => getDocumentStats(),
   })
 
   // Update URL params

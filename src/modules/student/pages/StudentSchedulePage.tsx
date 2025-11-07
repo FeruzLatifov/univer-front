@@ -16,7 +16,7 @@ const DAYS_UZ = [
 export default function StudentSchedulePage() {
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'schedule'],
-    queryFn: getStudentSchedule,
+    queryFn: () => getStudentSchedule(),
   });
 
   if (isLoading) {

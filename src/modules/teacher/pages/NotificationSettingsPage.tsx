@@ -20,6 +20,7 @@ import {
 import {
   resetNotificationSettings,
   type NotificationSettings,
+  type NotificationType,
 } from '@/lib/api/notifications';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
@@ -43,13 +44,13 @@ const notificationTypeLabels: Record<string, string> = {
   comment_posted: 'Yangi izoh',
 };
 
-const notificationCategories = {
+const notificationCategories: Record<string, NotificationType[]> = {
   'Topshiriqlar': ['assignment_due', 'assignment_graded', 'assignment_posted', 'assignment_submitted'],
   'Testlar': ['test_available', 'test_ending_soon', 'test_graded'],
   'Baholar': ['grade_posted', 'grade_updated'],
   'Davomat': ['attendance_marked', 'attendance_warning'],
   'Umumiy': ['announcement', 'message_received', 'comment_posted'],
-};
+}
 
 export default function NotificationSettingsPage() {
   const { t } = useTranslation();
@@ -88,7 +89,7 @@ export default function NotificationSettingsPage() {
   });
 
   const handleToggle = (
-    notificationType: string,
+    notificationType: NotificationType,
     channel: 'email_enabled' | 'push_enabled' | 'sms_enabled' | 'in_app_enabled',
     value: boolean
   ) => {
@@ -103,7 +104,7 @@ export default function NotificationSettingsPage() {
 
   const handleSave = () => {
     const settingsArray = Object.entries(localSettings).map(([type, setting]) => ({
-      notification_type: type,
+      notification_type: type as NotificationType,
       email_enabled: setting.email_enabled,
       push_enabled: setting.push_enabled,
       sms_enabled: setting.sms_enabled,

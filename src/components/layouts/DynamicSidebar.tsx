@@ -13,7 +13,7 @@
  */
 
 import { Link, useLocation } from 'react-router-dom'
-import { ChevronDown, X, Loader2, AlertCircle } from 'lucide-react'
+import { ChevronDown, X, Loader2, AlertCircle, type LucideIcon } from 'lucide-react'
 import { useThemeStore } from '@/stores/themeStore'
 import { useMenuStore } from '@/stores/menuStore'
 import { cn } from '@/lib/utils'
@@ -33,8 +33,8 @@ const getIcon = (iconName: string) => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join('')
 
-  // @ts-ignore - Dynamic icon import
-  const Icon = LucideIcons[pascalCase] || LucideIcons.Circle
+  const iconMap = LucideIcons as Record<string, LucideIcon>
+  const Icon = iconMap[pascalCase] || LucideIcons.Circle
 
   return <Icon className="w-4 h-4" />
 }

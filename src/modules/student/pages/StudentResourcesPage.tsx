@@ -14,7 +14,7 @@ export default function StudentResourcesPage() {
   // Fetch subjects for filter
   const { data: subjects } = useQuery({
     queryKey: ['student', 'subjects'],
-    queryFn: getStudentSubjects,
+    queryFn: () => getStudentSubjects(),
   });
 
   // Fetch resources

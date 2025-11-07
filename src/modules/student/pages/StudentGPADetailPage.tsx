@@ -19,7 +19,7 @@ import {
 export default function StudentGPADetailPage() {
   const { data: gpaData, isLoading } = useQuery({
     queryKey: ['student', 'gpa'],
-    queryFn: getStudentGPA,
+    queryFn: () => getStudentGPA(),
   })
 
   if (isLoading) {

@@ -5,6 +5,7 @@
  */
 
 import { BaseApiService } from '../base/BaseApiService'
+import * as attendanceApi from '@/lib/api/attendance'
 
 export interface AttendanceRecord {
   id: number
@@ -65,11 +66,25 @@ export class TeacherAttendanceService extends BaseApiService {
     return this.get<AttendanceRecord[]>(`/schedule/${scheduleId}`)
   }
 
+  async getSubjectAttendance(
+    subjectId: number,
+    params?: { date_from?: string; date_to?: string }
+  ) {
+    return attendanceApi.getSubjectAttendance(subjectId, params)
+  }
+
   /**
    * Mark bulk attendance for a class
    */
   async markAttendance(data: BulkAttendanceData) {
     return this.post('/mark', data)
+  }
+
+  async bulkMarkAttendance(
+    subjectId: number,
+    payload: attendanceApi.BulkMarkAttendancePayload
+  ) {
+    return attendanceApi.bulkMarkAttendance(subjectId, payload)
   }
 
   /**

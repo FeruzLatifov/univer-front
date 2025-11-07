@@ -1,5 +1,4 @@
 import { Languages, Check } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,7 +66,7 @@ export function LanguageSwitcher({
       toast.success('Til o\'zgartirildi', {
         description: `${name} tiliga o'tkazildi`,
       })
-    } catch (error) {
+    } catch {
       toast.error('Tilni o\'zgartishda xatolik', {
         description: 'Iltimos qaytadan urinib ko\'ring',
       })
@@ -168,7 +167,7 @@ export function LanguageSwitcherCompact() {
       toast.success('Til o\'zgartirildi', {
         description: `${name} tiliga o'tkazildi`,
       })
-    } catch (error) {
+    } catch {
       toast.error('Tilni o\'zgartishda xatolik', {
         description: 'Iltimos qaytadan urinib ko\'ring',
       })

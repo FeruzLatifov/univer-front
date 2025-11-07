@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FileText, Upload, Download, Trash2, Link as LinkIcon, File, Video } from 'lucide-react'
 import { useTranslation } from '@/hooks/useTranslation'
 import { teacherSubjectService, teacherResourceService } from '@/services'
+import type { Resource } from '@/services/teacher/ResourceService'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -34,7 +35,7 @@ export default function ResourcesPage() {
     queryFn: () => teacherSubjectService.getSubjects({ per_page: 100 }),
   })
 
-  const { data: resourcesData, isLoading } = useQuery({
+  const { data: resourcesData, isLoading } = useQuery<Resource[]>({
     queryKey: ['teacher', 'resources', selectedSubject],
     queryFn: () => teacherResourceService.getSubjectResources(selectedSubject!),
     enabled: !!selectedSubject,
@@ -62,7 +63,7 @@ export default function ResourcesPage() {
   })
 
   const subjects = subjectsData?.data || []
-  const resources = resourcesData?.data || []
+  const resources = resourcesData || []
 
   const handleUpload = () => {
     if (!selectedSubject) return

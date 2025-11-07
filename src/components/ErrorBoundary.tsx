@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface ErrorFallbackProps {
-  error: Error
+  error: Error | unknown
   resetError: () => void
   eventId?: string
 }
 
 function ErrorFallback({ error, resetError, eventId }: ErrorFallbackProps) {
   const isDevelopment = import.meta.env.DEV
+  const normalizedError = error instanceof Error ? error : new Error(String(error ?? 'Unknown error'))
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
@@ -33,9 +34,9 @@ function ErrorFallback({ error, resetError, eventId }: ErrorFallbackProps) {
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
               <p className="font-semibold text-sm mb-2">Xatolik tafsilotlari (faqat development):</p>
               <pre className="text-xs overflow-auto max-h-40 bg-black/5 p-2 rounded">
-                {error.message}
+                {normalizedError.message}
                 {'\n\n'}
-                {error.stack}
+                {normalizedError.stack}
               </pre>
             </div>
           )}

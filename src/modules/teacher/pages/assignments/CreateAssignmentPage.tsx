@@ -27,26 +27,21 @@ import {
 import { useAssignment, useCreateAssignment, useUpdateAssignment, useMySubjects, useMyGroups } from '@/hooks/useAssignments'
 import type { CreateAssignmentRequest } from '@/lib/api/teacher'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Checkbox } from '@/components/ui/checkbox'
 
 // Validation schema
 const assignmentSchema = z.object({
-  subject_id: z.number({
-    required_error: 'Fan tanlanishi shart',
-  }),
-  group_id: z.number({
-    required_error: 'Guruh tanlanishi shart',
-  }),
-  title: z.string().min(3, 'Sarlavha kamida 3 ta belgidan iborat bo\'lishi kerak'),
+  subject_id: z.number(),
+  group_id: z.number(),
+  title: z.string().min(3, "Sarlavha kamida 3 ta belgidan iborat bo'lishi kerak"),
   description: z.string().optional(),
+  instructions: z.string().optional(),
   deadline: z.string().min(1, 'Muddat kiritilishi shart'),
   max_score: z.number().min(1, 'Maksimal ball kamida 1 bo\'lishi kerak'),
-  passing_score: z.number().optional(),
-  _subject_topic: z.number().optional(),
-  _education_year: z.string().optional(),
-  _semester: z.string().optional(),
-  _marking_category: z.string().optional(),
-  attempt_count: z.number().optional(),
-  position: z.number().optional(),
+  marking_category: z.string().optional(),
+  allow_late: z.boolean().optional(),
+  attempt_count: z.number().min(1, 'Urinishlar soni kamida 1 bo\'lishi kerak').optional(),
+  publish_now: z.boolean().optional(),
 })
 
 type AssignmentFormValues = z.infer<typeof assignmentSchema>
@@ -79,31 +74,30 @@ export function CreateAssignmentPage() {
     defaultValues: {
       title: '',
       description: '',
+      instructions: '',
       max_score: 100,
-      passing_score: 56,
       attempt_count: 1,
-      position: 0,
+      allow_late: false,
+      publish_now: true,
     },
   })
 
   // Populate form in edit mode
   useEffect(() => {
     if (isEditMode && existingAssignment) {
-      setSelectedSubjectId(existingAssignment._subject)
+      setSelectedSubjectId(existingAssignment.subject.id)
       form.reset({
-        subject_id: existingAssignment._subject,
-        group_id: existingAssignment._group,
+        subject_id: existingAssignment.subject.id,
+        group_id: existingAssignment.group.id,
         title: existingAssignment.title,
         description: existingAssignment.description || '',
+        instructions: existingAssignment.instructions || '',
         deadline: existingAssignment.deadline,
         max_score: existingAssignment.max_score,
-        passing_score: existingAssignment.passing_score || undefined,
-        _subject_topic: existingAssignment._subject_topic || undefined,
-        _education_year: existingAssignment._education_year || undefined,
-        _semester: existingAssignment._semester || undefined,
-        _marking_category: existingAssignment._marking_category || undefined,
+        marking_category: existingAssignment.marking_category || undefined,
+        allow_late: existingAssignment.allow_late,
         attempt_count: existingAssignment.attempt_count || 1,
-        position: existingAssignment.position || 0,
+        publish_now: existingAssignment.is_published,
       })
     }
   }, [isEditMode, existingAssignment, form])
@@ -115,10 +109,7 @@ export function CreateAssignmentPage() {
         // Update existing assignment
         await updateAssignment.mutateAsync({
           id: assignmentId,
-          data: {
-            ...values,
-            files: files.length > 0 ? files : undefined,
-          },
+          data: values,
         })
       } else {
         // Create new assignment
@@ -307,8 +298,28 @@ export function CreateAssignmentPage() {
                 )}
               />
 
+              {/* Instructions */}
+              <FormField
+                control={form.control}
+                name="instructions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ko'rsatmalar</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Talabalarga qo'shimcha ko'rsatmalar..."
+                        rows={4}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>Ixtiyoriy bo'lsa-da, tushunarli ko'rsatma berish tavsiya etiladi.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Deadline and Scores */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="deadline"
@@ -342,25 +353,6 @@ export function CreateAssignmentPage() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="passing_score"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>O'tish balli</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormDescription>56% tavsiya etiladi</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
             </CardContent>
           </Card>
@@ -439,58 +431,17 @@ export function CreateAssignmentPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="_education_year"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>O'quv yili</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="O'quv yilini tanlang" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="2024-2025">2024-2025</SelectItem>
-                          <SelectItem value="2025-2026">2025-2026</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="_semester"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Semestr</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Semestr tanlang" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="1">1-semestr</SelectItem>
-                          <SelectItem value="2">2-semestr</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="_marking_category"
+                  name="marking_category"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Baholash kategoriyasi</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={(value) => field.onChange(value || undefined)}
+                        value={field.value ?? undefined}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Kategoriya tanlang" />
@@ -527,6 +478,46 @@ export function CreateAssignmentPage() {
                         Talaba necha marta topshirishi mumkin
                       </FormDescription>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="allow_late"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-1">
+                        <FormLabel>Kech topshirishga ruxsat</FormLabel>
+                        <FormDescription>Muddati o'tganidan keyin ham topshirishga imkon berish</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value ?? false}
+                          onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="publish_now"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-1">
+                        <FormLabel>Darhol nashr qilish</FormLabel>
+                        <FormDescription>Saqlangandan so'ng talabalar uchun ochiq bo'lsin</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value ?? true}
+                          onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />

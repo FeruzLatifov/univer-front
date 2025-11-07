@@ -2,7 +2,13 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { BrowserRouter } from 'react-router-dom'
+import {
+  BrowserRouter,
+  createRoutesFromChildren,
+  matchRoutes,
+  useLocation,
+  useNavigationType,
+} from 'react-router-dom'
 import * as Sentry from '@sentry/react'
 import App from './App'
 import './index.css'
@@ -17,14 +23,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
     environment: import.meta.env.VITE_SENTRY_ENVIRONMENT || import.meta.env.MODE,
     integrations: [
       // Browser Tracing for performance monitoring
-      Sentry.browserTracingIntegration({
-        // Trace navigation (React Router)
-        tracePropagationTargets: [
-          'localhost',
-          /^https:\/\/[^/]*\.univer\.uz/,
-          /^https:\/\/api\.univer\.uz/,
-        ],
-      }),
+      Sentry.browserTracingIntegration(),
       // Replay for session recording
       Sentry.replayIntegration({
         maskAllText: true,
@@ -33,6 +32,10 @@ if (import.meta.env.VITE_SENTRY_DSN) {
       // React Router integration
       Sentry.reactRouterV7BrowserTracingIntegration({
         useEffect: React.useEffect,
+        useLocation,
+        useNavigationType,
+        createRoutesFromChildren,
+        matchRoutes,
       }),
     ],
     // Performance Monitoring

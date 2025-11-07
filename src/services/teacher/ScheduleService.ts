@@ -5,6 +5,7 @@
  */
 
 import { BaseApiService } from '../base/BaseApiService'
+import type { WeeklySchedule, WorkloadData } from '@/lib/api/schedule'
 
 export interface ScheduleItem {
   id: number
@@ -46,9 +47,9 @@ export class TeacherScheduleService extends BaseApiService {
   /**
    * Get teacher's schedule with optional filters
    */
-  async getSchedule(filters?: ScheduleFilters): Promise<ScheduleItem[]> {
+  async getSchedule(filters?: ScheduleFilters): Promise<WeeklySchedule> {
     const query = filters ? this.buildQueryString(filters) : ''
-    return this.get<ScheduleItem[]>(query)
+    return this.get<WeeklySchedule>(query)
   }
 
   /**
@@ -83,7 +84,7 @@ export class TeacherScheduleService extends BaseApiService {
    * Get teacher's workload statistics
    */
   async getWorkload() {
-    return this.get('/workload')
+    return this.get<WorkloadData>('/workload')
   }
 }
 

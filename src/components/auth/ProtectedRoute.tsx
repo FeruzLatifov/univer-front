@@ -38,6 +38,7 @@ export function ProtectedRoute({
   const { user } = useUserStore()
   const { canAccessPath } = usePermissionStore()
   const { canAccessPath: canAccessMenuPath } = useMenuStore()
+  const hasPermission = usePermission(permission)
   const location = useLocation()
 
   // Show loading state while checking auth
@@ -68,7 +69,6 @@ export function ProtectedRoute({
   // PRIMARY SECURITY: Permission-based check (CANNOT be bypassed via F12)
   // This is the NEW menu-based permission system
   if (permission) {
-    const hasPermission = usePermission(permission)
     if (!hasPermission) {
       logger.warn(`Access denied. Required permission: ${permission}, User role: ${user.role}`)
       // SECURITY: Show 404 instead of 403/Unauthorized

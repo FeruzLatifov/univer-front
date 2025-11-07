@@ -22,10 +22,12 @@ export interface ApiResponse<T> {
 export interface Student {
   id: string
   student_id_number: string
+  student_id?: string
   first_name: string
   second_name: string
   third_name: string
   full_name: string
+  name?: string
   birth_date: string
   gender: 'male' | 'female'
   citizenship: string
@@ -34,6 +36,10 @@ export interface Student {
   email: string
   address: string
   photo?: string
+  group?: string | {
+    id?: number
+    name?: string
+  } | null
   
   // Academic info
   education_type: 'full_time' | 'part_time' | 'evening' | 'distance'

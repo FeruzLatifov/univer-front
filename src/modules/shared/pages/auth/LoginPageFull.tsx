@@ -16,7 +16,11 @@ export default function LoginPageFull() {
     setLoading(true)
 
     try {
-      await login(email, password)
+      await login({
+        userType: 'employee',
+        login: email,
+        password,
+      })
       toast.success('Tizimga muvaffaqiyatli kirdingiz!')
       navigate('/dashboard')
     } catch {

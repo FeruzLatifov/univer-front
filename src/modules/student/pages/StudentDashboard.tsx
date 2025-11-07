@@ -9,7 +9,7 @@ import { getStudentDashboard } from '@/lib/api/student';
 export default function StudentDashboard() {
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'dashboard'],
-    queryFn: getStudentDashboard,
+    queryFn: () => getStudentDashboard(),
   });
 
   if (isLoading) {

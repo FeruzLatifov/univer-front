@@ -376,8 +376,8 @@ export class AssignmentService extends BaseApiService {
   /**
    * Get groups for a subject (for assignment creation)
    */
-  async getMyGroups(subjectId: number) {
-    const query = this.buildQueryString({ subject_id: subjectId })
+  async getMyGroups(subjectId?: number) {
+    const query = subjectId ? this.buildQueryString({ subject_id: subjectId }) : ''
     const response = await this.client.get(`/v1/teacher/assignments/my-groups${query}`)
     return this.unwrapResponse(response)
   }

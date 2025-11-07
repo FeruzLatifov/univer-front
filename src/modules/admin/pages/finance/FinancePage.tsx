@@ -1,5 +1,4 @@
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, Receipt, FileText, Banknote, Calculator, Stethoscope, Award, Users, BookOpen } from 'lucide-react'
-import { mockPaymentStats, mockContractStats } from '@/lib/mockData'
 import { formatCurrency } from '@/lib/utils'
 
 export default function FinancePage() {

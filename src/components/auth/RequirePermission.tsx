@@ -12,8 +12,8 @@
  * @version 1.0
  */
 
-import { ReactNode } from 'react'
-import { usePermission } from '@/stores/menuStore'
+import { ReactNode, useMemo } from 'react'
+import { useMenuStore } from '@/stores/menuStore'
 
 interface RequirePermissionProps {
   permission: string | string[] // Single permission or array of permissions
@@ -22,33 +22,48 @@ interface RequirePermissionProps {
   children: ReactNode
 }
 
+const evaluatePermission = (permissions: string[], perm: string): boolean => {
+  if (permissions.includes('*')) {
+    return true
+  }
+
+  if (permissions.includes(perm)) {
+    return true
+  }
+
+  const parts = perm.split('.')
+  if (parts.length >= 2) {
+    const wildcardPermission = `${parts[0]}.*`
+    if (permissions.includes(wildcardPermission)) {
+      return true
+    }
+  }
+
+  return false
+}
+
 export function RequirePermission({
   permission,
   requireAll = false,
   fallback = null,
   children,
 }: RequirePermissionProps) {
-  // Handle single permission
-  if (typeof permission === 'string') {
-    const hasPermission = usePermission(permission)
-    return hasPermission ? <>{children}</> : <>{fallback}</>
-  }
+  const permissions = useMenuStore((state) => state.permissions)
 
-  // Handle array of permissions
-  if (Array.isArray(permission)) {
-    const permissionChecks = permission.map((p) => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      return usePermission(p)
-    })
+  const hasAccess = useMemo(() => {
+    if (typeof permission === 'string') {
+      return evaluatePermission(permissions, permission)
+    }
 
-    const hasAccess = requireAll
-      ? permissionChecks.every((check) => check) // AND logic
-      : permissionChecks.some((check) => check) // OR logic
+    if (Array.isArray(permission)) {
+      const checks = permission.map((perm) => evaluatePermission(permissions, perm))
+      return requireAll ? checks.every(Boolean) : checks.some(Boolean)
+    }
 
-    return hasAccess ? <>{children}</> : <>{fallback}</>
-  }
+    return false
+  }, [permission, permissions, requireAll])
 
-  return <>{fallback}</>
+  return hasAccess ? <>{children}</> : <>{fallback}</>
 }
 
 /**
@@ -61,20 +76,18 @@ export function RequirePermission({
  * }
  */
 export function useHasPermission(permission: string | string[], requireAll = false): boolean {
-  if (typeof permission === 'string') {
-    return usePermission(permission)
-  }
+  const permissions = useMenuStore((state) => state.permissions)
 
-  if (Array.isArray(permission)) {
-    const permissionChecks = permission.map((p) => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      return usePermission(p)
-    })
+  return useMemo(() => {
+    if (typeof permission === 'string') {
+      return evaluatePermission(permissions, permission)
+    }
 
-    return requireAll
-      ? permissionChecks.every((check) => check)
-      : permissionChecks.some((check) => check)
-  }
+    if (Array.isArray(permission)) {
+      const checks = permission.map((perm) => evaluatePermission(permissions, perm))
+      return requireAll ? checks.every(Boolean) : checks.some(Boolean)
+    }
 
-  return false
+    return false
+  }, [permission, permissions, requireAll])
 }

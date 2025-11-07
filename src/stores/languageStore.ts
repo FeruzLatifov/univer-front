@@ -126,9 +126,11 @@ export const useLanguageStore = create<LanguageState>()(
           const isLocaleActive = languages.some(lang => lang.code === locale && lang.active)
 
           if (!isLocaleActive) {
-            // Fallback to first active language or default
             const fallbackLang = languages.find(lang => lang.active)
-            const fallbackLocale = fallbackLang?.code || (import.meta.env.VITE_DEFAULT_LOCALE as LanguageCode) || 'uz'
+            const fallbackLocale: LanguageCode =
+              (fallbackLang?.code as LanguageCode | undefined) ??
+              (import.meta.env.VITE_DEFAULT_LOCALE as LanguageCode | undefined) ??
+              'uz'
 
             set({ locale: fallbackLocale })
             api.defaults.headers.common['X-Locale'] = fallbackLocale

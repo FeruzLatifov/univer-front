@@ -12,7 +12,10 @@ export default function StudentAttendancePage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'attendance', selectedSubject],
-    queryFn: () => getStudentAttendance(selectedSubject !== 'all' ? selectedSubject : undefined),
+    queryFn: () =>
+      getStudentAttendance(
+        selectedSubject !== 'all' ? Number(selectedSubject) : undefined
+      ),
   });
 
   if (isLoading) {

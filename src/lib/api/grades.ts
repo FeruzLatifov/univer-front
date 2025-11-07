@@ -127,7 +127,9 @@ export const updateGrade = async (
 /**
  * Delete a grade
  */
-export const deleteGrade = async (gradeId: number): Promise<{ success: boolean }> => {
+export const deleteGrade = async (
+  gradeId: number
+): Promise<{ success: boolean; message?: string }> => {
   const response = await api.delete(`/grade/${gradeId}`)
   return response.data
 }

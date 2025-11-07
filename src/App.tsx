@@ -116,10 +116,9 @@ import DiplomasPage from '@/modules/admin/pages/archive/DiplomasPage'
 
 // Reports
 import ReportsPage from '@/modules/admin/pages/reports/ReportsPage'
-import SignDocumentsPage from '@/modules/admin/pages/documents/SignDocumentsPage'
 
 // Employee - Document Signing
-import DocumentSignPage from '@/pages/employee/DocumentSignPage'
+import DocumentSignPage from '@/modules/employee/pages/DocumentSignPage'
 
 // System
 import SystemUsersPage from '@/modules/admin/pages/system/UsersPage'

@@ -16,7 +16,8 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { teacherSubjectService, teacherAttendanceService } from '@/services'
 import {
   ATTENDANCE_STATUSES,
-  type AttendanceStatus
+  type AttendanceStatus,
+  type StudentAttendance,
 } from '@/lib/api/attendance'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -86,7 +87,7 @@ export default function AttendancePage() {
   })
 
   const subjects = subjectsData?.data || []
-  const students = attendanceList?.data || []
+  const students: StudentAttendance[] = attendanceList?.data || []
 
   // Calculate statistics
   const stats = {

@@ -19,6 +19,7 @@ export class BaseApiService {
    * Base API path for this service (e.g., '/v1/teacher/dashboard')
    */
   protected basePath: string
+  protected client = apiClient
 
   constructor(basePath: string) {
     this.basePath = basePath
@@ -87,6 +88,14 @@ export class BaseApiService {
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await apiClient.delete<T>(this.buildPath(path), config)
+    return response.data
+  }
+
+  /**
+   * Some endpoints still rely on the raw Axios client.
+   * Provide a helper to keep typings consistent when we bypass the helpers.
+   */
+  protected unwrapResponse<T>(response: AxiosResponse<T>): T {
     return response.data
   }
 

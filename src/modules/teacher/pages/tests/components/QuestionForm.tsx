@@ -27,7 +27,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useAddQuestion, useUpdateQuestion, useAddAnswerOption, useUpdateAnswerOption, useDeleteAnswerOption } from '@/hooks/useTests'
 import { QUESTION_TYPES } from '@/lib/api/teacher'
-import type { Question, QuestionType, AnswerOption } from '@/lib/api/teacher'
+import type { QuestionDetail } from '@/lib/api/teacher'
 
 // Validation schema
 const questionSchema = z.object({
@@ -52,7 +52,7 @@ type QuestionFormValues = z.infer<typeof questionSchema>
 
 interface QuestionFormProps {
   testId: number
-  question?: Question | null
+  question?: QuestionDetail | null
   onSuccess: () => void
   onCancel: () => void
 }
@@ -94,15 +94,20 @@ export function QuestionForm({ testId, question, onSuccess, onCancel }: Question
   // Populate form in edit mode
   useEffect(() => {
     if (isEditMode && question) {
+      const normalizedType: QuestionFormValues['question_type'] =
+        typeof question.question_type === 'number'
+          ? 'multiple_choice'
+          : question.question_type
+
       form.reset({
         question_text: question.question_text,
-        question_type: question.question_type,
+        question_type: normalizedType,
         points: question.points,
         position: question.position,
         is_required: question.is_required,
         explanation: question.explanation || '',
         allow_multiple: question.allow_multiple || false,
-        correct_answer_boolean: question.correct_answer_boolean,
+        correct_answer_boolean: question.correct_answer_boolean ?? undefined,
         correct_answer_text: question.correct_answer_text || '',
         case_sensitive: question.case_sensitive || false,
         word_limit: question.word_limit || undefined,

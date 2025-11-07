@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { FileText, Calendar, Clock, Users, TrendingUp, Plus, Eye } from 'lucide-react'
 import { teacherExamService } from '@/services'
+import type { Exam } from '@/services/teacher/ExamService'
 import { EXAM_TYPES } from '@/lib/api/exams'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,12 +15,12 @@ export default function ExamsPage() {
   const navigate = useNavigate()
   const [filter, setFilter] = useState<string>('all')
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<Exam[]>({
     queryKey: ['teacher', 'exams'],
     queryFn: () => teacherExamService.getExams(),
   })
 
-  const exams = data?.data || []
+  const exams: Exam[] = data ?? []
   const filteredExams =
     filter === 'all' ? exams : exams.filter((e) => e.exam_type === filter)
 

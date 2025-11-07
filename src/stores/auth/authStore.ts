@@ -57,7 +57,7 @@ export const useAuthStore = create<AuthState>()(
 
             logger.debug('[AuthStore] Login successful', {
               userId: user.id,
-              userName: user.name,
+              userName: user.full_name ?? user.login ?? user.student_id_number ?? 'N/A',
               userType: credentials.userType,
             })
 

@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { teacherAssignmentService } from '@/services'
-import * as teacherApi from '../lib/api/teacher'
 import type {
   Assignment,
   AssignmentDetail,
@@ -16,15 +15,27 @@ import type {
   UpdateAssignmentRequest,
 } from '../lib/api/teacher'
 
-/**
- * React Query hooks for Assignment/Task management
- *
- * Best practices:
- * - Use query keys for caching and invalidation
- * - Show toast notifications for mutations
- * - Handle errors gracefully
- * - Invalidate related queries after mutations
- */
+const normalizeResponse = <T>(payload: any, fallbackMessage?: string): { success: boolean; data: T; message: string } => {
+  if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
+    const base = payload as { success?: boolean; data: T; message?: string }
+    return {
+      success: base.success ?? true,
+      data: base.data,
+      message: base.message ?? '',
+    }
+  }
+
+  const message =
+    (payload && typeof payload === 'object' && '_message' in payload
+      ? (payload as any)._message
+      : fallbackMessage) || ''
+
+  return {
+    success: true,
+    data: payload as T,
+    message,
+  }
+}
 
 // Query keys for better cache management
 export const assignmentKeys = {
@@ -50,7 +61,7 @@ export function useAssignments(params?: {
 }) {
   return useQuery<{ success: boolean; data: Assignment[]; message: string }>({
     queryKey: assignmentKeys.list(params || {}),
-    queryFn: () => teacherAssignmentService.getAssignments(params),
+    queryFn: async () => normalizeResponse<Assignment[]>(await teacherAssignmentService.getAssignments(params)),
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 }
@@ -61,7 +72,7 @@ export function useAssignments(params?: {
 export function useMySubjects() {
   return useQuery<{ success: boolean; data: { id: number; name: string; code?: string }[]; message: string }>({
     queryKey: ['mySubjects'],
-    queryFn: () => teacherAssignmentService.getMySubjects(),
+    queryFn: async () => normalizeResponse(await teacherAssignmentService.getMySubjects()),
     staleTime: 1000 * 60 * 10, // 10 minutes (subjects don't change often)
   })
 }
@@ -73,9 +84,9 @@ export function useMySubjects() {
 export function useMyGroups(subjectId?: number) {
   return useQuery<{ success: boolean; data: { id: number; name: string; code?: string }[]; message: string }>({
     queryKey: ['myGroups', subjectId],
-    queryFn: () => teacherAssignmentService.getMyGroups(subjectId!),
+    queryFn: async () => normalizeResponse(await teacherAssignmentService.getMyGroups(subjectId)),
     staleTime: 1000 * 60 * 10, // 10 minutes
-    enabled: subjectId === undefined || subjectId > 0, // Only fetch if subjectId is valid or not provided
+    enabled: subjectId === undefined ? false : subjectId > 0,
   })
 }
 
@@ -85,7 +96,7 @@ export function useMyGroups(subjectId?: number) {
 export function useAssignment(id: number | undefined) {
   return useQuery<{ success: boolean; data: AssignmentDetail; message: string }>({
     queryKey: assignmentKeys.detail(id!),
-    queryFn: () => teacherAssignmentService.getAssignment(id!),
+    queryFn: async () => normalizeResponse(await teacherAssignmentService.getAssignment(id!)),
     enabled: !!id,
     staleTime: 1000 * 60 * 5,
   })
@@ -98,7 +109,8 @@ export function useCreateAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: CreateAssignmentRequest) => teacherAssignmentService.createAssignment(data),
+    mutationFn: async (data: CreateAssignmentRequest) =>
+      normalizeResponse(await teacherAssignmentService.createAssignment(data)),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       toast.success(response.message || 'Topshiriq yaratildi')
@@ -116,8 +128,8 @@ export function useUpdateAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateAssignmentRequest }) =>
-      teacherAssignmentService.updateAssignment(id, data),
+    mutationFn: async ({ id, data }: { id: number; data: UpdateAssignmentRequest }) =>
+      normalizeResponse(await teacherAssignmentService.updateAssignment(id, data)),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(variables.id) })
@@ -136,7 +148,7 @@ export function useDeleteAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherAssignmentService.deleteAssignment(id),
+    mutationFn: async (id: number) => normalizeResponse(await teacherAssignmentService.deleteAssignment(id)),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       toast.success(response.message || 'Topshiriq o\'chirildi')
@@ -154,7 +166,7 @@ export function usePublishAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherAssignmentService.publishAssignment(id),
+    mutationFn: async (id: number) => normalizeResponse(await teacherAssignmentService.publishAssignment(id)),
     onSuccess: (response, id) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(id) })
@@ -173,7 +185,7 @@ export function useUnpublishAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => teacherAssignmentService.unpublishAssignment(id),
+    mutationFn: async (id: number) => normalizeResponse(await teacherAssignmentService.unpublishAssignment(id)),
     onSuccess: (response, id) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(id) })
@@ -191,7 +203,8 @@ export function useUnpublishAssignment() {
 export function useSubmissions(assignmentId: number | undefined, status?: SubmissionStatusFilter) {
   return useQuery<{ success: boolean; data: SubmissionsResponse; message: string }>({
     queryKey: [...assignmentKeys.submissions(assignmentId!), status],
-    queryFn: () => teacherAssignmentService.getSubmissions(assignmentId!, status),
+    queryFn: async () =>
+      normalizeResponse(await teacherAssignmentService.getSubmissions(assignmentId!, status)),
     enabled: !!assignmentId,
     staleTime: 1000 * 60 * 2, // 2 minutes (more frequent updates)
   })
@@ -203,7 +216,7 @@ export function useSubmissions(assignmentId: number | undefined, status?: Submis
 export function useSubmissionDetail(submissionId: number | undefined) {
   return useQuery<{ success: boolean; data: SubmissionDetail; message: string }>({
     queryKey: assignmentKeys.submissionDetail(submissionId!),
-    queryFn: () => teacherAssignmentService.getSubmissionDetail(submissionId!),
+    queryFn: async () => normalizeResponse(await teacherAssignmentService.getSubmissionDetail(submissionId!)),
     enabled: !!submissionId,
   })
 }
@@ -215,8 +228,8 @@ export function useGradeSubmission() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ submissionId, data }: { submissionId: number; data: GradeSubmissionRequest }) =>
-      teacherAssignmentService.gradeSubmission(submissionId, data),
+    mutationFn: async ({ submissionId, data }: { submissionId: number; data: GradeSubmissionRequest }) =>
+      normalizeResponse(await teacherAssignmentService.gradeSubmission(submissionId, data)),
     onSuccess: (response, variables) => {
       // Invalidate submission detail
       queryClient.invalidateQueries({
@@ -225,10 +238,7 @@ export function useGradeSubmission() {
 
       // Invalidate submissions list
       queryClient.invalidateQueries({
-        queryKey: assignmentKeys.submissions(
-          // We need to get assignment ID from somewhere, or invalidate all submissions
-          // For now, invalidate all assignment queries
-        ),
+        predicate: (query) => query.queryKey.includes('submissions'),
       })
 
       // Invalidate statistics
@@ -267,7 +277,7 @@ export function useDownloadSubmissionFile() {
 export function useAssignmentStatistics(assignmentId: number | undefined) {
   return useQuery<{ success: boolean; data: AssignmentStatistics; message?: string }>({
     queryKey: assignmentKeys.statistics(assignmentId!),
-    queryFn: () => teacherAssignmentService.getAssignmentStatistics(assignmentId!),
+    queryFn: async () => normalizeResponse(await teacherAssignmentService.getAssignmentStatistics(assignmentId!)),
     enabled: !!assignmentId,
     staleTime: 1000 * 60 * 5,
   })
@@ -279,7 +289,8 @@ export function useAssignmentStatistics(assignmentId: number | undefined) {
 export function useAssignmentActivities(assignmentId: number | undefined, days = 7) {
   return useQuery<{ success: boolean; data: Activity[]; message: string }>({
     queryKey: [...assignmentKeys.activities(assignmentId!), days],
-    queryFn: () => teacherAssignmentService.getAssignmentActivities(assignmentId!, days),
+    queryFn: async () =>
+      normalizeResponse(await teacherAssignmentService.getAssignmentActivities(assignmentId!, days)),
     enabled: !!assignmentId,
     staleTime: 1000 * 60 * 2,
   })

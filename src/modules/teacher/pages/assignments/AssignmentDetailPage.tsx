@@ -120,6 +120,17 @@ export function AssignmentDetailPage() {
     )
   }
 
+  const totalStudents = assignment.submission_stats.total_students
+  const pendingSubmissions = assignment.submission_stats.pending_grading
+  const assignmentStats = statisticsData?.data
+  const computedPassRate =
+    assignmentStats && assignmentStats.total_students > 0
+      ? (
+          (assignmentStats.passed / assignmentStats.total_students) *
+          100
+        ).toFixed(1)
+      : '0'
+
   // Status badge
   const getStatusBadge = () => {
     if (assignment.is_overdue) {
@@ -257,7 +268,7 @@ export function AssignmentDetailPage() {
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-3xl font-bold text-orange-600">
-                {assignment.submission_stats.pending}
+                {pendingSubmissions}
               </p>
               <p className="text-sm text-muted-foreground mt-1">Kutilmoqda</p>
             </div>
@@ -332,7 +343,7 @@ export function AssignmentDetailPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="submissions">
-            Javoblar ({assignment.submission_stats.total})
+            Javoblar ({totalStudents})
           </TabsTrigger>
           <TabsTrigger value="statistics">Statistika</TabsTrigger>
           <TabsTrigger value="activities">Faollik</TabsTrigger>
@@ -349,10 +360,7 @@ export function AssignmentDetailPage() {
               </div>
             </Card>
           ) : (
-            <SubmissionsList
-              submissions={submissionsData?.data.submissions || []}
-              assignmentId={assignmentId}
-            />
+            <SubmissionsList submissions={submissionsData?.data.submissions || []} />
           )}
         </TabsContent>
 
@@ -384,9 +392,7 @@ export function AssignmentDetailPage() {
                       <p className="text-sm text-muted-foreground">Mediana</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-3xl font-bold">
-                        {statisticsData.data.pass_rate}%
-                      </p>
+                      <p className="text-3xl font-bold">{computedPassRate}%</p>
                       <p className="text-sm text-muted-foreground">O'tish foizi</p>
                     </div>
                   </div>
@@ -410,11 +416,7 @@ export function AssignmentDetailPage() {
                             </span>
                           </div>
                           <Progress
-                            value={
-                              assignment.submission_stats.total > 0
-                                ? ((count as number) / assignment.submission_stats.total) * 100
-                                : 0
-                            }
+                            value={totalStudents > 0 ? ((count as number) / totalStudents) * 100 : 0}
                             className="h-2"
                           />
                         </div>

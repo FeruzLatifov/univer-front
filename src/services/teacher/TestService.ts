@@ -1,4 +1,5 @@
 import { BaseApiService } from '../base/BaseApiService'
+import type { TestStatusFilter } from '@/lib/api/teacher'
 
 // ==================== TYPES ====================
 
@@ -65,7 +66,10 @@ export interface TestListParams {
   per_page?: number
   search?: string
   subject_id?: number
-  status?: string
+  employee_id?: number
+  group_id?: number
+  is_published?: boolean
+  status?: TestStatusFilter | string | null
 }
 
 export interface TestResultsParams {

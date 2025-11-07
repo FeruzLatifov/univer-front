@@ -12,12 +12,12 @@ import { uz } from 'date-fns/locale';
 export default function StudentTestsPage() {
   const { data: tests, isLoading: testsLoading } = useQuery({
     queryKey: ['student', 'tests'],
-    queryFn: getStudentTests,
+    queryFn: () => getStudentTests(),
   });
 
   const { data: results, isLoading: resultsLoading } = useQuery({
     queryKey: ['student', 'test-results'],
-    queryFn: getStudentTestResults,
+    queryFn: () => getStudentTestResults(),
   });
 
   if (testsLoading || resultsLoading) {

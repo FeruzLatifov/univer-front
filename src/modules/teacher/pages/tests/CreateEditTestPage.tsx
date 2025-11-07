@@ -29,15 +29,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useTest, useCreateTest, useUpdateTest } from '@/hooks/useTests'
 import { useMySubjects, useMyGroups } from '@/hooks/useAssignments'
 import type { CreateTestRequest } from '@/lib/api/teacher'
+import { useUserStore } from '@/stores/auth'
 
 // Validation schema
 const testSchema = z.object({
-  subject_id: z.number({
-    required_error: 'Fan tanlanishi shart',
-  }),
-  employee_id: z.number({
-    required_error: 'O\'qituvchi tanlanishi shart',
-  }),
+  subject_id: z.number(),
   group_id: z.number().optional(),
   subject_topic_id: z.number().optional(),
   title: z.string().min(3, 'Sarlavha kamida 3 ta belgidan iborat bo\'lishi kerak'),
@@ -62,6 +58,7 @@ export function CreateEditTestPage() {
   const { id } = useParams<{ id: string }>()
   const testId = id ? Number(id) : undefined
   const isEditMode = !!testId
+  const { user } = useUserStore()
 
   const createTest = useCreateTest()
   const updateTest = useUpdateTest()
@@ -102,7 +99,6 @@ export function CreateEditTestPage() {
       setSelectedSubjectId(existingTest.subject.id)
       form.reset({
         subject_id: existingTest.subject.id,
-        employee_id: existingTest.employee.id,
         group_id: existingTest.group?.id,
         subject_topic_id: existingTest.topic?.id,
         title: existingTest.title,
@@ -125,17 +121,19 @@ export function CreateEditTestPage() {
   // Handle form submission
   const onSubmit = async (values: TestFormValues) => {
     try {
+      const payload: CreateTestRequest = {
+        ...values,
+        employee_id: user?.id,
+      }
+
       if (isEditMode && testId) {
-        // Update existing test
         await updateTest.mutateAsync({
           id: testId,
-          data: values,
+          data: payload,
         })
         navigate(`/teacher/tests/${testId}`)
       } else {
-        // Create new test
-        const response = await createTest.mutateAsync(values as CreateTestRequest)
-        // Navigate to questions page to add questions
+        const response = await createTest.mutateAsync(payload)
         navigate(`/teacher/tests/${response.data.id}/questions`)
       }
     } catch (error) {

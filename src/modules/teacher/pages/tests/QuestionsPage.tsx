@@ -14,8 +14,13 @@ import {
 import { useTest, useTestQuestions, useDeleteQuestion, useDuplicateQuestion } from '@/hooks/useTests'
 import { QuestionForm } from './components/QuestionForm'
 import { QUESTION_TYPE_NAMES } from '@/lib/api/teacher'
-import type { Question } from '@/lib/api/teacher'
+import type { QuestionDetail } from '@/lib/api/teacher'
 import { Skeleton } from '@/components/ui/skeleton'
+
+const getQuestionTypeLabel = (type: QuestionDetail['question_type']) => {
+  const key = typeof type === 'number' ? 'multiple_choice' : type
+  return QUESTION_TYPE_NAMES[key as keyof typeof QUESTION_TYPE_NAMES] || 'Noma\'lum'
+}
 
 /**
  * Questions Builder Page
@@ -34,7 +39,7 @@ export function QuestionsPage() {
   const testId = id ? Number(id) : undefined
 
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
+  const [editingQuestion, setEditingQuestion] = useState<QuestionDetail | null>(null)
 
   // Fetch test and questions
   const { data: testData, isLoading: loadingTest } = useTest(testId)
@@ -52,13 +57,13 @@ export function QuestionsPage() {
   }
 
   // Handle edit question
-  const handleEdit = (question: Question) => {
+  const handleEdit = (question: QuestionDetail) => {
     setEditingQuestion(question)
     setIsFormOpen(true)
   }
 
   // Handle delete question
-  const handleDelete = (question: Question) => {
+  const handleDelete = (question: QuestionDetail) => {
     if (window.confirm(`"${question.question_text.substring(0, 50)}..." savolini o'chirmoqchimisiz?`)) {
       deleteQuestion.mutate({
         testId: testId!,
@@ -68,7 +73,7 @@ export function QuestionsPage() {
   }
 
   // Handle duplicate question
-  const handleDuplicate = (question: Question) => {
+  const handleDuplicate = (question: QuestionDetail) => {
     duplicateQuestion.mutate({
       testId: testId!,
       questionId: question.id,
@@ -194,7 +199,7 @@ export function QuestionsPage() {
                         </p>
                         <div className="flex gap-2 flex-wrap">
                           <Badge variant="secondary">
-                            {QUESTION_TYPE_NAMES[question.question_type]}
+                            {getQuestionTypeLabel(question.question_type)}
                           </Badge>
                           <Badge variant="outline">
                             {question.points} ball
@@ -203,9 +208,13 @@ export function QuestionsPage() {
                             <Badge variant="destructive">Majburiy</Badge>
                           )}
                           {question.can_auto_grade ? (
-                            <Badge variant="success">Avto baholanadi</Badge>
+                            <Badge className="bg-green-100 text-green-700">
+                              Avto baholanadi
+                            </Badge>
                           ) : (
-                            <Badge variant="warning">Qo'lda baholanadi</Badge>
+                            <Badge className="bg-yellow-100 text-yellow-700">
+                              Qo'lda baholanadi
+                            </Badge>
                           )}
                         </div>
                       </div>
@@ -227,7 +236,9 @@ export function QuestionsPage() {
                               {answer.answer_text}
                             </span>
                             {answer.is_correct && (
-                              <Badge variant="success" className="text-xs">To'g'ri</Badge>
+                              <Badge className="text-xs bg-green-100 text-green-700">
+                                To'g'ri
+                              </Badge>
                             )}
                           </div>
                         ))}
@@ -240,7 +251,7 @@ export function QuestionsPage() {
                     <div className="mt-4 pl-4 border-l-2 border-muted">
                       <p className="text-sm">
                         <span className="font-medium">To'g'ri javob:</span>{' '}
-                        <Badge variant="success">
+                        <Badge className="bg-green-100 text-green-700">
                           {question.correct_answer_boolean ? "To'g'ri" : "Noto'g'ri"}
                         </Badge>
                       </p>

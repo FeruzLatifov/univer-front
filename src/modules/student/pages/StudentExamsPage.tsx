@@ -11,7 +11,7 @@ import { uz } from 'date-fns/locale';
 export default function StudentExamsPage() {
   const { data: exams, isLoading } = useQuery({
     queryKey: ['student', 'exams'],
-    queryFn: getStudentExams,
+    queryFn: () => getStudentExams(),
   });
 
   if (isLoading) {
