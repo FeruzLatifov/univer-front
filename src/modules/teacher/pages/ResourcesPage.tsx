@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FileText, Upload, Download, Trash2, Link as LinkIcon, File, Video } from 'lucide-react'
 import { useTranslation } from '@/hooks/useTranslation'
 import { teacherSubjectService, teacherResourceService } from '@/services'
-import type { Resource } from '@/services/teacher/ResourceService'
+import type { CreateResourcePayload, Resource } from '@/services/teacher/ResourceService'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -42,7 +42,7 @@ export default function ResourcesPage() {
   })
 
   const uploadMutation = useMutation({
-    mutationFn: (data: any) => teacherResourceService.uploadResource(data),
+    mutationFn: (data: CreateResourcePayload) => teacherResourceService.uploadResource(data),
     onSuccess: () => {
       toast({ title: 'Material yuklandi', description: 'Material muvaffaqiyatli yuklandi' })
       queryClient.invalidateQueries({ queryKey: ['teacher', 'resources'] })
@@ -78,7 +78,7 @@ export default function ResourcesPage() {
     })
   }
 
-  const handleDownload = async (resourceId: number, fileName: string) => {
+  const handleDownload = async (resourceId: number) => {
     try {
       await teacherResourceService.downloadResource(resourceId)
     } catch {
@@ -199,7 +199,7 @@ export default function ResourcesPage() {
                         size="sm"
                         variant="outline"
                         className="flex-1"
-                        onClick={() => handleDownload(resource.id, resource.file_name || 'file')}
+                        onClick={() => handleDownload(resource.id)}
                       >
                         <Download className="w-3 h-3 mr-1" />
                         Yuklash

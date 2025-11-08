@@ -1,5 +1,9 @@
 import { BaseApiService } from '../base/BaseApiService'
-import type { TestStatusFilter } from '@/lib/api/teacher'
+import type {
+  TestStatusFilter,
+  CreateQuestionRequest,
+  UpdateQuestionRequest,
+} from '@/lib/api/teacher'
 
 // ==================== TYPES ====================
 
@@ -49,16 +53,6 @@ export interface TestFormData {
   shuffle_answers?: boolean
   show_results?: boolean
   status: number
-}
-
-export interface QuestionFormData {
-  question_text: string
-  question_type: number
-  points: number
-  answers: {
-    answer_text: string
-    is_correct: boolean
-  }[]
 }
 
 export interface TestListParams {
@@ -167,14 +161,14 @@ export class TestService extends BaseApiService {
   /**
    * Add new question to test
    */
-  async addQuestion(testId: number, data: QuestionFormData) {
+  async addQuestion(testId: number, data: CreateQuestionRequest) {
     return this.post<TestQuestion>(`/${testId}/questions`, data)
   }
 
   /**
    * Update question
    */
-  async updateQuestion(testId: number, questionId: number, data: Partial<QuestionFormData>) {
+  async updateQuestion(testId: number, questionId: number, data: UpdateQuestionRequest) {
     return this.put<TestQuestion>(`/${testId}/questions/${questionId}`, data)
   }
 

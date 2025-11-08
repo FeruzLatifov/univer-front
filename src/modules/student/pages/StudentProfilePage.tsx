@@ -7,6 +7,7 @@ import {
   uploadStudentPhoto,
   deleteStudentPhoto
 } from '@/lib/api/student'
+import type { StudentProfileResponse } from '@/lib/types/student'
 import { buildStorageUrl } from '@/config/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,28 +19,9 @@ import { toast } from 'sonner'
 import { Loader2, User, Lock, Camera, Trash2, Save, X } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 
-type StudentProfile = {
-  full_name?: string
-  student_id_number?: string
-  passport_number?: string
-  gender?: number | string
-  phone?: string
-  email?: string
-  telegram_username?: string
-  current_address?: string
-  faculty?: { name?: string }
-  group?: { name?: string }
-  education_form?: { name?: string }
-  year_of_enter?: string | number
-  image?: string
-  first_name?: string
-  second_name?: string
-}
-
 export default function StudentProfilePage() {
   const queryClient = useQueryClient()
   const [isEditingProfile, setIsEditingProfile] = useState(false)
-  const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
@@ -59,7 +41,7 @@ export default function StudentProfilePage() {
   })
 
   // Fetch profile
-  const { data: profile, isLoading } = useQuery<StudentProfile>({
+  const { data: profile, isLoading } = useQuery<StudentProfileResponse>({
     queryKey: ['student', 'profile'],
     queryFn: () => getStudentProfile(),
   })
@@ -67,10 +49,10 @@ export default function StudentProfilePage() {
   useEffect(() => {
     if (profile) {
       setProfileForm({
-        phone: profile.phone || '',
-        email: profile.email || '',
-        current_address: profile.current_address || '',
-        telegram_username: profile.telegram_username || '',
+        phone: profile.student.phone || '',
+        email: profile.student.email || '',
+        current_address: profile.student.current_address || '',
+        telegram_username: profile.student.telegram_username || '',
       })
     }
   }, [profile])
@@ -83,8 +65,8 @@ export default function StudentProfilePage() {
       toast.success('Profil muvaffaqiyatli yangilandi')
       setIsEditingProfile(false)
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Profilni yangilashda xatolik yuz berdi')
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Profilni yangilashda xatolik yuz berdi'))
     },
   })
 
@@ -98,15 +80,16 @@ export default function StudentProfilePage() {
         password: '',
         password_confirmation: '',
       })
-      setIsChangingPassword(false)
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Parolni o\'zgartirishda xatolik yuz berdi'
-      const errors = error.response?.data?.errors
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Parolni o\'zgartirishda xatolik yuz berdi')
+      const errors = (error as { response?: { data?: { errors?: Record<string, string[]> } } }).response?.data?.errors
 
       if (errors) {
-        Object.values(errors).flat().forEach((err: any) => {
-          toast.error(err)
+        Object.values(errors)
+          .flat()
+          .forEach((err) => {
+            toast.error(err)
         })
       } else {
         toast.error(errorMessage)
@@ -123,8 +106,8 @@ export default function StudentProfilePage() {
       setSelectedImage(null)
       setImagePreview(null)
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Rasmni yuklashda xatolik yuz berdi')
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Rasmni yuklashda xatolik yuz berdi'))
     },
   })
 
@@ -135,8 +118,8 @@ export default function StudentProfilePage() {
       queryClient.invalidateQueries({ queryKey: ['student', 'profile'] })
       toast.success('Rasm o\'chirildi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Rasmni o\'chirishda xatolik yuz berdi')
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Rasmni o\'chirishda xatolik yuz berdi'))
     },
   })
 

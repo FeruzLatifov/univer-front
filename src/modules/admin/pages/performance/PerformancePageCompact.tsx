@@ -4,8 +4,6 @@ import {
   ClipboardCheck,
   Search,
   Filter,
-  TrendingUp,
-  TrendingDown,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'

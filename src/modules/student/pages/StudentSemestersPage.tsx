@@ -3,9 +3,10 @@ import { getStudentSemesters } from '@/lib/api/student'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Calendar, BookOpen, TrendingUp, Clock } from 'lucide-react'
+import type { StudentSemestersResponse, StudentSemesterInfo } from '@/lib/types/student'
 
 export default function StudentSemestersPage() {
-  const { data: semesters, isLoading } = useQuery({
+  const { data: semesters, isLoading } = useQuery<StudentSemestersResponse>({
     queryKey: ['student', 'semesters'],
     queryFn: () => getStudentSemesters(),
   })
@@ -18,7 +19,7 @@ export default function StudentSemestersPage() {
     )
   }
 
-  const semesterList = semesters?.data || []
+  const semesterList = semesters?.data ?? []
 
   return (
     <div className="container mx-auto p-6">
@@ -47,7 +48,7 @@ export default function StudentSemestersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {semesterList.find((s: any) => s.is_current)?.name || '-'}
+              {semesterList.find((s) => s.is_current)?.name || '-'}
             </div>
             <p className="text-xs text-muted-foreground">Hozirgi o'quv semestri</p>
           </CardContent>
@@ -62,7 +63,7 @@ export default function StudentSemestersPage() {
             <div className="text-2xl font-bold">
               {semesterList.length > 0
                 ? (
-                    semesterList.reduce((acc: number, s: any) => acc + (s.gpa || 0), 0) /
+                    semesterList.reduce((acc: number, s: StudentSemesterInfo) => acc + (s.gpa ?? 0), 0) /
                     semesterList.length
                   ).toFixed(2)
                 : '0.00'}
@@ -82,7 +83,7 @@ export default function StudentSemestersPage() {
             </CardContent>
           </Card>
         ) : (
-          semesterList.map((semester: any) => (
+          semesterList.map((semester: StudentSemesterInfo) => (
             <Card key={semester.id || semester.code} className={semester.is_current ? 'border-blue-500 border-2' : ''}>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -155,7 +156,7 @@ export default function StudentSemestersPage() {
                       Muhim sanalar
                     </h4>
                     <div className="space-y-2">
-                      {semester.events.map((event: any, index: number) => (
+                      {semester.events.map((event, index) => (
                         <div key={index} className="flex items-center justify-between text-sm">
                           <span className="text-gray-600">{event.name}</span>
                           <span className="font-medium">
@@ -198,13 +199,13 @@ export default function StudentSemestersPage() {
               <div>
                 <p className="text-sm text-gray-500">Tugallangan</p>
                 <p className="text-lg font-semibold">
-                  {semesterList.filter((s: any) => s.status === 'completed').length}
+                  {semesterList.filter((s) => s.status === 'completed').length}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Joriy</p>
                 <p className="text-lg font-semibold">
-                  {semesterList.filter((s: any) => s.is_current).length}
+                  {semesterList.filter((s) => s.is_current).length}
                 </p>
               </div>
             </div>

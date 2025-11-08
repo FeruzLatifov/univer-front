@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import type { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/themeStore'
@@ -6,19 +8,20 @@ import { useLanguageStore } from '@/stores/languageStore'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import {
-  LogIn, Lock, GraduationCap, User, IdCard, Moon, Sun, Sparkles, Eye, EyeOff,
-  FileText, Award, FileCheck, BarChart3, MoreVertical, KeyRound, Calendar, Code
+  Lock, GraduationCap, User, IdCard, Moon, Sun, Eye, EyeOff,
+  FileText, Calendar, Code
 } from 'lucide-react'
 import { toast } from 'sonner'
 import * as systemApi from '@/lib/api/system'
 import { setPageMeta, PAGE_META, DEFAULT_FAVICON } from '@/utils/favicon'
+import { getErrorMessage } from '@/lib/utils/error'
 
 type UserType = 'employee' | 'student'
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { login, loading, error, clearError } = useAuthStore()
+  const { login, loading, clearError } = useAuthStore()
   const { theme, toggleTheme } = useThemeStore()
   const { locale } = useLanguageStore()
   const [userType, setUserType] = useState<UserType>('employee')
@@ -27,7 +30,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
-  const [showDropdown, setShowDropdown] = useState(false)
 
   // System configuration
   const [systemConfig, setSystemConfig] = useState<systemApi.SystemLoginConfig>({
@@ -93,8 +95,8 @@ export default function LoginPage() {
       })
       toast.success(t('auth.login_to_continue'))
       navigate('/dashboard')
-    } catch (error: any) {
-      toast.error(error.message || t('auth.welcome_back'))
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('auth.welcome_back')))
     }
   }
 
@@ -207,12 +209,7 @@ export default function LoginPage() {
                           onChange={(e) => setLoginField(e.target.value)}
                           placeholder={t('auth.login_or_employee_id', { defaultValue: 'Login / Xodim ID' })}
                           className="w-full border rounded-md px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-1"
-                          style={{
-                            borderColor: 'var(--border-color)',
-                            backgroundColor: 'var(--card-bg)',
-                            color: 'var(--text-primary)',
-                            '--tw-ring-color': 'var(--primary)'
-                          } as any}
+                          style={inputStyle}
                           required
                         />
                       ) : (
@@ -222,12 +219,7 @@ export default function LoginPage() {
                           onChange={(e) => setStudentId(e.target.value)}
                           placeholder={t('auth.student_id', { defaultValue: 'Student ID' })}
                           className="w-full border rounded-md px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-1"
-                          style={{
-                            borderColor: 'var(--border-color)',
-                            backgroundColor: 'var(--card-bg)',
-                            color: 'var(--text-primary)',
-                            '--tw-ring-color': 'var(--primary)'
-                          } as any}
+                          style={inputStyle}
                           required
                         />
                       )}
@@ -247,12 +239,7 @@ export default function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder={t('auth.password', { defaultValue: 'Password' })}
                         className="w-full border rounded-md px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-1"
-                        style={{
-                          borderColor: 'var(--border-color)',
-                          backgroundColor: 'var(--card-bg)',
-                          color: 'var(--text-primary)',
-                          '--tw-ring-color': 'var(--primary)'
-                        } as any}
+                        style={inputStyle}
                         required
                       />
                       <button
@@ -274,10 +261,7 @@ export default function LoginPage() {
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
                       className="w-4 h-4 rounded border-2 focus:ring-2 focus:ring-offset-2"
-                      style={{
-                        borderColor: 'var(--border-color)',
-                        '--tw-ring-color': 'var(--primary)'
-                      } as any}
+                      style={checkboxStyle}
                     />
                     <label
                       htmlFor="remember-me"
@@ -352,3 +336,16 @@ export default function LoginPage() {
     </div>
   )
 }
+  type RingedStyle = CSSProperties & { '--tw-ring-color': string }
+
+  const inputStyle: RingedStyle = {
+    borderColor: 'var(--border-color)',
+    backgroundColor: 'var(--card-bg)',
+    color: 'var(--text-primary)',
+    '--tw-ring-color': 'var(--primary)'
+  }
+
+  const checkboxStyle: RingedStyle = {
+    borderColor: 'var(--border-color)',
+    '--tw-ring-color': 'var(--primary)'
+  }

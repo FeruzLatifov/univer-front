@@ -6,19 +6,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getStudentResources, getStudentSubjects } from '@/lib/api/student';
+import type { StudentResourceResponse, StudentSubjectsResponse, StudentResourceItem } from '@/lib/types/student';
 
 export default function StudentResourcesPage() {
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
 
   // Fetch subjects for filter
-  const { data: subjects } = useQuery({
+  const { data: subjects } = useQuery<StudentSubjectsResponse>({
     queryKey: ['student', 'subjects'],
     queryFn: () => getStudentSubjects(),
   });
 
   // Fetch resources
-  const { data: resources, isLoading } = useQuery({
+  const { data: resources, isLoading } = useQuery<StudentResourceResponse>({
     queryKey: ['student', 'resources', selectedSubject],
     queryFn: () => getStudentResources(selectedSubject !== 'all' ? selectedSubject : undefined),
   });
@@ -46,7 +47,7 @@ export default function StudentResourcesPage() {
     return `${kb.toFixed(2)} KB`;
   };
 
-  const filteredResources = resources?.data?.filter((resource: any) => {
+  const filteredResources = resources?.data?.filter((resource) => {
     if (selectedType === 'all') return true;
     return resource.type?.toLowerCase() === selectedType.toLowerCase();
   }) || [];
@@ -76,7 +77,7 @@ export default function StudentResourcesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Barcha fanlar</SelectItem>
-                  {subjects?.map((subject: any) => (
+                  {subjects?.data?.map((subject) => (
                     <SelectItem key={subject.id} value={subject.id.toString()}>
                       {subject.name}
                     </SelectItem>
@@ -122,7 +123,7 @@ export default function StudentResourcesPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredResources.map((resource: any) => (
+          {filteredResources.map((resource: StudentResourceItem) => (
             <Card key={resource.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="space-y-4">

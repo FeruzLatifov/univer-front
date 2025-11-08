@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { teacherTestService } from '@/services'
+import { getErrorMessage } from '@/lib/utils/error'
 import * as teacherApi from '../lib/api/teacher'
 import type {
   Test,
   TestDetail,
-  Question,
   QuestionDetail,
   TestAttempt,
   TestAttemptDetail,
@@ -21,8 +21,11 @@ import type {
   AttemptStatus,
 } from '../lib/api/teacher'
 
-const normalizeResponse = <T>(payload: any, fallbackMessage?: string): { success: boolean; data: T; message: string } => {
-  if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const normalizeResponse = <T>(payload: unknown, fallbackMessage?: string): { success: boolean; data: T; message: string } => {
+  if (isRecord(payload) && 'data' in payload) {
     const base = payload as { success?: boolean; data: T; message?: string }
     return {
       success: base.success ?? true,
@@ -32,8 +35,8 @@ const normalizeResponse = <T>(payload: any, fallbackMessage?: string): { success
   }
 
   const message =
-    (payload && typeof payload === 'object' && '_message' in payload
-      ? (payload as any)._message
+    (isRecord(payload) && typeof payload._message === 'string'
+      ? payload._message
       : fallbackMessage) || ''
 
   return {
@@ -114,15 +117,15 @@ export function useTest(id: number | undefined) {
 export function useCreateTest() {
   const queryClient = useQueryClient()
 
-  return useMutation<{ success: boolean; data: Test; message: string }, any, CreateTestRequest>({
+  return useMutation<{ success: boolean; data: Test; message: string }, unknown, CreateTestRequest>({
     mutationFn: async (data: CreateTestRequest) =>
-      normalizeResponse<Test>(await teacherTestService.createTest(data as any)),
+      normalizeResponse<Test>(await teacherTestService.createTest(data)),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       toast.success(response.message || 'Test yaratildi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Test yaratishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Test yaratishda xatolik'))
     },
   })
 }
@@ -135,14 +138,14 @@ export function useUpdateTest() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: UpdateTestRequest }) =>
-      normalizeResponse(await teacherTestService.updateTest(id, data as any)),
+      normalizeResponse(await teacherTestService.updateTest(id, data)),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.id) })
       toast.success(response.message || 'Test yangilandi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Test yangilashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Test yangilashda xatolik'))
     },
   })
 }
@@ -159,8 +162,8 @@ export function useDeleteTest() {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       toast.success(response.message || "Test o'chirildi")
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Test o'chirishda xatolik")
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Test o'chirishda xatolik"))
     },
   })
 }
@@ -177,8 +180,8 @@ export function useDuplicateTest() {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() })
       toast.success(response.message || 'Test nusxalandi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Test nusxalashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Test nusxalashda xatolik'))
     },
   })
 }
@@ -196,8 +199,8 @@ export function usePublishTest() {
       queryClient.invalidateQueries({ queryKey: testKeys.detail(id) })
       toast.success(response.message || 'Test nashr qilindi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Nashr qilishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Nashr qilishda xatolik'))
     },
   })
 }
@@ -215,8 +218,8 @@ export function useUnpublishTest() {
       queryClient.invalidateQueries({ queryKey: testKeys.detail(id) })
       toast.success(response.message || 'Test nashrdan olindi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Nashrdan olishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Nashrdan olishda xatolik'))
     },
   })
 }
@@ -257,18 +260,18 @@ export function useAddQuestion() {
 
   return useMutation<
     { success: boolean; data: QuestionDetail; message: string },
-    any,
+    unknown,
     { testId: number; data: CreateQuestionRequest }
   >({
     mutationFn: async ({ testId, data }) =>
-      normalizeResponse<QuestionDetail>(await teacherTestService.addQuestion(testId, data as any)),
+      normalizeResponse<QuestionDetail>(await teacherTestService.addQuestion(testId, data)),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.testId) })
       toast.success(response.message || 'Savol qo\'shildi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Savol qo\'shishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Savol qo\'shishda xatolik'))
     },
   })
 }
@@ -288,7 +291,7 @@ export function useUpdateQuestion() {
       testId: number
       questionId: number
       data: UpdateQuestionRequest
-    }) => normalizeResponse(await teacherTestService.updateQuestion(testId, questionId, data as any)),
+    }) => normalizeResponse(await teacherTestService.updateQuestion(testId, questionId, data)),
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       queryClient.invalidateQueries({
@@ -297,8 +300,8 @@ export function useUpdateQuestion() {
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.testId) })
       toast.success(response.message || 'Savol yangilandi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Savol yangilashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Savol yangilashda xatolik'))
     },
   })
 }
@@ -317,8 +320,8 @@ export function useDeleteQuestion() {
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.testId) })
       toast.success(response.message || "Savol o'chirildi")
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Savol o'chirishda xatolik")
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Savol o'chirishda xatolik"))
     },
   })
 }
@@ -338,8 +341,8 @@ export function useReorderQuestions() {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       toast.success(response.message || 'Savollar tartibi o\'zgartirildi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Tartibni o\'zgartirishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Tartibni o\'zgartirishda xatolik'))
     },
   })
 }
@@ -358,8 +361,8 @@ export function useDuplicateQuestion() {
       queryClient.invalidateQueries({ queryKey: testKeys.detail(variables.testId) })
       toast.success(response.message || 'Savol nusxalandi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Savol nusxalashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Savol nusxalashda xatolik'))
     },
   })
 }
@@ -391,8 +394,8 @@ export function useAddAnswerOption() {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       toast.success(response.message || 'Javob varianti qo\'shildi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Javob qo\'shishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Javob qo\'shishda xatolik'))
     },
   })
 }
@@ -422,8 +425,8 @@ export function useUpdateAnswerOption() {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       toast.success(response.message || 'Javob varianti yangilandi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Javob yangilashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Javob yangilashda xatolik'))
     },
   })
 }
@@ -451,8 +454,8 @@ export function useDeleteAnswerOption() {
       queryClient.invalidateQueries({ queryKey: testKeys.questions(variables.testId) })
       toast.success(response.message || "Javob varianti o'chirildi")
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Javob o'chirishda xatolik")
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Javob o'chirishda xatolik"))
     },
   })
 }
@@ -520,8 +523,8 @@ export function useGradeAttempt() {
       })
       toast.success(response.message || 'Urinish baholandi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Baholashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Baholashda xatolik'))
     },
   })
 }

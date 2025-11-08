@@ -6,8 +6,6 @@ import {
   Eye,
   Calendar,
   BookOpen,
-  Users,
-  TrendingUp,
   AlertCircle,
   FileText,
   Clock,
@@ -32,6 +30,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { getErrorMessage } from '@/lib/utils/error'
 
 interface TeacherLoad {
   id: number
@@ -44,15 +43,17 @@ interface TeacherLoad {
   education_year_code: string
 }
 
+type TeacherLoadAttributes = TeacherLoad & Record<string, unknown>
+
 interface TeacherLoadDetail {
-  teacher_load: TeacherLoad & { [key: string]: any }
+  teacher_load: TeacherLoadAttributes
   autumn_subjects: SubjectMeta[]
   spring_subjects: SubjectMeta[]
   scientific_work: ScientificWork[]
   methodical_work: MethodicalWork[]
 }
 
-interface SubjectMeta {
+interface SubjectMeta extends Record<string, unknown> {
   id: number
   _subject: number
   _training_type: number
@@ -61,21 +62,28 @@ interface SubjectMeta {
   lecture_hours?: number
   practice_hours?: number
   lab_hours?: number
-  [key: string]: any
 }
 
-interface ScientificWork {
+interface ScientificWork extends Record<string, unknown> {
   id: number
   name: string
   hours: number
-  [key: string]: any
 }
 
-interface MethodicalWork {
+interface MethodicalWork extends Record<string, unknown> {
   id: number
   name: string
   hours: number
-  [key: string]: any
+}
+
+interface TeacherLoadListResponse {
+  data: {
+    teacher_loads: TeacherLoad[]
+  }
+}
+
+interface TeacherLoadDetailResponse {
+  data: TeacherLoadDetail
 }
 
 export default function TeacherLoadPage() {
@@ -83,27 +91,29 @@ export default function TeacherLoadPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   // Fetch teacher loads list
-  const { data: loadsResponse, isLoading } = useQuery({
+  const { data: loadsResponse, isLoading } = useQuery<TeacherLoadListResponse>({
     queryKey: ['teacher-loads'],
     queryFn: async () => {
-      const response = await api.get('/employee/teacher-load')
+      const response = await api.get<TeacherLoadListResponse>('/employee/teacher-load')
       return response.data
     },
   })
 
   // Fetch selected load details
-  const { data: detailResponse, isLoading: isDetailLoading } = useQuery({
+  const { data: detailResponse, isLoading: isDetailLoading } = useQuery<
+    TeacherLoadDetailResponse | null
+  >({
     queryKey: ['teacher-load-detail', selectedLoadId],
     queryFn: async () => {
       if (!selectedLoadId) return null
-      const response = await api.get(`/employee/teacher-load/${selectedLoadId}`)
+      const response = await api.get<TeacherLoadDetailResponse>(`/employee/teacher-load/${selectedLoadId}`)
       return response.data
     },
     enabled: !!selectedLoadId && isDetailOpen,
   })
 
-  const teacherLoads: TeacherLoad[] = loadsResponse?.data?.teacher_loads || []
-  const loadDetail: TeacherLoadDetail | null = detailResponse?.data || null
+  const teacherLoads = loadsResponse?.data.teacher_loads ?? []
+  const loadDetail: TeacherLoadDetail | null = detailResponse?.data ?? null
 
   const handleViewDetails = (loadId: number) => {
     setSelectedLoadId(loadId)
@@ -124,9 +134,9 @@ export default function TeacherLoadPage() {
       document.body.appendChild(link)
       link.click()
       link.remove()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to download PDF:', error)
-      alert(error.response?.data?.message || 'PDF yuklab olishda xatolik')
+      alert(getErrorMessage(error, 'PDF yuklab olishda xatolik'))
     }
   }
 

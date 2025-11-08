@@ -23,12 +23,11 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import forumService from '@/services/teacher/ForumService';
-import { useTranslation } from '@/hooks/useTranslation';
+import forumService, { type CreateTopicData, type ForumTopic } from '@/services/teacher/ForumService';
 import { useToast } from '@/hooks/use-toast';
+import type { AxiosError } from 'axios';
 
 // Form validation schema
 const formSchema = z.object({
@@ -47,7 +46,6 @@ type FormData = z.infer<typeof formSchema>;
 export default function CreateTopicPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [tags, setTags] = useState<string[]>([]);
@@ -71,9 +69,9 @@ export default function CreateTopicPage() {
   });
 
   // Create topic mutation
-  const createTopicMutation = useMutation({
-    mutationFn: forumService.createTopic.bind(forumService),
-    onSuccess: (data: any) => {
+  const createTopicMutation = useMutation<ForumTopic, AxiosError<{ message?: string }>, CreateTopicData>({
+    mutationFn: (payload) => forumService.createTopic(payload),
+    onSuccess: (data) => {
       toast({
         title: 'Muvaffaqiyatli!',
         description: category?.requires_approval
@@ -82,7 +80,7 @@ export default function CreateTopicPage() {
       });
       navigate(`/teacher/forum/topics/${data.id}`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
         title: 'Xatolik',
         description: error.response?.data?.message || 'Mavzu yaratishda xatolik yuz berdi',

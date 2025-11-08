@@ -11,7 +11,6 @@ import {
   Clock,
   Plus,
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Tag,
@@ -31,21 +30,19 @@ import {
 import { cn } from '@/lib/utils';
 import { useForumCategory, useForumTopics, useToggleTopicLike } from '@/hooks/useForum';
 import type { ForumTopic, TopicFilters } from '@/services/teacher/ForumService';
-import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { uz } from 'date-fns/locale';
 
+type SortOption = 'latest' | 'popular' | 'most_viewed' | 'most_liked'
+
 export default function ForumTopicsPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'most_viewed' | 'most_liked'>(
-    'latest'
-  );
+  const [sortBy, setSortBy] = useState<SortOption>('latest');
   const [page, setPage] = useState(1);
 
   // Fetch category details using hook
@@ -62,7 +59,6 @@ export default function ForumTopicsPage() {
   const {
     data: topicsData,
     isLoading: topicsLoading,
-    refetch,
   } = useForumTopics(Number(categoryId), filters);
 
   // Like mutation using hook
@@ -73,7 +69,7 @@ export default function ForumTopicsPage() {
     e.stopPropagation();
     try {
       await likeMutation.mutateAsync(topicId);
-    } catch (error) {
+    } catch {
       toast({
         title: 'Xatolik',
         description: 'Like qo\'shishda xatolik yuz berdi',
@@ -176,7 +172,7 @@ export default function ForumTopicsPage() {
             className="pl-9"
           />
         </div>
-        <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+        <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
           <SelectTrigger className="w-[200px]">
             <SelectValue />
           </SelectTrigger>

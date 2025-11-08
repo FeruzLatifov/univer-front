@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/utils/error';
 import ForumService, {
   type TopicFilters,
   type CreateTopicData,
@@ -71,10 +72,10 @@ export function useCreateTopic() {
       });
       return data;
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Xatolik',
-        description: error.response?.data?.message || 'Mavzu yaratishda xatolik',
+        description: getErrorMessage(error, 'Mavzu yaratishda xatolik'),
         variant: 'destructive',
       });
     },

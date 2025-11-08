@@ -8,12 +8,10 @@ import {
   Lock,
   Star,
   Clock,
-  ChevronLeft,
   ChevronRight,
   Reply,
   Edit,
   Trash,
-  Paperclip,
   Tag,
   CheckCircle,
   Bell,
@@ -48,8 +46,6 @@ import {
   useUnsubscribeFromTopic,
 } from '@/hooks/useForum';
 import type { ForumPost } from '@/services/teacher/ForumService';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { uz } from 'date-fns/locale';
 import { sanitizeRichText } from '@/utils/sanitize';
@@ -57,8 +53,6 @@ import { sanitizeRichText } from '@/utils/sanitize';
 export default function ForumTopicDetailPage() {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { toast } = useToast();
 
   const [replyText, setReplyText] = useState('');
   const [editingPostId, setEditingPostId] = useState<number | null>(null);

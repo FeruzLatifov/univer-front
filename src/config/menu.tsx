@@ -27,6 +27,7 @@
  * @see src/stores/menuStore.ts
  * @see src/lib/api/menu.ts
  */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {
   LayoutDashboard,
@@ -527,4 +528,3 @@ export const menuItems: MenuItem[] = [
     gradient: 'gradient-science',
   },
 ]
-

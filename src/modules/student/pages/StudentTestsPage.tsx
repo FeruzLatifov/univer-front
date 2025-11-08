@@ -1,21 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ClipboardList, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getStudentTests, getStudentTestResults } from '@/lib/api/student';
 import { formatDistanceToNow } from 'date-fns';
 import { uz } from 'date-fns/locale';
+import type {
+  StudentTestInfo,
+  StudentTestResult,
+  StudentTestsResponse,
+  StudentTestResultsResponse,
+} from '@/lib/types/student';
 
 export default function StudentTestsPage() {
-  const { data: tests, isLoading: testsLoading } = useQuery({
+  const { data: tests, isLoading: testsLoading } = useQuery<StudentTestsResponse>({
     queryKey: ['student', 'tests'],
     queryFn: () => getStudentTests(),
   });
 
-  const { data: results, isLoading: resultsLoading } = useQuery({
+  const { data: results, isLoading: resultsLoading } = useQuery<StudentTestResultsResponse>({
     queryKey: ['student', 'test-results'],
     queryFn: () => getStudentTestResults(),
   });
@@ -26,8 +32,8 @@ export default function StudentTestsPage() {
     </div>;
   }
 
-  const availableTests = tests?.data || [];
-  const testResults = results?.data || [];
+  const availableTests: StudentTestInfo[] = tests?.data || [];
+  const testResults: StudentTestResult[] = results?.data || [];
 
   return (
     <div className="space-y-6">
@@ -57,7 +63,7 @@ export default function StudentTestsPage() {
               </CardContent>
             </Card>
           ) : (
-            availableTests.map((test: any) => (
+            availableTests.map((test) => (
               <Card key={test.id}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -141,7 +147,7 @@ export default function StudentTestsPage() {
               </CardContent>
             </Card>
           ) : (
-            testResults.map((result: any) => (
+            testResults.map((result) => (
               <Card key={result.id}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">

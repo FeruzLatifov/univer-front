@@ -22,7 +22,7 @@ import DOMPurify from 'dompurify'
  * <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(userContent) }} />
  * ```
  */
-export const sanitizeHtml = (html: string, options?: {
+export const sanitizeHtml = (html?: string | null, options?: {
   allowedTags?: string[]
   allowedAttributes?: string[]
 }): string => {
@@ -75,7 +75,7 @@ export const sanitizeHtml = (html: string, options?: {
  * <div dangerouslySetInnerHTML={{ __html: sanitizeRichText(forumPost) }} />
  * ```
  */
-export const sanitizeRichText = (html: string): string => {
+export const sanitizeRichText = (html?: string | null): string => {
   if (!html) return ''
   
   return sanitizeHtml(html, {
@@ -104,7 +104,7 @@ export const sanitizeRichText = (html: string): string => {
  * <div dangerouslySetInnerHTML={{ __html: sanitizeBasicText(comment) }} />
  * ```
  */
-export const sanitizeBasicText = (html: string): string => {
+export const sanitizeBasicText = (html?: string | null): string => {
   if (!html) return ''
   
   return sanitizeHtml(html, {
@@ -126,7 +126,7 @@ export const sanitizeBasicText = (html: string): string => {
  * const preview = stripHtml(content).substring(0, 100)
  * ```
  */
-export const stripHtml = (html: string): string => {
+export const stripHtml = (html?: string | null): string => {
   if (!html) return ''
   
   return DOMPurify.sanitize(html, {

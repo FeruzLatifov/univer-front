@@ -31,11 +31,8 @@ import {
   type Notification,
 } from '@/lib/api/notifications';
 import { cn } from '@/lib/utils';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { LucideIcon } from 'lucide-react';
 
 export default function NotificationsDropdown() {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
 

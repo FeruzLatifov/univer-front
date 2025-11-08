@@ -62,9 +62,9 @@ export class AdminStudentService extends BaseApiService {
   /**
    * Get paginated student list with filters
    */
-  async getStudents(filters?: AdminStudentFilters): Promise<PaginatedResponse<any>> {
+  async getStudents(filters?: AdminStudentFilters): Promise<PaginatedResponse<StudentData>> {
     const query = filters ? this.buildQueryString(filters) : ''
-    return this.get<PaginatedResponse<any>>(query)
+    return this.get<PaginatedResponse<StudentData>>(query)
   }
 
   /**

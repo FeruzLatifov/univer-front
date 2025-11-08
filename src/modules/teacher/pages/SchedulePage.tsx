@@ -17,7 +17,6 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export default function SchedulePage() {
-  const { t } = useTranslation()
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const today = new Date().getDay() || 7 // 0 (Sunday) -> 7
 
@@ -37,11 +36,10 @@ export default function SchedulePage() {
       : schedule
 
   // Calculate statistics
-  const totalLessons = Object.values(schedule).flat().length
-  const todayLessons = schedule[today]?.length || 0
+  const totalLessons = Object.values(schedule).reduce((count, lessonsForDay) => count + lessonsForDay.length, 0)
+  const todayLessons = (schedule[String(today)] || []).length
   const conductedLessons = Object.values(schedule)
-    .flat()
-    .filter((l) => l.conducted).length
+    .reduce((count, lessonsForDay) => count + lessonsForDay.filter((lesson) => lesson.conducted).length, 0)
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -141,9 +139,9 @@ export default function SchedulePage() {
                 )}
               >
                 {day.name}
-                {schedule[day.id]?.length > 0 && (
+                {schedule[String(day.id)]?.length > 0 && (
                   <Badge variant="secondary" className="ml-2">
-                    {schedule[day.id].length}
+                    {schedule[String(day.id)].length}
                   </Badge>
                 )}
               </Button>
@@ -188,8 +186,9 @@ export default function SchedulePage() {
           {Object.entries(displaySchedule)
             .sort(([a], [b]) => Number(a) - Number(b))
             .map(([dayId, lessons]) => {
-              const dayName = WEEK_DAYS.find((d) => d.id === Number(dayId))?.name
-              const isToday = Number(dayId) === today
+              const numericDayId = Number(dayId)
+              const dayName = WEEK_DAYS.find((d) => d.id === numericDayId)?.name
+              const isToday = numericDayId === today
 
               return (
                 <Card key={dayId} className={cn(isToday && 'ring-2 ring-primary')}>

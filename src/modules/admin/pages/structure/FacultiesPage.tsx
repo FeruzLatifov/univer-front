@@ -5,7 +5,6 @@ import {
   Users,
   BookOpen,
   User,
-  Mail,
   Phone,
   MapPin,
   Plus,

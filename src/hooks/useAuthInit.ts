@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore, useUserStore } from '@/stores/auth'
+import { logger } from '@/utils/logger'
 
 /**
  * Initialize authentication on app load
@@ -7,10 +8,12 @@ import { useAuthStore, useUserStore } from '@/stores/auth'
  */
 export function useAuthInit() {
   const [isInitialized, setIsInitialized] = useState(false)
-  const { token, isAuthenticated } = useAuthStore()
+  const { isAuthenticated } = useAuthStore()
   const { fetchCurrentUser } = useUserStore()
 
   useEffect(() => {
+    let isMounted = true
+
     const initAuth = async () => {
       // Check if we have a token and user type in localStorage
       const accessToken = localStorage.getItem('access_token')
@@ -21,16 +24,22 @@ export function useAuthInit() {
           // Fetch current user to restore session
           await fetchCurrentUser()
         } catch (error) {
-          console.error('Failed to restore session:', error)
+          logger.warn('[AuthInit] Failed to restore session', error)
           // Token might be expired, user will need to login again
         }
       }
 
-      setIsInitialized(true)
+      if (isMounted) {
+        setIsInitialized(true)
+      }
     }
 
-    initAuth()
-  }, []) // Only run once on mount
+    void initAuth()
+
+    return () => {
+      isMounted = false
+    }
+  }, [fetchCurrentUser, isAuthenticated])
 
   return isInitialized
 }

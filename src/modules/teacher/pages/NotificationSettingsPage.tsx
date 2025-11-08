@@ -22,7 +22,6 @@ import {
   type NotificationSettings,
   type NotificationType,
 } from '@/lib/api/notifications';
-import { useTranslation } from '@/hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
 import { useNotificationSettings, useUpdateSettings } from '@/hooks/useNotifications';
 import { toast } from 'sonner';
@@ -53,7 +52,6 @@ const notificationCategories: Record<string, NotificationType[]> = {
 }
 
 export default function NotificationSettingsPage() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 

@@ -44,6 +44,7 @@ import { DatePickerWithRange } from '@/components/ui/date-range-picker'
 import { useToast } from '@/hooks/use-toast'
 import { useMenuStore } from '@/stores/menuStore'
 import type { DateRange } from 'react-day-picker'
+import { getErrorMessage } from '@/lib/utils/error'
 
 export default function DocumentSignPage() {
   const { toast } = useToast()
@@ -102,10 +103,10 @@ export default function DocumentSignPage() {
       setIsSignConfirmOpen(false)
       setIsViewOpen(false)
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Xatolik',
-        description: error.response?.data?.message || 'Hujjatni imzolashda xatolik',
+        description: getErrorMessage(error, 'Hujjatni imzolashda xatolik'),
         variant: 'destructive',
       })
     },
@@ -130,7 +131,10 @@ export default function DocumentSignPage() {
     }
   }
 
-  const handleFilterChange = (key: keyof DocumentListFilters, value: any) => {
+  const handleFilterChange = <K extends keyof DocumentListFilters>(
+    key: K,
+    value: DocumentListFilters[K]
+  ) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -225,7 +229,10 @@ export default function DocumentSignPage() {
               <Select
                 value={filters.status || 'all'}
                 onValueChange={(value) =>
-                  handleFilterChange('status', value === 'all' ? undefined : value)
+                  handleFilterChange(
+                    'status',
+                    value === 'all' ? undefined : (value as DocumentListFilters['status'])
+                  )
                 }
               >
                 <SelectTrigger className="border-[#E5E7EB]">
@@ -241,7 +248,10 @@ export default function DocumentSignPage() {
               <Select
                 value={filters.type || 'all'}
                 onValueChange={(value) =>
-                  handleFilterChange('type', value === 'all' ? undefined : value)
+                  handleFilterChange(
+                    'type',
+                    value === 'all' ? undefined : (value as DocumentListFilters['type'])
+                  )
                 }
               >
                 <SelectTrigger className="border-[#E5E7EB]">

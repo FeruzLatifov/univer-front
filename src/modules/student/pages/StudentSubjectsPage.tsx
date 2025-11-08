@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getStudentSubjects } from '@/lib/api/student';
+import type { StudentSubjectsResponse, StudentSubjectInfo } from '@/lib/types/student';
 
 export default function StudentSubjectsPage() {
-  const { data: subjects, isLoading } = useQuery({
+  const { data: subjects, isLoading } = useQuery<StudentSubjectsResponse>({
     queryKey: ['student', 'subjects'],
     queryFn: () => getStudentSubjects(),
   });
@@ -17,7 +17,7 @@ export default function StudentSubjectsPage() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Fanlarim</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {subjects?.map((subject: any) => (
+        {subjects?.data?.map((subject: StudentSubjectInfo) => (
           <Card key={subject.id}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

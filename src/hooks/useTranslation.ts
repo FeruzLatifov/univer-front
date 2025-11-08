@@ -1,6 +1,8 @@
 import { useLanguageStore } from '@/stores/languageStore'
 import type { LanguageCode } from '@/lib/api/language'
 
+type TranslatableRecord = Record<string, unknown>
+
 /**
  * Translation Hook
  *
@@ -38,7 +40,7 @@ export function useTranslation() {
    * @param forcedLocale Optional: Force specific locale
    * @returns Translated string
    */
-  const t = <T extends Record<string, any>>(
+  const t = <T extends TranslatableRecord>(
     obj: T | null | undefined,
     field: keyof T,
     forcedLocale?: LanguageCode
@@ -68,7 +70,7 @@ export function useTranslation() {
    * @param field Field name
    * @returns Object with all translations { uz: '...', ru: '...', en: '...' }
    */
-  const getAllTranslations = <T extends Record<string, any>>(
+  const getAllTranslations = <T extends TranslatableRecord>(
     obj: T | null | undefined,
     field: keyof T
   ): Record<LanguageCode, string> => {
@@ -87,7 +89,7 @@ export function useTranslation() {
   /**
    * Check if translation exists for a field
    */
-  const hasTranslation = <T extends Record<string, any>>(
+  const hasTranslation = <T extends TranslatableRecord>(
     obj: T | null | undefined,
     field: keyof T,
     targetLocale?: LanguageCode
@@ -119,7 +121,7 @@ export function useTranslation() {
  *
  * Useful for contexts where hooks can't be used
  */
-export function getTranslatedValue<T extends Record<string, any>>(
+export function getTranslatedValue<T extends TranslatableRecord>(
   obj: T | null | undefined,
   field: keyof T,
   locale: LanguageCode

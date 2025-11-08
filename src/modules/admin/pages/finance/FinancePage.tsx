@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, TrendingDown, CreditCard, Receipt, FileText, Banknote, Calculator, Stethoscope, Award, Users, BookOpen } from 'lucide-react'
+import { DollarSign, TrendingUp, CreditCard, Receipt, FileText, Banknote, Calculator, Stethoscope, Award, Users, BookOpen } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
 export default function FinancePage() {

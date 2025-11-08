@@ -18,6 +18,7 @@ import {
 import { setPageMeta, PAGE_META } from '@/utils/favicon'
 import { useUserStore } from '@/stores/auth'
 import { getDashboard, type DashboardData, type TodayClass } from '@/lib/api/teacher'
+import { getErrorMessage } from '@/lib/utils/error'
 
 interface QuickStatCard {
   title: string
@@ -52,9 +53,9 @@ export default function TeacherDashboard() {
       } else {
         setError('Ma\'lumot yuklanmadi')
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Dashboard yuklanmadi:', err)
-      setError(err.response?.data?.message || err.message || 'Server bilan bog\'lanishda xatolik')
+      setError(getErrorMessage(err, 'Server bilan bog\'lanishda xatolik'))
     } finally {
       setLoading(false)
     }

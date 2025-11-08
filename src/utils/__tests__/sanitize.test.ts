@@ -43,11 +43,11 @@ describe('sanitizeHtml', () => {
   })
 
   it('should handle null input', () => {
-    expect(sanitizeHtml(null as any)).toBe('')
+    expect(sanitizeHtml(null)).toBe('')
   })
 
   it('should handle undefined input', () => {
-    expect(sanitizeHtml(undefined as any)).toBe('')
+    expect(sanitizeHtml(undefined)).toBe('')
   })
 
   it('should remove dangerous attributes', () => {

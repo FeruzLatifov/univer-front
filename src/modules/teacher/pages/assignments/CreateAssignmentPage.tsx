@@ -209,7 +209,7 @@ export function CreateAssignmentPage() {
                           field.onChange(numValue)
                           setSelectedSubjectId(numValue)
                           // Reset group when subject changes
-                          form.setValue('group_id', undefined as any)
+                          form.resetField('group_id')
                         }}
                         value={field.value?.toString()}
                       >

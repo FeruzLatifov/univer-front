@@ -6,8 +6,6 @@ import { Loader2, TrendingUp, Award, Target, BarChart3 } from 'lucide-react'
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -15,9 +13,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
+import type { StudentGPAResponse, SemesterGPA, SubjectGPA } from '@/lib/types/student'
 
 export default function StudentGPADetailPage() {
-  const { data: gpaData, isLoading } = useQuery({
+  const { data: gpaData, isLoading } = useQuery<StudentGPAResponse>({
     queryKey: ['student', 'gpa'],
     queryFn: () => getStudentGPA(),
   })
@@ -30,11 +29,11 @@ export default function StudentGPADetailPage() {
     )
   }
 
-  const currentGPA = gpaData?.data?.current_gpa || 0
-  const cumulativeGPA = gpaData?.data?.cumulative_gpa || 0
-  const semesterGPAs = gpaData?.data?.semesters || []
-  const subjectGPAs = gpaData?.data?.subjects || []
-  const gradeDistribution = gpaData?.data?.grade_distribution || {}
+  const currentGPA = gpaData?.data.current_gpa ?? 0
+  const cumulativeGPA = gpaData?.data.cumulative_gpa ?? 0
+  const semesterGPAs = gpaData?.data.semesters ?? []
+  const subjectGPAs = gpaData?.data.subjects ?? []
+  const gradeDistribution = gpaData?.data.grade_distribution ?? {}
 
   // Get GPA color based on value
   const getGPAColor = (gpa: number) => {
@@ -53,7 +52,7 @@ export default function StudentGPADetailPage() {
   }
 
   // Prepare chart data for semester trend
-  const semesterTrendData = semesterGPAs.map((semester: any) => ({
+  const semesterTrendData = semesterGPAs.map((semester) => ({
     name: semester.name || `${semester.code}-sem`,
     GPA: parseFloat(semester.gpa || 0),
     'O\'rtacha': parseFloat(semester.average || 0),
@@ -102,7 +101,7 @@ export default function StudentGPADetailPage() {
           <CardContent>
             <div className="text-3xl font-bold text-green-600">
               {semesterGPAs.length > 0
-                ? Math.max(...semesterGPAs.map((s: any) => parseFloat(s.gpa || 0))).toFixed(2)
+                ? Math.max(...semesterGPAs.map((s) => parseFloat(s.gpa || '0'))).toFixed(2)
                 : '0.00'}
             </div>
             <p className="text-xs text-muted-foreground mt-2">Maksimal GPA</p>
@@ -168,7 +167,7 @@ export default function StudentGPADetailPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {semesterGPAs.map((semester: any, index: number) => (
+              {semesterGPAs.map((semester: SemesterGPA, index: number) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
@@ -186,8 +185,8 @@ export default function StudentGPADetailPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className={`text-2xl font-bold ${getGPAColor(parseFloat(semester.gpa || 0))}`}>
-                      {parseFloat(semester.gpa || 0).toFixed(2)}
+                    <div className={`text-2xl font-bold ${getGPAColor(parseFloat(semester.gpa || '0'))}`}>
+                      {parseFloat(semester.gpa || '0').toFixed(2)}
                     </div>
                     <div className="mt-1">{getGPABadge(parseFloat(semester.gpa || 0))}</div>
                   </div>
@@ -207,7 +206,7 @@ export default function StudentGPADetailPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {subjectGPAs.slice(0, 10).map((subject: any, index: number) => (
+              {subjectGPAs.slice(0, 10).map((subject: SubjectGPA, index: number) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="font-medium">{subject.name}</p>
@@ -243,7 +242,7 @@ export default function StudentGPADetailPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-5 gap-4">
-              {Object.entries(gradeDistribution).map(([grade, count]: [string, any]) => (
+              {Object.entries(gradeDistribution).map(([grade, count]) => (
                 <div key={grade} className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-blue-600">{count}</div>
                   <div className="text-sm text-gray-600 mt-1">Baho: {grade}</div>

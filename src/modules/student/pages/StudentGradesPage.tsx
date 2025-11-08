@@ -3,16 +3,17 @@ import { Award, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getStudentGrades } from '@/lib/api/student';
+import type { StudentGradeRecord, StudentGradesResponse } from '@/lib/types/student';
 
 export default function StudentGradesPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<StudentGradesResponse>({
     queryKey: ['student', 'grades'],
     queryFn: () => getStudentGrades(),
   });
 
   if (isLoading) return <div>Yuklanmoqda...</div>;
 
-  const grades = data?.grades || [];
+  const grades: StudentGradeRecord[] = data?.grades ?? [];
   const stats = data?.statistics || {};
 
   return (
@@ -60,7 +61,7 @@ export default function StudentGradesPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {grades.map((grade: any) => (
+            {grades.map((grade) => (
               <div key={grade.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <span className="font-medium flex-1">{grade.subject}</span>
                 <div className="flex items-center gap-4">

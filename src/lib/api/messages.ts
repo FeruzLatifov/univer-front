@@ -1,5 +1,18 @@
 import { api } from './client'
 
+export interface MessageParticipant {
+  id: number
+  type?: string
+  firstname?: string
+  lastname?: string
+  avatar?: string | null
+  [key: string]: unknown
+}
+
+export interface MessageRecipient extends MessageParticipant {
+  pivot?: Record<string, unknown>
+}
+
 export interface Message {
   id: number
   sender_id: number
@@ -14,9 +27,9 @@ export interface Message {
   has_attachments: boolean
   created_at: string
   read_at?: string
-  sender?: any
-  receiver?: any
-  recipients?: any[]
+  sender?: MessageParticipant
+  receiver?: MessageParticipant
+  recipients?: MessageRecipient[]
   attachments?: MessageAttachment[]
 }
 

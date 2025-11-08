@@ -5,7 +5,14 @@ import reactHooks from "eslint-plugin-react-hooks"
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   {
-    ignores: ["**/node_modules/**", "**/dist/**", "**/.next/**", "**/build/**", "**/.yarn/**"],
+    ignores: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.next/**",
+      "**/build/**",
+      "**/.yarn/**",
+      "src/pages/**",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -32,4 +39,3 @@ export default [
     },
   },
 ]
-

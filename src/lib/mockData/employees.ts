@@ -1,6 +1,5 @@
 import type {
   Employee,
-  Teacher,
   TeacherWorkload,
   AcademicDegree,
   AcademicRank,

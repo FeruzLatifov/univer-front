@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/utils/error';
 import MessageService, {
   type MessageFilters,
   type SendMessageData,
@@ -64,10 +65,10 @@ export function useSendMessage() {
         description: 'Xabar yuborildi',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Xatolik',
-        description: error.response?.data?.message || 'Xabar yuborishda xatolik',
+        description: getErrorMessage(error, 'Xabar yuborishda xatolik'),
         variant: 'destructive',
       });
     },

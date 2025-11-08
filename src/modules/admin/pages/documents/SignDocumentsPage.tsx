@@ -10,7 +10,7 @@
  * - Responsive design
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -45,7 +45,7 @@ export default function SignDocumentsPage() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
 
   // Filters from URL
-  const filters: DocumentsFilters = {
+  const filters: DocumentsFilters = useMemo(() => ({
     page: parseInt(searchParams.get('page') || '1'),
     per_page: parseInt(searchParams.get('per_page') || '50'),
     search: searchParams.get('search') || '',
@@ -54,7 +54,7 @@ export default function SignDocumentsPage() {
     signer_type: searchParams.get('signer_type') || 'all',
     date_from: searchParams.get('date_from') || '',
     date_to: searchParams.get('date_to') || '',
-  }
+  }), [searchParams])
 
   // Fetch documents
   const { data, isLoading, isError, refetch } = useQuery({
@@ -69,7 +69,7 @@ export default function SignDocumentsPage() {
   })
 
   // Update URL params
-  const updateFilters = (newFilters: Partial<DocumentsFilters>) => {
+  const updateFilters = useCallback((newFilters: Partial<DocumentsFilters>) => {
     const params = new URLSearchParams(searchParams)
 
     Object.entries({ ...filters, ...newFilters }).forEach(([key, value]) => {
@@ -81,7 +81,7 @@ export default function SignDocumentsPage() {
     })
 
     setSearchParams(params)
-  }
+  }, [filters, searchParams, setSearchParams])
 
   // Handle search
   const handleSearch = (value: string) => {
@@ -99,7 +99,7 @@ export default function SignDocumentsPage() {
     } else {
       updateFilters({ date_from: '', date_to: '' })
     }
-  }, [dateRange])
+  }, [dateRange, updateFilters])
 
   // Get status badge variant
   const getStatusBadgeClass = (status: string) => {

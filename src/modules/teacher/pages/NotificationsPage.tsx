@@ -5,7 +5,6 @@ import {
   Bell,
   Check,
   CheckCheck,
-  Filter,
   Settings,
   Clock,
   FileText,
@@ -28,30 +27,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   getNotificationStats,
   type Notification,
+  type NotificationType,
 } from '@/lib/api/notifications';
 import { cn } from '@/lib/utils';
-import { useTranslation } from '@/hooks/useTranslation';
 import { useNotifications, useMarkAsRead, useMarkAllAsRead } from '@/hooks/useNotifications';
+import type { LucideIcon } from 'lucide-react';
+
+type NotificationTab = 'all' | 'unread'
+type NotificationTypeFilter = 'all' | NotificationType
+type NotificationPriorityFilter = 'all' | 'low' | 'normal' | 'high' | 'urgent'
 
 export default function NotificationsPage() {
-  const { t } = useTranslation();
-
-  const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<NotificationTab>('all');
+  const [filterType, setFilterType] = useState<NotificationTypeFilter>('all');
+  const [filterPriority, setFilterPriority] = useState<NotificationPriorityFilter>('all');
   const [page, setPage] = useState(1);
 
   // Fetch notifications using custom hook
   const {
     data: notificationsData,
     isLoading,
-    refetch,
   } = useNotifications({
     page,
     per_page: 20,
     is_read: activeTab === 'all' ? undefined : false,
-    type: filterType === 'all' ? undefined : (filterType as any),
-    priority: filterPriority === 'all' ? undefined : (filterPriority as any),
+    type: filterType === 'all' ? undefined : filterType,
+    priority: filterPriority === 'all' ? undefined : filterPriority,
   });
 
   // Fetch stats
@@ -66,44 +67,26 @@ export default function NotificationsPage() {
   // Mark all as read mutation
   const markAllAsReadMutation = useMarkAllAsRead();
 
-  const getNotificationIcon = (type: string) => {
-    const icons: Record<string, any> = {
+  const getNotificationIcon = (type: NotificationType | string) => {
+    const icons: Partial<Record<NotificationType, LucideIcon>> = {
       assignment_due: Clock,
       assignment_graded: Check,
       assignment_posted: FileText,
+      assignment_submitted: FileText,
       test_available: FileText,
+      test_ending_soon: Clock,
       test_graded: Award,
       grade_posted: Award,
+      grade_updated: Award,
       attendance_marked: Calendar,
       attendance_warning: AlertCircle,
       announcement: Megaphone,
       message_received: Mail,
+      comment_posted: Mail,
     };
 
-    const Icon = icons[type] || Bell;
+    const Icon = icons[type as NotificationType] || Bell;
     return Icon;
-  };
-
-  const getPriorityColor = (priority: string) => {
-    const colors: Record<string, string> = {
-      urgent: 'text-red-500 bg-red-100 dark:bg-red-950',
-      high: 'text-orange-500 bg-orange-100 dark:bg-orange-950',
-      normal: 'text-blue-500 bg-blue-100 dark:bg-blue-950',
-      low: 'text-gray-500 bg-gray-100 dark:bg-gray-950',
-    };
-    return colors[priority] || colors.normal;
-  };
-
-  const formatTimeAgo = (date: string) => {
-    const now = new Date();
-    const created = new Date(date);
-    const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return 'Hozirgina';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} daqiqa oldin`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} soat oldin`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} kun oldin`;
-    return created.toLocaleDateString('uz-UZ');
   };
 
   const handleNotificationClick = (notification: Notification) => {
@@ -153,7 +136,7 @@ export default function NotificationsPage() {
       )}
 
       {/* Tabs and Filters */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+      <Tabs value={activeTab} onValueChange={(v: NotificationTab) => setActiveTab(v)}>
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="all">
@@ -175,7 +158,7 @@ export default function NotificationsPage() {
           </TabsList>
 
           <div className="flex items-center gap-2">
-            <Select value={filterType} onValueChange={setFilterType}>
+            <Select value={filterType} onValueChange={(value: NotificationTypeFilter) => setFilterType(value)}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Tur" />
               </SelectTrigger>
@@ -192,7 +175,7 @@ export default function NotificationsPage() {
               </SelectContent>
             </Select>
 
-            <Select value={filterPriority} onValueChange={setFilterPriority}>
+            <Select value={filterPriority} onValueChange={(value: NotificationPriorityFilter) => setFilterPriority(value)}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -291,7 +274,7 @@ export default function NotificationsPage() {
 }
 
 // Notification Content Component
-function NotificationContent({ notification, Icon }: { notification: Notification; Icon: any }) {
+function NotificationContent({ notification, Icon }: { notification: Notification; Icon: LucideIcon }) {
   const getPriorityColor = (priority: string) => {
     const colors: Record<string, string> = {
       urgent: 'bg-red-100 dark:bg-red-950',

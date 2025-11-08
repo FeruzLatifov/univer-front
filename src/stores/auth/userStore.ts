@@ -15,6 +15,11 @@ import * as authApi from '@/lib/api/auth'
 import { User, sessionStorageAdapter } from '@/stores/types/auth.types'
 import { getApiOrigin } from '@/config/api'
 
+type ApiUser = authApi.AuthResponse['data']['user']
+type EmployeeProfileUpdate = Parameters<typeof authApi.updateEmployeeProfile>[0]
+type StudentProfileUpdate = Parameters<typeof authApi.updateStudentProfile>[0]
+type ProfileUpdatePayload = EmployeeProfileUpdate | StudentProfileUpdate
+
 interface UserState {
   // State
   user: User | null
@@ -27,8 +32,8 @@ interface UserState {
   refreshUserSilent: () => Promise<void>
   switchRole: (roleId: number) => Promise<void>
   setUser: (user: User) => void
-  setUserFromApi: (apiUser: any) => void
-  updateProfile: (data: any) => Promise<void>
+  setUserFromApi: (apiUser: ApiUser) => void
+  updateProfile: (data: ProfileUpdatePayload) => Promise<void>
   uploadAvatar: (file: File) => Promise<void>
   clearUser: () => void
   setPermissionsCachedAt: (timestamp: number | null) => void
@@ -123,8 +128,9 @@ export const useUserStore = create<UserState>()(
           } else {
             set({ loading: false, error: response.message ?? 'Rolni o\'zgartirishda xatolik' })
           }
-        } catch (e: any) {
-          set({ loading: false, error: e.response?.data?.message || 'Rolni o\'zgartirishda xatolik' })
+        } catch (error: unknown) {
+          const apiError = error as { response?: { data?: { message?: string } } }
+          set({ loading: false, error: apiError.response?.data?.message || 'Rolni o\'zgartirishda xatolik' })
         }
       },
 
@@ -138,7 +144,7 @@ export const useUserStore = create<UserState>()(
       /**
        * Set User from API response (builds User object from raw API data)
        */
-      setUserFromApi: (apiUser: any) => {
+      setUserFromApi: (apiUser: ApiUser) => {
         const mappedUser = buildUserFromApi(apiUser)
         set({ user: mappedUser })
       },
@@ -146,7 +152,7 @@ export const useUserStore = create<UserState>()(
       /**
        * Update Profile
        */
-      updateProfile: async (data: any) => {
+      updateProfile: async (data: ProfileUpdatePayload) => {
         const { user } = get()
 
         if (!user) {
@@ -166,8 +172,9 @@ export const useUserStore = create<UserState>()(
           }
 
           set({ loading: false })
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.message || 'Profilni yangilashda xatolik'
+        } catch (error: unknown) {
+          const apiError = error as { response?: { data?: { message?: string } } }
+          const errorMessage = apiError.response?.data?.message || 'Profilni yangilashda xatolik'
           set({
             loading: false,
             error: errorMessage,
@@ -203,8 +210,9 @@ export const useUserStore = create<UserState>()(
               loading: false,
             })
           }
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.message || 'Rasmni yuklashda xatolik'
+        } catch (error: unknown) {
+          const apiError = error as { response?: { data?: { message?: string } } }
+          const errorMessage = apiError.response?.data?.message || 'Rasmni yuklashda xatolik'
           set({
             loading: false,
             error: errorMessage,
@@ -266,7 +274,9 @@ const normalizeAvatarUrl = (value?: string | null): string | undefined => {
   return `${origin}/${value.replace(/^\/+/, '')}`
 }
 
-const mapRolesArray = (roles: any[] | undefined): Array<{ id?: number; code?: string | null; name: string }> => {
+const mapRolesArray = (
+  roles: Array<{ id?: number; code?: string | null; name?: string | null }> | undefined
+): Array<{ id?: number; code?: string | null; name: string }> => {
   if (!Array.isArray(roles)) return []
   return roles
     .filter((role) => role)
@@ -277,7 +287,7 @@ const mapRolesArray = (roles: any[] | undefined): Array<{ id?: number; code?: st
     }))
 }
 
-const buildUserFromApi = (apiUser: any): User => {
+const buildUserFromApi = (apiUser: ApiUser): User => {
   const type = apiUser?.type === 'admin' ? 'employee' : apiUser?.type ?? 'employee'
   const roles = mapRolesArray(apiUser?.roles)
   const roleCode = apiUser?.role_code ?? (typeof apiUser?.role === 'string' ? apiUser.role : undefined) ?? roles[0]?.code

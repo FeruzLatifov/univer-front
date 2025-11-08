@@ -5,11 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { getStudentExams } from '@/lib/api/student';
-import { formatDistanceToNow } from 'date-fns';
-import { uz } from 'date-fns/locale';
+import type { StudentExamList, StudentExam } from '@/lib/types/student';
 
 export default function StudentExamsPage() {
-  const { data: exams, isLoading } = useQuery({
+  const { data: exams, isLoading } = useQuery<StudentExamList>({
     queryKey: ['student', 'exams'],
     queryFn: () => getStudentExams(),
   });
@@ -23,13 +22,15 @@ export default function StudentExamsPage() {
   }
 
   const now = new Date();
-  const upcomingExams = exams?.data?.filter((exam: any) =>
-    new Date(exam.exam_date) >= now && exam.status === 'scheduled'
-  ) || [];
+  const examList = Array.isArray(exams) ? exams : exams?.data ?? [];
 
-  const pastExams = exams?.data?.filter((exam: any) =>
-    exam.status === 'taken' || new Date(exam.exam_date) < now
-  ) || [];
+  const upcomingExams = examList.filter(
+    (exam) => new Date(exam.exam_date) >= now && exam.status === 'scheduled'
+  );
+
+  const pastExams = examList.filter(
+    (exam) => exam.status === 'taken' || new Date(exam.exam_date) < now
+  );
 
   const getStatusBadge = (status: string, passed?: boolean) => {
     if (status === 'taken') {
@@ -106,7 +107,12 @@ export default function StudentExamsPage() {
           <CardContent>
             <div className="text-2xl font-bold">
               {pastExams.length > 0
-                ? (pastExams.reduce((sum: number, exam: any) => sum + (exam.student_ball || 0), 0) / pastExams.length).toFixed(1)
+                ? (
+                    pastExams.reduce(
+                      (sum: number, exam: StudentExam) => sum + (exam.student_ball ?? 0),
+                      0
+                    ) / pastExams.length
+                  ).toFixed(1)
                 : '0'}
             </div>
             <p className="text-xs text-muted-foreground">Imtihonlar bo'yicha</p>
@@ -139,7 +145,7 @@ export default function StudentExamsPage() {
             </Card>
           ) : (
             <div className="space-y-4">
-              {upcomingExams.map((exam: any) => (
+              {upcomingExams.map((exam: StudentExam) => (
                 <Card key={exam.id} className="border-l-4 border-l-blue-500">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -196,8 +202,11 @@ export default function StudentExamsPage() {
             </Card>
           ) : (
             <div className="space-y-4">
-              {pastExams.map((exam: any) => {
-                const percentage = exam.max_ball > 0 ? (exam.student_ball / exam.max_ball) * 100 : 0;
+              {pastExams.map((exam: StudentExam) => {
+                const percentage =
+                  exam.max_ball && exam.max_ball > 0
+                    ? ((exam.student_ball ?? 0) / exam.max_ball) * 100
+                    : 0;
                 const passed = percentage >= 55; // Assuming 55% is passing grade
 
                 return (

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { teacherAssignmentService } from '@/services'
+import { getErrorMessage } from '@/lib/utils/error'
 import type {
   Assignment,
   AssignmentDetail,
@@ -15,8 +16,11 @@ import type {
   UpdateAssignmentRequest,
 } from '../lib/api/teacher'
 
-const normalizeResponse = <T>(payload: any, fallbackMessage?: string): { success: boolean; data: T; message: string } => {
-  if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const normalizeResponse = <T>(payload: unknown, fallbackMessage?: string): { success: boolean; data: T; message: string } => {
+  if (isRecord(payload) && 'data' in payload) {
     const base = payload as { success?: boolean; data: T; message?: string }
     return {
       success: base.success ?? true,
@@ -26,8 +30,8 @@ const normalizeResponse = <T>(payload: any, fallbackMessage?: string): { success
   }
 
   const message =
-    (payload && typeof payload === 'object' && '_message' in payload
-      ? (payload as any)._message
+    (isRecord(payload) && typeof payload._message === 'string'
+      ? payload._message
       : fallbackMessage) || ''
 
   return {
@@ -115,8 +119,8 @@ export function useCreateAssignment() {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       toast.success(response.message || 'Topshiriq yaratildi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Topshiriq yaratishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Topshiriq yaratishda xatolik'))
     },
   })
 }
@@ -135,8 +139,8 @@ export function useUpdateAssignment() {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(variables.id) })
       toast.success(response.message || 'Topshiriq yangilandi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Topshiriq yangilashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Topshiriq yangilashda xatolik'))
     },
   })
 }
@@ -153,8 +157,8 @@ export function useDeleteAssignment() {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       toast.success(response.message || 'Topshiriq o\'chirildi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Topshiriq o\'chirishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Topshiriq o\'chirishda xatolik'))
     },
   })
 }
@@ -172,8 +176,8 @@ export function usePublishAssignment() {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(id) })
       toast.success(response.message || 'Topshiriq nashr qilindi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Nashr qilishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Nashr qilishda xatolik'))
     },
   })
 }
@@ -191,8 +195,8 @@ export function useUnpublishAssignment() {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(id) })
       toast.success(response.message || 'Topshiriq nashrdan olindi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Nashrdan olishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Nashrdan olishda xatolik'))
     },
   })
 }
@@ -248,8 +252,8 @@ export function useGradeSubmission() {
 
       toast.success(response.message || 'Javob baholandi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Baholashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Baholashda xatolik'))
     },
   })
 }
@@ -261,12 +265,11 @@ export function useDownloadSubmissionFile() {
   return useMutation({
     mutationFn: ({ submissionId, fileIndex }: { submissionId: number; fileIndex?: number }) =>
       teacherAssignmentService.downloadSubmissionFile(submissionId, fileIndex),
-    onSuccess: (response, variables) => {
-      // Download is already handled by the service
+    onSuccess: () => {
       toast.success('Fayl yuklab olindi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Fayl yuklab olishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Fayl yuklab olishda xatolik'))
     },
   })
 }

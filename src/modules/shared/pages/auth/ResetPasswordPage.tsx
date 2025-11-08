@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import type { CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useThemeStore } from '@/stores/themeStore'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
@@ -6,6 +7,7 @@ import { ArrowLeft, Lock, Moon, Sun, Loader2, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { resetPassword } from '@/lib/api/auth'
 import { DEFAULT_FAVICON } from '@/utils/favicon'
+import { getErrorMessage } from '@/lib/utils/error'
 
 type UserType = 'employee' | 'student'
 
@@ -22,6 +24,15 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  type RingedStyle = CSSProperties & { '--tw-ring-color': string }
+
+  const inputStyle: RingedStyle = {
+    borderColor: 'var(--border-color)',
+    backgroundColor: 'var(--card-bg)',
+    color: 'var(--text-primary)',
+    '--tw-ring-color': 'var(--primary)'
+  }
 
   useEffect(() => {
     const tokenParam = searchParams.get('token')
@@ -60,8 +71,8 @@ export default function ResetPasswordPage() {
       const response = await resetPassword(email, token, password, passwordConfirmation, userType)
       toast.success(response.message)
       navigate('/login')
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Xatolik yuz berdi')
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Xatolik yuz berdi'))
     } finally {
       setLoading(false)
     }
@@ -113,12 +124,7 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-10 pr-10 py-2 rounded-md border focus:outline-none focus:ring-1"
-                  style={{
-                    borderColor: 'var(--border-color)',
-                    backgroundColor: 'var(--card-bg)',
-                    color: 'var(--text-primary)',
-                    '--tw-ring-color': 'var(--primary)'
-                  } as any}
+                  style={inputStyle}
                   required
                   minLength={6}
                 />
@@ -145,12 +151,7 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setPasswordConfirmation(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-10 pr-10 py-2 rounded-md border focus:outline-none focus:ring-1"
-                  style={{
-                    borderColor: 'var(--border-color)',
-                    backgroundColor: 'var(--card-bg)',
-                    color: 'var(--text-primary)',
-                    '--tw-ring-color': 'var(--primary)'
-                  } as any}
+                  style={inputStyle}
                   required
                   minLength={6}
                 />

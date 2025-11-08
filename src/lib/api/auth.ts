@@ -290,11 +290,13 @@ export interface ResetPasswordResponse {
   message: string
 }
 
+type ForgotPasswordPayload = { email: string } | { login: string }
+
 /**
  * Forgot Password - Student
  */
 export const studentForgotPassword = async (identifier: string): Promise<ForgotPasswordResponse> => {
-  const payload: any = /@/.test(identifier) ? { email: identifier } : { login: identifier }
+  const payload: ForgotPasswordPayload = /@/.test(identifier) ? { email: identifier } : { login: identifier }
   const response = await apiClient.post<ForgotPasswordResponse>('/v1/student/auth/forgot-password', payload)
   return response.data
 }
@@ -303,7 +305,7 @@ export const studentForgotPassword = async (identifier: string): Promise<ForgotP
  * Forgot Password - Employee
  */
 export const employeeForgotPassword = async (identifier: string): Promise<ForgotPasswordResponse> => {
-  const payload: any = /@/.test(identifier) ? { email: identifier } : { login: identifier }
+  const payload: ForgotPasswordPayload = /@/.test(identifier) ? { email: identifier } : { login: identifier }
   const response = await apiClient.post<ForgotPasswordResponse>('/v1/employee/auth/forgot-password', payload)
   return response.data
 }

@@ -117,11 +117,19 @@ apiClient.interceptors.response.use(
         // Retry original request with new token
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return apiClient(originalRequest)
-      } catch (refreshError: any) {
+      } catch (refreshError) {
+        const isAxios = axios.isAxiosError(refreshError)
+        const message = isAxios
+          ? refreshError.message
+          : refreshError instanceof Error
+            ? refreshError.message
+            : 'Unknown error'
+        const status = isAxios ? refreshError.response?.status : undefined
+
         // Refresh failed, logout user and redirect to login
         logger.error('[API] Token refresh failed', {
-          error: refreshError?.message,
-          status: refreshError?.response?.status,
+          error: message,
+          status,
         })
         logger.info('[API] Redirecting to login...')
 
@@ -158,8 +166,8 @@ apiClient.interceptors.response.use(
       }
     }
 
-  // Handle other errors
-  return Promise.reject(error)
+    // Handle other errors
+    return Promise.reject(error)
   }
 )
 

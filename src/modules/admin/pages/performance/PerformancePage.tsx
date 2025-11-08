@@ -1,5 +1,5 @@
 import { mockPerformanceRecords } from '@/lib/mockData'
-import { Search, Plus, Filter, Download, Edit, Save, X, ClipboardCheck, PenTool, Award, TrendingUp, BookOpen, Calculator, Brain } from 'lucide-react'
+import { Plus, Download, Edit, Save, X, ClipboardCheck, PenTool, Award, TrendingUp, BookOpen, Calculator, Brain } from 'lucide-react'
 import { useState } from 'react'
 import { getGradeColor } from '@/lib/utils'
 

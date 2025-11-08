@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { getStudentDashboard } from '@/lib/api/student';
+import type { StudentDashboardResponse } from '@/lib/types/student';
 
 export default function StudentDashboard() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<StudentDashboardResponse>({
     queryKey: ['student', 'dashboard'],
     queryFn: () => getStudentDashboard(),
   });
@@ -91,7 +92,7 @@ export default function StudentDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {assignments?.upcoming?.map((assignment: any) => (
+              {assignments?.upcoming?.map((assignment) => (
                 <div key={assignment.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{assignment.title}</p>
@@ -123,7 +124,7 @@ export default function StudentDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {tests?.available?.map((test: any) => (
+              {tests?.available?.map((test) => (
                 <div key={test.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{test.title}</p>
@@ -153,7 +154,7 @@ export default function StudentDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {grades?.recent?.map((grade: any) => (
+            {grades?.recent?.map((grade) => (
               <div key={grade.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <span className="font-medium">{grade.subject}</span>
                 <div className="flex items-center gap-4">

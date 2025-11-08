@@ -118,7 +118,7 @@ export const usePermissionStore = create<PermissionState>()((set, get) => ({
    * Performance: No user impact, instant page loads
    */
   refreshPermissionsInBackground: async (): Promise<void> => {
-    const { user, permissionsCachedAt } = useUserStore.getState()
+    const { user } = useUserStore.getState()
     const { token } = useAuthStore.getState()
     const { isPermissionsCacheValid } = get()
 

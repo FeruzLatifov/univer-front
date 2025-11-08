@@ -12,7 +12,6 @@ import {
   XCircle,
   Clock,
   Download,
-  Users,
 } from 'lucide-react'
 import { decreesApi } from '@/lib/api/decrees'
 import { Card } from '@/components/ui/card'
@@ -25,14 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import type { DecreeFilters } from '@/lib/types/decree'
 import { formatDate } from '@/lib/utils'
@@ -57,8 +48,8 @@ export default function DecreesPage() {
     setFilters({ ...filters, search: value })
   }
 
-  const handleStatusChange = (value: string) => {
-    setFilters({ ...filters, status: value as any })
+  const handleStatusChange = (value: DecreeFilters['status']) => {
+    setFilters({ ...filters, status: value })
   }
 
   const handleTypeChange = (value: string) => {
@@ -222,7 +213,7 @@ export default function DecreesPage() {
           </SelectContent>
         </Select>
 
-        <Select value={filters.status} onValueChange={handleStatusChange}>
+        <Select value={filters.status} onValueChange={(value) => handleStatusChange(value as DecreeFilters['status'])}>
           <SelectTrigger className="h-9">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="Holat" />

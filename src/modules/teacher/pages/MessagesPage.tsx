@@ -4,12 +4,9 @@ import {
   Mail,
   Send,
   Inbox,
-  Star,
-  Archive,
   Paperclip,
   Search,
   Plus,
-  Filter,
   MoreVertical,
   Clock,
   AlertCircle,
@@ -34,14 +31,15 @@ import {
 import { cn } from '@/lib/utils';
 import { useInboxMessages, useSentMessages, useMarkAsRead, useDeleteMessage } from '@/hooks/useMessages';
 import type { Message } from '@/services/teacher/MessageService';
-import { useTranslation } from '@/hooks/useTranslation';
+
+type ReadFilter = 'all' | 'read' | 'unread'
+type PriorityFilter = 'all' | 'urgent' | 'high' | 'normal' | 'low'
 
 export default function MessagesPage() {
-  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('inbox');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRead, setFilterRead] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [filterRead, setFilterRead] = useState<ReadFilter>('all');
+  const [filterPriority, setFilterPriority] = useState<PriorityFilter>('all');
   const [page, setPage] = useState(1);
 
   // Fetch inbox messages using hook
@@ -53,7 +51,7 @@ export default function MessagesPage() {
     page,
     per_page: 15,
     is_read: filterRead === 'all' ? undefined : filterRead === 'read',
-    priority: filterPriority === 'all' ? undefined : (filterPriority as any),
+    priority: filterPriority === 'all' ? undefined : filterPriority,
     search: searchTerm || undefined,
   });
 

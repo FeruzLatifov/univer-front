@@ -152,7 +152,7 @@ export function QuestionForm({ testId, question, onSuccess, onCancel }: Question
       }
 
       // Prepare data
-      const questionData: any = {
+      const questionData: QuestionFormValues & { correct_answers?: number[] } = {
         ...values,
       }
 

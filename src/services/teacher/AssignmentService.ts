@@ -178,7 +178,7 @@ export interface Activity {
   }
   activity_type: string
   activity_name: string
-  details?: any
+  details?: Record<string, unknown> | string | null
   created_at: string
   time_ago: string
 }

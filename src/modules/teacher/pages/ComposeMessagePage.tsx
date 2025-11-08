@@ -34,7 +34,6 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSendMessage } from '@/hooks/useMessages';
 import type { SendMessageData } from '@/services/teacher/MessageService';
-import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 
 const messageSchema = z.object({
@@ -50,7 +49,6 @@ type MessageFormData = z.infer<typeof messageSchema>;
 
 export default function ComposeMessagePage() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [messageType, setMessageType] = useState<'direct' | 'broadcast'>('direct');
@@ -64,7 +62,6 @@ export default function ComposeMessagePage() {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
   } = useForm<MessageFormData>({
     resolver: zodResolver(messageSchema),
     defaultValues: {

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Briefcase,
-  Search,
   Filter,
   TrendingUp,
   Clock,
@@ -15,7 +14,6 @@ import {
 } from 'lucide-react'
 import { employeesApi } from '@/lib/api/employees'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -34,7 +32,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import type { WorkloadFilters } from '@/lib/types/employee'
+import type { TeacherWorkload, WorkloadFilters } from '@/lib/types/employee'
 
 export default function TeachersWorkloadPage() {
   const [filters, setFilters] = useState<WorkloadFilters>({
@@ -42,7 +40,7 @@ export default function TeachersWorkloadPage() {
     status: 'all',
   })
 
-  const { data: workloads, isLoading } = useQuery({
+  const { data: workloads, isLoading } = useQuery<TeacherWorkload[]>({
     queryKey: ['workloads', filters],
     queryFn: () => employeesApi.getWorkloads(filters),
   })
@@ -51,8 +49,8 @@ export default function TeachersWorkloadPage() {
     setFilters({ ...filters, academic_year: value })
   }
 
-  const handleStatusChange = (value: string) => {
-    setFilters({ ...filters, status: value as any })
+  const handleStatusChange = (value: WorkloadFilters['status']) => {
+    setFilters({ ...filters, status: value })
   }
 
   const getStatusBadge = (status: string) => {
@@ -136,7 +134,7 @@ export default function TeachersWorkloadPage() {
             </SelectContent>
           </Select>
 
-          <Select value={filters.status} onValueChange={handleStatusChange}>
+          <Select value={filters.status} onValueChange={(value) => handleStatusChange(value as WorkloadFilters['status'])}>
             <SelectTrigger>
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Holat" />

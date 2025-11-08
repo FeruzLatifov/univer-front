@@ -3,6 +3,7 @@ import { Calendar, Clock, MapPin, User, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getStudentSchedule } from '@/lib/api/student';
+import type { StudentScheduleLesson, StudentScheduleResponse } from '@/lib/types/student';
 
 const DAYS_UZ = [
   { key: 'monday', label: 'Dushanba' },
@@ -14,7 +15,7 @@ const DAYS_UZ = [
 ];
 
 export default function StudentSchedulePage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<StudentScheduleResponse>({
     queryKey: ['student', 'schedule'],
     queryFn: () => getStudentSchedule(),
   });
@@ -25,7 +26,7 @@ export default function StudentSchedulePage() {
     </div>;
   }
 
-  const schedule = data?.schedule || {};
+  const schedule: Record<string, StudentScheduleLesson[]> = data?.schedule || {};
   const currentWeek = data?.current_week || 1;
 
   const getLessonTypeVariant = (type: string): "default" | "secondary" | "outline" => {
@@ -70,7 +71,7 @@ export default function StudentSchedulePage() {
       {/* Schedule Grid */}
       <div className="space-y-4">
         {DAYS_UZ.map((day) => {
-          const daySchedule = schedule[day.key] || [];
+          const daySchedule: StudentScheduleLesson[] = schedule[day.key] || [];
 
           return (
             <Card key={day.key}>
@@ -91,7 +92,7 @@ export default function StudentSchedulePage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {daySchedule.map((lesson: any, index: number) => (
+                    {daySchedule.map((lesson, index: number) => (
                       <div
                         key={index}
                         className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"

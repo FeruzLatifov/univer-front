@@ -17,13 +17,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+
+type ReportType = 'overview' | 'attendance' | 'grades'
 
 export default function ReportsPage() {
   const { t } = useTranslation()
   const [selectedSubject, setSelectedSubject] = useState<number | null>(null)
-  const [reportType, setReportType] = useState<'overview' | 'attendance' | 'grades'>('overview')
+  const [reportType, setReportType] = useState<ReportType>('overview')
 
   const { data: subjectsData } = useQuery({
     queryKey: ['teacher-subjects'],
@@ -82,7 +83,7 @@ export default function ReportsPage() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Hisobot turi</label>
-              <Select value={reportType} onValueChange={(value: any) => setReportType(value)}>
+              <Select value={reportType} onValueChange={(value: ReportType) => setReportType(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -171,7 +172,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Reports Tabs */}
-      <Tabs value={reportType} onValueChange={(value: any) => setReportType(value)}>
+      <Tabs value={reportType} onValueChange={(value: ReportType) => setReportType(value)}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Umumiy</TabsTrigger>
           <TabsTrigger value="attendance">Davomat</TabsTrigger>

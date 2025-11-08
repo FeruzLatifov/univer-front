@@ -5,6 +5,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { ArrowLeft, User, IdCard, Moon, Sun, Loader2, GraduationCap } from 'lucide-react'
 import { toast } from 'sonner'
 import { forgotPassword } from '@/lib/api/auth'
+import { getErrorMessage } from '@/lib/utils/error'
 import { DEFAULT_FAVICON } from '@/utils/favicon'
 import { useTranslation } from 'react-i18next'
 
@@ -34,8 +35,8 @@ export default function ForgotPasswordPage() {
         console.log('Reset token:', response.debug.token)
         console.log('Reset link:', response.debug.reset_link)
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Xatolik yuz berdi')
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Xatolik yuz berdi'))
     } finally {
       setLoading(false)
     }

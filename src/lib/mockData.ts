@@ -2,7 +2,6 @@ import type {
   Student, 
   StudentGroup, 
   Grade, 
-  Attendance, 
   Contract, 
   Payment, 
   Subject, 

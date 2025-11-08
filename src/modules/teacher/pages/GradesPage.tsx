@@ -5,8 +5,6 @@ import {
   TrendingUp,
   Users,
   PlusCircle,
-  Edit,
-  Trash2,
   Download,
   BarChart3
 } from 'lucide-react'
@@ -15,8 +13,6 @@ import { getTeacherSubjects } from '@/lib/api/subjects'
 import {
   useGrades,
   useCreateGrade,
-  useUpdateGrade,
-  useDeleteGrade,
   useExportGrades,
 } from '@/hooks/useGrades'
 import {
@@ -32,15 +28,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { useToast } from '@/hooks/use-toast'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 
 export default function GradesPage() {
   const { t } = useTranslation()
-  const { toast } = useToast()
 
   const [selectedSubject, setSelectedSubject] = useState<number | null>(null)
   const [gradeTypeFilter, setGradeTypeFilter] = useState<string>('all')

@@ -1,13 +1,13 @@
-import { Bell, Menu, Moon, Sun, Search, User, LogOut, RefreshCw } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { Menu, Moon, Sun, Search, User, LogOut, RefreshCw } from 'lucide-react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useAuthStore, useUserStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/themeStore'
 import { useLanguageStore } from '@/stores/languageStore'
 import { useMenuStore } from '@/stores/menuStore'
 import { getInitials } from '@/lib/utils'
+import { getErrorMessage } from '@/lib/utils/error'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import NotificationsDropdown from '@/components/NotificationsDropdown'
 import { useToast } from '@/hooks/use-toast'
 import {
   DropdownMenu,
@@ -16,7 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api/client'
 
 export default function Header() {
@@ -47,10 +46,10 @@ export default function Header() {
       })
       setIsClearingCache(false)
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Xatolik',
-        description: error.response?.data?.message || 'Keshni tozalashda xatolik yuz berdi',
+        description: getErrorMessage(error, 'Keshni tozalashda xatolik yuz berdi'),
         variant: 'destructive',
       })
       setIsClearingCache(false)
@@ -91,14 +90,19 @@ export default function Header() {
     return `${surname} ${firstInitial} ${patronymicInitial}`.trim()
   }
 
-  const roleLabel = (roleName?: string | null, roleCode?: string) => roleName || roleCode || 'Admin'
-
   // Frontend fallback dictionary when DB lacks translations for some roles
   const roleI18n: Record<string, Record<string, string>> = {
     uz: { user: 'Foydalanuvchi', teacher: "O'qituvchi", department: 'Kafedra mudiri', admin: 'Admin' },
     oz: { user: 'Фойдаланувчи', teacher: 'Ўқитувчи', department: 'Кафедра мудири', admin: 'Админ' },
     ru: { user: 'Пользователь', teacher: 'Преподаватель', department: 'Заведующий кафедрой', admin: 'Админ' },
     en: { user: 'User', teacher: 'Teacher', department: 'Head of Department', admin: 'Admin' },
+  }
+
+  const searchInputStyle: CSSProperties = {
+    borderColor: 'var(--border-color)',
+    backgroundColor: 'var(--card-bg)',
+    color: 'var(--text-primary)',
+    '--tw-ring-color': 'var(--primary)',
   }
 
   return (
@@ -120,12 +124,7 @@ export default function Header() {
             type="text"
             placeholder="Qidiruv..."
             className="pl-9 pr-3 py-2 w-40 md:w-52 lg:w-64 text-sm rounded-md border focus:outline-none focus:ring-1"
-            style={{
-              borderColor: 'var(--border-color)',
-              backgroundColor: 'var(--card-bg)',
-              color: 'var(--text-primary)',
-              '--tw-ring-color': 'var(--primary)'
-            } as any}
+            style={searchInputStyle}
           />
         </div>
       </div>

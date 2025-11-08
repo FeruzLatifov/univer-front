@@ -2,11 +2,6 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Building2,
-  Users,
-  BookOpen,
-  User,
-  Phone,
-  MapPin,
   Plus,
   Search,
   X,

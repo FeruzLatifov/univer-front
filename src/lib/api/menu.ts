@@ -51,10 +51,21 @@ export interface CheckAccessResponse {
   }
 }
 
+export type MenuSchemaNode =
+  | string
+  | number
+  | boolean
+  | null
+  | MenuItem
+  | MenuSchemaNode[]
+  | {
+      [key: string]: MenuSchemaNode
+    }
+
 export interface MenuStructureResponse {
   success: boolean
   data: {
-    menu: Record<string, any>
+    menu: Record<string, MenuSchemaNode>
   }
 }
 

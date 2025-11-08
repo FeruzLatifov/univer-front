@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { gradeService } from '@/services/teacher/GradeService'
+import { getErrorMessage } from '@/lib/utils/error'
 import type {
   GradesListResponse,
   CreateGradePayload,
   UpdateGradePayload,
-  GradeResponse,
   GradeReportResponse,
 } from '@/services/teacher/GradeService'
 
@@ -79,8 +79,8 @@ export function useCreateGrade() {
 
       toast.success(response.message || "Baho qo'shildi")
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Baho qo'shishda xatolik")
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Baho qo'shishda xatolik"))
     },
   })
 }
@@ -101,8 +101,8 @@ export function useUpdateGrade() {
 
       toast.success(response.message || 'Baho yangilandi')
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Baho yangilashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Baho yangilashda xatolik'))
     },
   })
 }
@@ -122,8 +122,8 @@ export function useDeleteGrade() {
 
       toast.success(response.message || "Baho o'chirildi")
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Baho o'chirishda xatolik")
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Baho o'chirishda xatolik"))
     },
   })
 }
@@ -148,8 +148,8 @@ export function useExportGrades() {
 
       toast.success('Baholar eksport qilindi')
     },
-    onError: (error: any) => {
-      toast.error(error.message || error.response?.data?.message || 'Eksport qilishda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Eksport qilishda xatolik'))
     },
   })
 }

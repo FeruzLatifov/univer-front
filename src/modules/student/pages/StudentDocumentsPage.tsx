@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { FileText, Download, FileCheck, FileSpreadsheet, Award, FileSignature, Plus } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,35 +10,44 @@ import {
   getStudentDecrees,
   getStudentReferences,
   getStudentContracts,
-  generateReference
+  generateReference,
+  type StudentDocumentsResponse,
+  type StudentDecreesResponse,
+  type StudentReferencesResponse,
+  type StudentContractsResponse,
+  type StudentDocument,
+  type StudentDecree,
+  type StudentReference,
+  type StudentContract,
 } from '@/lib/api/student';
+import { getErrorMessage } from '@/lib/utils/error';
 import { toast } from 'sonner';
 
 export default function StudentDocumentsPage() {
   const [activeTab, setActiveTab] = useState('all');
 
   // Fetch all documents
-  const { data: allDocuments, isLoading: allLoading } = useQuery({
+  const { data: allDocuments, isLoading: allLoading } = useQuery<StudentDocumentsResponse>({
     queryKey: ['student', 'documents', 'all'],
     queryFn: () => getStudentDocuments(),
   });
 
   // Fetch decrees
-  const { data: decrees, isLoading: decreesLoading } = useQuery({
+  const { data: decrees, isLoading: decreesLoading } = useQuery<StudentDecreesResponse>({
     queryKey: ['student', 'decrees'],
     queryFn: () => getStudentDecrees(),
     enabled: activeTab === 'decree',
   });
 
   // Fetch references
-  const { data: references, isLoading: referencesLoading, refetch: refetchReferences } = useQuery({
+  const { data: references, isLoading: referencesLoading, refetch: refetchReferences } = useQuery<StudentReferencesResponse>({
     queryKey: ['student', 'references'],
     queryFn: () => getStudentReferences(),
     enabled: activeTab === 'reference',
   });
 
   // Fetch contracts
-  const { data: contracts, isLoading: contractsLoading } = useQuery({
+  const { data: contracts, isLoading: contractsLoading } = useQuery<StudentContractsResponse>({
     queryKey: ['student', 'contracts'],
     queryFn: () => getStudentContracts(),
     enabled: activeTab === 'contract',
@@ -50,11 +59,11 @@ export default function StudentDocumentsPage() {
   const handleGenerateReference = async () => {
     try {
       setIsGenerating(true);
-      const result = await generateReference();
+      await generateReference();
       toast.success('Ma\'lumotnoma muvaffaqiyatli yaratildi!');
       refetchReferences();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Xatolik yuz berdi');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Xatolik yuz berdi'));
     } finally {
       setIsGenerating(false);
     }
@@ -134,7 +143,7 @@ export default function StudentDocumentsPage() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {allDocuments.data.map((doc: any) => (
+              {allDocuments.data.map((doc: StudentDocument) => (
                 <Card key={`${doc.type}-${doc.id}`} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -143,7 +152,7 @@ export default function StudentDocumentsPage() {
                         <div className="flex-1">
                           <h3 className="font-semibold">{doc.name}</h3>
                           <div className="flex gap-2 mt-1">
-                            {doc.attributes?.map((attr: any, idx: number) => (
+                            {doc.attributes?.map((attr, idx) => (
                               <span key={idx} className="text-xs text-muted-foreground">
                                 {attr.label}: <span className="font-medium">{attr.value}</span>
                               </span>
@@ -183,7 +192,7 @@ export default function StudentDocumentsPage() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {decrees.data.map((decree: any) => (
+              {decrees.data.map((decree: StudentDecree) => (
                 <Card key={decree.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -253,7 +262,7 @@ export default function StudentDocumentsPage() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {references.data.map((ref: any) => (
+              {references.data.map((ref: StudentReference) => (
                 <Card key={ref.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -304,7 +313,7 @@ export default function StudentDocumentsPage() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {contracts.data.items.map((contract: any) => (
+              {contracts.data.items.map((contract: StudentContract) => (
                 <Card key={contract.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">

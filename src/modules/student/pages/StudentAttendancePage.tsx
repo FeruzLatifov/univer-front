@@ -6,11 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getStudentAttendance } from '@/lib/api/student';
+import type {
+  StudentAttendanceResponse,
+  StudentAttendanceSubject,
+  StudentAttendanceRecord,
+  AttendanceStatus,
+} from '@/lib/types/student';
 
 export default function StudentAttendancePage() {
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<StudentAttendanceResponse>({
     queryKey: ['student', 'attendance', selectedSubject],
     queryFn: () =>
       getStudentAttendance(
@@ -24,11 +30,11 @@ export default function StudentAttendancePage() {
     </div>;
   }
 
-  const attendance = data?.attendance || [];
-  const stats = data?.statistics || {};
-  const subjects = data?.subjects || [];
+  const attendance: StudentAttendanceRecord[] = data?.attendance ?? [];
+  const stats = data?.statistics ?? { attendance_rate: 0, present: 0, absent: 0, late: 0, total: 0 };
+  const subjects: StudentAttendanceSubject[] = data?.subjects ?? [];
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: AttendanceStatus) => {
     switch (status) {
       case 'present':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -43,7 +49,7 @@ export default function StudentAttendancePage() {
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: AttendanceStatus) => {
     switch (status) {
       case 'present':
         return 'Qatnashdi';
@@ -58,7 +64,7 @@ export default function StudentAttendancePage() {
     }
   };
 
-  const getStatusVariant = (status: string): "default" | "destructive" | "secondary" | "outline" => {
+  const getStatusVariant = (status: AttendanceStatus): "default" | "destructive" | "secondary" | "outline" => {
     switch (status) {
       case 'present':
         return 'default';
@@ -86,7 +92,7 @@ export default function StudentAttendancePage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha fanlar</SelectItem>
-            {subjects.map((subject: any) => (
+              {subjects.map((subject) => (
               <SelectItem key={subject.id} value={subject.id.toString()}>
                 {subject.name}
               </SelectItem>
@@ -164,7 +170,7 @@ export default function StudentAttendancePage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {attendance.map((record: any) => (
+              {attendance.map((record: StudentAttendanceRecord) => (
                 <div
                   key={record.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -214,7 +220,7 @@ export default function StudentAttendancePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {subjects.map((subject: any) => (
+              {subjects.map((subject) => (
                 <div key={subject.id} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{subject.name}</span>

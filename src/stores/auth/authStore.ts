@@ -82,8 +82,15 @@ export const useAuthStore = create<AuthState>()(
           } else {
             throw new Error(response.message || 'Login failed')
           }
-        } catch (error: any) {
-          const errorMessage = error.message || error.response?.data?.message || 'Login yoki parol noto\'g\'ri'
+        } catch (error: unknown) {
+          const apiError = error as {
+            response?: { data?: { message?: string } }
+            message?: string
+          }
+          const errorMessage =
+            apiError.response?.data?.message ||
+            apiError.message ||
+            'Login yoki parol noto\'g\'ri'
           set({
             loading: false,
             error: errorMessage,

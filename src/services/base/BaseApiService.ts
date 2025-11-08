@@ -36,7 +36,7 @@ export class BaseApiService {
   /**
    * Generic GET request
    */
-  protected async get<T = any>(
+  protected async get<T = unknown>(
     path: string = '',
     config?: AxiosRequestConfig
   ): Promise<T> {
@@ -47,9 +47,9 @@ export class BaseApiService {
   /**
    * Generic POST request
    */
-  protected async post<T = any>(
+  protected async post<T = unknown>(
     path: string = '',
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await apiClient.post<T>(this.buildPath(path), data, config)
@@ -59,9 +59,9 @@ export class BaseApiService {
   /**
    * Generic PUT request
    */
-  protected async put<T = any>(
+  protected async put<T = unknown>(
     path: string = '',
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await apiClient.put<T>(this.buildPath(path), data, config)
@@ -71,9 +71,9 @@ export class BaseApiService {
   /**
    * Generic PATCH request
    */
-  protected async patch<T = any>(
+  protected async patch<T = unknown>(
     path: string = '',
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await apiClient.patch<T>(this.buildPath(path), data, config)
@@ -83,7 +83,7 @@ export class BaseApiService {
   /**
    * Generic DELETE request
    */
-  protected async delete<T = any>(
+  protected async delete<T = unknown>(
     path: string = '',
     config?: AxiosRequestConfig
   ): Promise<T> {
@@ -102,7 +102,7 @@ export class BaseApiService {
   /**
    * Build query string from params object
    */
-  protected buildQueryString(params: Record<string, any>): string {
+  protected buildQueryString(params: Record<string, unknown>): string {
     const searchParams = new URLSearchParams()
 
     Object.entries(params).forEach(([key, value]) => {

@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, TrendingDown, Calendar, Award, Microscope, Calculator, Code, Brain, Stethoscope } from 'lucide-react'
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { mockDashboardStats, mockStudentsByFaculty, mockStudentsByCourse, mockGPADistribution, mockPaymentStats } from '@/lib/mockData'
-import { formatNumber, formatCurrency } from '@/lib/utils'
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, Calendar, Award, Microscope, Calculator, Code, Brain, Stethoscope } from 'lucide-react'
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { mockDashboardStats, mockStudentsByFaculty, mockStudentsByCourse } from '@/lib/mockData'
+import { formatNumber } from '@/lib/utils'
 import { setPageMeta, PAGE_META } from '@/utils/favicon'
 
 export default function DashboardPage() {

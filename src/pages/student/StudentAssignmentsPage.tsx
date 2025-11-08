@@ -5,9 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { getStudentAssignments } from '@/lib/api/student';
 import { formatDistanceToNow } from 'date-fns';
 import { uz } from 'date-fns/locale';
+import type { StudentAssignment, StudentAssignmentsResult } from '@/lib/types/student';
 
 export default function StudentAssignmentsPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<StudentAssignmentsResult>({
     queryKey: ['student', 'assignments'],
     queryFn: () => getStudentAssignments(),
   });
@@ -18,7 +19,7 @@ export default function StudentAssignmentsPage() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Topshiriqlarim</h1>
       <div className="space-y-3">
-        {data?.data?.map((assignment: any) => (
+        {(Array.isArray(data) ? data : data?.data ?? []).map((assignment: StudentAssignment) => (
           <Card key={assignment.id}>
             <CardContent className="p-4">
               <div className="flex items-start justify-between">

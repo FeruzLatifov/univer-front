@@ -201,7 +201,7 @@ export function CreateEditTestPage() {
                           const numValue = Number(value)
                           field.onChange(numValue)
                           setSelectedSubjectId(numValue)
-                          form.setValue('group_id', undefined as any)
+                          form.resetField('group_id')
                         }}
                         value={field.value?.toString()}
                       >

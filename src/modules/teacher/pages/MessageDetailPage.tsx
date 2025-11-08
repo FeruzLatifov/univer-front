@@ -10,8 +10,6 @@ import {
   Download,
   Reply,
   Trash2,
-  Archive,
-  Star,
   AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,16 +19,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useMessage, useDeleteMessage, useSendMessage } from '@/hooks/useMessages';
-import type { Message } from '@/services/teacher/MessageService';
 import { getAttachmentDownloadUrl } from '@/lib/api/messaging';
-import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 export default function MessageDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [showReply, setShowReply] = useState(false);

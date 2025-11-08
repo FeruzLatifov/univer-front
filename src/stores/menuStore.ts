@@ -15,6 +15,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { isAxiosError } from 'axios'
 import * as menuApi from '@/lib/api/menu'
 import { MenuItem } from '@/types'
 
@@ -52,7 +53,7 @@ const sessionStorageAdapter = {
     const value = sessionStorage.getItem(name)
     return value ? JSON.parse(value) : null
   },
-  setItem: (name: string, value: any) => {
+  setItem: (name: string, value: unknown) => {
     sessionStorage.setItem(name, JSON.stringify(value))
   },
   removeItem: (name: string) => {
@@ -99,7 +100,7 @@ export const useMenuStore = create<MenuStore>()(
               items: response.menu.length,
               permissions: response.permissions.length,
               cached: response._meta?.cached,
-              menuItems: response.menu.map((m: any) => m.label).join(', ')
+              menuItems: response.menu.map((m: MenuItem) => m.label).join(', ')
             })
 
             set({
@@ -116,21 +117,26 @@ export const useMenuStore = create<MenuStore>()(
           } else {
             throw new Error('Failed to load menu')
           }
-        } catch (error: any) {
+        } catch (error) {
           console.error('❌ [MenuStore] Failed to fetch menu', error)
 
-          // If 401 error, don't set error state - let API interceptor redirect to login
-          if (error.response?.status === 401) {
-            console.log('🔒 [MenuStore] 401 error - API interceptor will redirect to login')
-            set({ loading: false, error: null })
-            // Don't set error - interceptor will redirect
-            return
-          }
+          if (isAxiosError(error)) {
+            if (error.response?.status === 401) {
+              console.log('🔒 [MenuStore] 401 error - API interceptor will redirect to login')
+              set({ loading: false, error: null })
+              return
+            }
 
-          set({
-            loading: false,
-            error: error.response?.data?.message || error.message || 'Failed to load menu',
-          })
+            set({
+              loading: false,
+              error: error.response?.data?.message || error.message || 'Failed to load menu',
+            })
+          } else {
+            set({
+              loading: false,
+              error: error instanceof Error ? error.message : 'Failed to load menu',
+            })
+          }
         }
       },
 
@@ -145,16 +151,21 @@ export const useMenuStore = create<MenuStore>()(
 
           // Refresh menu after clearing cache
           await get().fetchMenu()
-        } catch (error: any) {
+        } catch (error) {
           console.error('[MenuStore] Failed to clear cache', error)
 
-          // If 401 error, let API interceptor redirect to login
-          if (error.response?.status === 401) {
-            console.log('🔒 [MenuStore] 401 error - redirecting to login')
-            return
-          }
+          if (isAxiosError(error)) {
+            if (error.response?.status === 401) {
+              console.log('🔒 [MenuStore] 401 error - redirecting to login')
+              return
+            }
 
-          set({ error: error.message || 'Failed to clear cache' })
+            set({ error: error.message || 'Failed to clear cache' })
+          } else if (error instanceof Error) {
+            set({ error: error.message })
+          } else {
+            set({ error: 'Failed to clear cache' })
+          }
         }
       },
 

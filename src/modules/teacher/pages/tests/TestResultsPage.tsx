@@ -11,12 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTest, useTestResults } from '@/hooks/useTests'
 import { ATTEMPT_STATUS_NAMES } from '@/lib/api/teacher'
 import type { AttemptStatus } from '@/lib/api/teacher'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatDate, formatDateTime } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
 
 /**
  * Test Results Page

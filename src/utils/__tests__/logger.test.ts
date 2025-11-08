@@ -1,17 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { SpyInstance } from 'vitest'
 import { logger, sanitizeForLog } from '../logger'
 
+type ConsoleSpy = SpyInstance<[...args: unknown[]], void>
+
 describe('logger', () => {
-  let consoleLogSpy: any
-  let consoleErrorSpy: any
-  let consoleWarnSpy: any
-  let consoleInfoSpy: any
+  let _consoleLogSpy: ConsoleSpy
+  let consoleErrorSpy: ConsoleSpy
+  let consoleWarnSpy: ConsoleSpy
+  let _consoleInfoSpy: ConsoleSpy
 
   beforeEach(() => {
-    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    _consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    _consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
   })
 
   afterEach(() => {

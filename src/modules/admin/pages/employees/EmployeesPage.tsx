@@ -8,7 +8,6 @@ import {
   UserCircle,
   Mail,
   Phone,
-  Building2,
   GraduationCap,
   Briefcase,
   Award,
@@ -28,16 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import type { EmployeeFilters } from '@/lib/types/employee'
+import type { Employee, EmployeeFilters, EmployeeStats } from '@/lib/types/employee'
 
 export default function EmployeesPage() {
   const [filters, setFilters] = useState<EmployeeFilters>({
@@ -45,14 +36,12 @@ export default function EmployeesPage() {
     search: '',
     is_teacher: undefined,
   })
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
-
-  const { data: employees, isLoading } = useQuery({
+  const { data: employees, isLoading } = useQuery<Employee[]>({
     queryKey: ['employees', filters],
     queryFn: () => employeesApi.getEmployees(filters),
   })
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<EmployeeStats>({
     queryKey: ['employee-stats'],
     queryFn: () => employeesApi.getStats(),
   })
@@ -61,8 +50,8 @@ export default function EmployeesPage() {
     setFilters({ ...filters, search: value })
   }
 
-  const handleStatusChange = (value: string) => {
-    setFilters({ ...filters, status: value as any })
+  const handleStatusChange = (value: EmployeeFilters['status']) => {
+    setFilters({ ...filters, status: value })
   }
 
   const handleTypeChange = (value: string) => {
@@ -181,7 +170,7 @@ export default function EmployeesPage() {
           </SelectContent>
         </Select>
 
-        <Select value={filters.status} onValueChange={handleStatusChange}>
+        <Select value={filters.status} onValueChange={(value) => handleStatusChange(value as EmployeeFilters['status'])}>
           <SelectTrigger className="h-9">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="Holat" />

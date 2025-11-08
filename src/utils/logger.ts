@@ -18,7 +18,7 @@ export const logger = {
    * Debug logging - only in development
    * Use for detailed debugging information
    */
-  debug: (...args: any[]) => {
+  debug: (...args: unknown[]) => {
     if (isDevelopment) {
       console.log('[DEBUG]', ...args)
     }
@@ -28,7 +28,7 @@ export const logger = {
    * Info logging - only in development
    * Use for general information
    */
-  info: (...args: any[]) => {
+  info: (...args: unknown[]) => {
     if (isDevelopment) {
       console.info('[INFO]', ...args)
     }
@@ -38,7 +38,7 @@ export const logger = {
    * Warning logging - always shown
    * Use for important warnings that should always be visible
    */
-  warn: (...args: any[]) => {
+  warn: (...args: unknown[]) => {
     console.warn('[WARN]', ...args)
   },
 
@@ -46,7 +46,7 @@ export const logger = {
    * Error logging - always shown
    * Use for errors that should always be logged
    */
-  error: (...args: any[]) => {
+  error: (...args: unknown[]) => {
     console.error('[ERROR]', ...args)
   },
 }
@@ -58,23 +58,36 @@ export const logger = {
  * @param data - The data object to sanitize
  * @returns Sanitized data object
  */
-export const sanitizeForLog = (data: any): any => {
-  if (!data) return data
-  
-  // Handle primitive types
-  if (typeof data !== 'object') return data
-  
-  const sanitized = { ...data }
-  const sensitiveKeys = [
-    'token', 'password', 'access_token', 'refresh_token', 
-    'authorization', 'secret', 'api_key', 'apiKey'
-  ]
-  
-  for (const key in sanitized) {
-    if (sensitiveKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
-      sanitized[key] = '***REDACTED***'
-    }
+export const sanitizeForLog = <T>(data: T): T => {
+  if (data === null || data === undefined) {
+    return data
   }
-  
-  return sanitized
+
+  if (typeof data !== 'object') {
+    return data
+  }
+
+  const sensitiveKeys = [
+    'token',
+    'password',
+    'access_token',
+    'refresh_token',
+    'authorization',
+    'secret',
+    'api_key',
+    'apiKey',
+  ]
+
+  if (Array.isArray(data)) {
+    return data.map((item) => sanitizeForLog(item)) as T
+  }
+
+  const sanitizedEntries = Object.entries(data as Record<string, unknown>).map(([key, value]) => {
+    const shouldRedact = sensitiveKeys.some((sensitiveKey) =>
+      key.toLowerCase().includes(sensitiveKey.toLowerCase())
+    )
+    return [key, shouldRedact ? '***REDACTED***' : value]
+  })
+
+  return Object.fromEntries(sanitizedEntries) as T
 }

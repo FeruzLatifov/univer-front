@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { teacherNotificationService } from '@/services/teacher/NotificationService'
+import { getErrorMessage } from '@/lib/utils/error'
 import type {
   NotificationFilters,
   NotificationSettings,
@@ -49,8 +50,8 @@ export function useMarkAsRead() {
       // Invalidate all notification queries
       queryClient.invalidateQueries({ queryKey: notificationKeys.all })
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Bildirishnomani o\'qilgan deb belgilashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Bildirishnomani o\'qilgan deb belgilashda xatolik'))
     },
   })
 }
@@ -67,8 +68,8 @@ export function useMarkAllAsRead() {
       toast.success(`${data.count} ta bildirishnoma o'qilgan deb belgilandi`)
       queryClient.invalidateQueries({ queryKey: notificationKeys.all })
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Bildirishnomalarni o\'qilgan deb belgilashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Bildirishnomalarni o\'qilgan deb belgilashda xatolik'))
     },
   })
 }
@@ -96,8 +97,8 @@ export function useUpdateSettings() {
       toast.success('Sozlamalar saqlandi')
       queryClient.invalidateQueries({ queryKey: notificationKeys.settings() })
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Sozlamalarni saqlashda xatolik')
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Sozlamalarni saqlashda xatolik'))
     },
   })
 }
