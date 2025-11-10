@@ -1,5 +1,4 @@
 import { apiClient } from './client'
-import { getApiOrigin } from '@/config/api'
 
 /**
  * System API Service
@@ -72,12 +71,8 @@ export const getLoginConfig = async (): Promise<SystemLoginConfig> => {
   const data = response.data
 
   // Map backend response to frontend format
-  const origin = getApiOrigin()
-
-  let logo = data.university_logo || data.favicon || '/images/hemis-logo.png'
-  if (logo && logo.startsWith('/')) {
-    logo = origin + logo
-  }
+  // Backend already returns absolute URL for logo (SystemController.php line 28)
+  const logo = data.university_logo || data.favicon || null
 
   return {
     logo,

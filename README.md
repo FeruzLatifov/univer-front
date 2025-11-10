@@ -1,278 +1,421 @@
-# ⚛️ Univer Frontend - React Application
+# HEMIS React Frontend
 
-Modern frontend for Univer University Management System built with React 19 + TypeScript + Vite.
+**HEMIS** - Higher Education Management Information System uchun zamonaviy React frontend.
 
-## 🚀 Quick Start
+Bu loyiha React 19, TypeScript, Vite va Tailwind CSS dan foydalanadi. Shuning uchun kodni yozishda zamonaviy JavaScript/TypeScript imkoniyatlaridan foydalaning.
+
+#### Happy coding!
+
+---
+
+## 📋 Talablar
+
+- **Node.js**: 20.19.0+ yoki 22.12.0+
+- **Yarn**: 4.10.3+ (package manager)
+- **Backend API**: univer-back (Laravel backend ishlab turishi kerak)
+
+---
+
+## 🚀 O'rnatish
+
+### 1. Loyihani yuklab olish
 
 ```bash
-# Install dependencies
-yarn install
-
-# Setup environment
-cp .env.example .env
-
-# Start development server
-yarn dev
-# Open http://localhost:5173
+git clone <repository-url>
+cd univer-front
 ```
 
-## 🛠 Tech Stack
+### 2. Dependencies o'rnatish
 
-- **React 19** - UI library
-- **TypeScript 5** - Type safety
-- **Vite 7** - Build tool & dev server
-- **Tailwind CSS 4** - Styling
-- **shadcn/ui** - UI components
-- **TanStack Query** - Data fetching & caching
-- **Zustand** - State management
-- **React Router 7** - Routing
-- **React Hook Form + Zod** - Forms & validation
-- **react-i18next** - Internationalization
-- **Sentry** - Error tracking
+```bash
+yarn install
+```
 
-## 🗂 Project Structure
+### 3. Environment sozlash
+
+`.env` faylni yarating:
+
+```bash
+cp .env.example .env
+```
+
+`.env` faylda backend API manzilini to'ldiring:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000/api
+VITE_APP_VERSION=1.0.0
+```
+
+### 4. Development server ishga tushirish
+
+```bash
+yarn dev
+```
+
+Server ishga tushadi: `http://localhost:5173`
+
+---
+
+## 📁 Loyiha Strukturasi
 
 ```
 src/
-├── components/
-│   ├── ui/                # shadcn/ui components
-│   ├── ErrorBoundary.tsx  # Error handling
-│   └── LanguageSwitcher.tsx  # Language selector
-├── pages/
-│   ├── student/           # Student portal pages
-│   ├── teacher/           # Teacher portal pages
-│   ├── auth/              # Authentication pages
-│   ├── system/            # System pages
-│   └── ...
-├── lib/
-│   ├── api/
-│   │   └── client.ts      # Axios client with interceptors
-│   └── utils.ts
-├── hooks/                 # Custom React hooks
-├── stores/                # Zustand stores
-├── types/                 # TypeScript types
-├── locales/               # i18n translation files
-│   ├── uz.json           # Uzbek translations
-│   ├── ru.json           # Russian translations
-│   └── en.json           # English translations
-├── i18n.ts               # i18n configuration
-├── App.tsx
-└── main.tsx
+    assets/          Images, fonts, static files
+    components/
+        ui/          Shadcn UI components
+        common/      Reusable components
+    features/        Feature-based modules
+        auth/        Authentication
+        dashboard/   Dashboard
+    hooks/           Custom React hooks
+    lib/             Utilities, helpers
+    pages/           Page components
+    routes/          Route configuration
+    services/        API services
+    stores/          Zustand state management
+    types/           TypeScript types
+    locales/         i18n translation files
+public/              Public static assets
 ```
 
-## 🌐 Multi-Language
+---
 
-The app supports 3 languages with **react-i18next**:
+## 🔧 Asosiy Commandlar
 
-- **Uzbek** (uz) - Default
-- **Russian** (ru)
-- **English** (en)
+### Development
 
-### Usage
+```bash
+# Development server
+yarn dev
 
-```tsx
-import { useTranslation } from 'react-i18next'
+# Development server (boshqa port)
+yarn dev --port 3000
 
-function Component() {
-  const { t, i18n } = useTranslation()
-
-  return (
-    <div>
-      <h1>{t('common.welcome')}</h1>
-      <button onClick={() => i18n.changeLanguage('ru')}>
-        Русский
-      </button>
-    </div>
-  )
-}
+# Type checking
+yarn type-check
 ```
 
-### Adding Translations
+### Build
 
-Edit translation files in `src/locales/`:
-- `uz.json` - Uzbek
-- `ru.json` - Russian
-- `en.json` - English
+```bash
+# Production build
+yarn build
 
-## 🔌 API Integration
-
-API client is configured in `src/lib/api/client.ts`
-
-**Features:**
-- Automatic JWT token injection
-- Token refresh mechanism
-- Language parameter injection (`?l=ru-RU`)
-- Response unwrapping (Laravel format)
-- Error handling
-
-**Usage:**
-```tsx
-import { api } from '@/lib/api/client'
-
-// GET request
-const response = await api.get('/v1/student/profile')
-// Actual: GET /v1/student/profile?l=uz-UZ
-
-// POST request
-const response = await api.post('/v1/student/auth/login', {
-  student_id: '123456',
-  password: 'password'
-})
+# Preview production build
+yarn preview
 ```
+
+### Code Quality
+
+```bash
+# ESLint
+yarn lint
+
+# TypeScript check
+yarn type-check
+```
+
+### Testing
+
+```bash
+# Run tests
+yarn test
+
+# Tests with UI
+yarn test:ui
+
+# Test coverage
+yarn test:coverage
+```
+
+---
 
 ## 🎨 UI Components
 
-Using **shadcn/ui** components built on Radix UI + Tailwind CSS.
+Loyiha **Shadcn UI** dan foydalanadi - zamonaviy, accessible va customizable komponentlar:
 
-**Available components:**
-- Button, Input, Select
-- Dialog, Sheet, Popover
-- Table, Card, Tabs
-- Toast, Alert, Badge
-- And more...
+- Radix UI (headless components)
+- Tailwind CSS (styling)
+- Lucide React (icons)
+- React Hook Form (forms)
+- Zod (validation)
 
-**Add new component:**
+**Yangi komponent qo'shish**:
 ```bash
 npx shadcn@latest add button
 ```
 
-## 🔐 Authentication
+---
 
-**Routes:**
-- `/login` - Login page
-- `/student/*` - Student portal (protected)
-- `/teacher/*` - Teacher portal (protected)
-- `/admin/*` - Admin panel (protected)
+## 🔑 Authentication
 
-**Protected routes** automatically redirect to login if not authenticated.
+Frontend backend JWT authentication bilan ishlaydi:
+
+### Login
+
+```typescript
+// Login request
+POST /api/auth/login
+{
+  "login": "admin@example.com",
+  "password": "password"
+}
+
+// Response
+{
+  "access_token": "eyJ0eXAiOiJKV1...",
+  "refresh_token": "eyJ0eXAiOiJKV1...",
+  "user": { ... }
+}
+```
+
+### Token Management
+
+- Access token: `localStorage` da saqlanadi
+- Refresh token: `localStorage` da saqlanadi
+- Auto refresh: Access token 60 daqiqa, refresh token 30 kun
+
+---
+
+## 🌐 Localization (i18n)
+
+Loyiha **react-i18next** dan foydalanadi:
+
+```typescript
+import { useTranslation } from 'react-i18next';
+
+function MyComponent() {
+  const { t } = useTranslation();
+
+  return <h1>{t('common.welcome')}</h1>;
+}
+```
+
+**Qo'llab-quvvatlanadigan tillar**:
+- Uzbek (Lotin) - `uz`
+- Uzbek (Kiril) - `oz`
+- Russian - `ru`
+- English - `en`
+
+**Tarjima qo'shish**:
+- `src/locales/uz.json` - O'zbek
+- `src/locales/ru.json` - Rus
+- `src/locales/en.json` - Ingliz
+
+---
 
 ## 📊 State Management
 
-**Global state:** Zustand stores in `src/stores/`
+Loyiha **Zustand** dan foydalanadi - minimal, fast va simple state management:
 
-**Server state:** TanStack Query
-
-**Example store:**
 ```typescript
-import { create } from 'zustand'
+import { create } from 'zustand';
 
 interface AuthStore {
-  user: User | null
-  setUser: (user: User) => void
+  user: User | null;
+  setUser: (user: User) => void;
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   setUser: (user) => set({ user }),
-}))
+  logout: () => set({ user: null }),
+}));
 ```
 
-## 🧪 Development
+**Server state**: TanStack Query (data fetching va caching)
+
+---
+
+## 🔄 Git Workflow
+
+### Loyihani yangilash
 
 ```bash
-# Start dev server
-yarn dev
+# Git'dan yangilanishlarni olish
+git pull
 
+# Dependencies yangilash (agar kerak bo'lsa)
+yarn install
+
+# Dev server qayta ishga tushirish
+yarn dev
+```
+
+---
+
+## ❓ Tez-tez so'raladigan savollar (FAQ)
+
+### Q: Backend API ishlamayapti, frontend ishlaydimi?
+
+**A**: YO'Q. Frontend backendga bog'liq. Avval backend ishga tushirish kerak:
+```bash
+cd /home/adm1n/univer/univer-back
+php artisan serve
+```
+
+### Q: Port 5173 band bo'lsa?
+
+**A**: Boshqa portda ishga tushiring:
+```bash
+yarn dev --port 3000
+# yoki
+yarn dev --port 8080
+```
+
+### Q: Build xatolik bersa?
+
+**A**:
+```bash
+# 1. Node modules tozalash
+rm -rf node_modules
+yarn install
+
+# 2. Type check
+yarn type-check
+
+# 3. Build qayta
+yarn build
+```
+
+---
+
+## 🐛 Muammolarni hal qilish (Troubleshooting)
+
+### Yarn install xatolik bersa
+
+```bash
+# 1. Yarn versiyasini tekshirish
+yarn --version
+# Kutilgan: 4.10.3+
+
+# 2. Cache tozalash
+yarn cache clean
+
+# 3. Qayta o'rnatish
+rm -rf node_modules
+yarn install
+```
+
+### API connection xatoligi
+
+```bash
+# 1. .env faylni tekshiring
+cat .env | grep VITE_API_URL
+# Kutilgan: http://127.0.0.1:8000/api
+
+# 2. Backend ishlab turganini tekshiring
+curl http://127.0.0.1:8000/api/health
+
+# 3. CORS xatoligini tekshiring
+# Backend .env da:
+# CORS_ALLOWED_ORIGINS=http://localhost:5173
+```
+
+### TypeScript xatoligi
+
+```bash
 # Type check
 yarn type-check
 
-# Lint
+# ESLint
 yarn lint
 
-# Build for production
+# Fix auto-fixable issues
+yarn lint --fix
+```
+
+---
+
+## 🏗️ Build va Deploy
+
+### Production Build
+
+```bash
+# Build yaratish
 yarn build
 
-# Preview production build
+# Build natijasi: dist/ papkada
+
+# Preview (test)
 yarn preview
-
-# Run tests
-yarn test
-
-# Run tests with UI
-yarn test:ui
-
-# Generate coverage report
-yarn test:coverage
 ```
 
-## 🔐 Security
+### Build fayllari
 
-This project implements comprehensive security measures:
-
-- **XSS Protection** - DOMPurify sanitization for user-generated content
-- **Secure Logging** - Environment-aware logging system
-- **CSP Headers** - Content Security Policy implementation
-- **Automated Tests** - 40+ security tests
-- **CodeQL Scanning** - Zero vulnerabilities
-
-**Security Rating:** ⭐⭐⭐⭐⚪ (4/5)
-
-For detailed security documentation, see [docs/security/](./docs/security/).
-
-## 🧪 Testing
-
-**Test Framework:** Vitest with jsdom
-
-**Test Coverage:**
-- Unit tests for security utilities (sanitize, logger)
-- 40 automated tests
-- Coverage reporting with v8
-
-```bash
-yarn test           # Run tests in watch mode
-yarn test:run       # Run tests once
-yarn test:ui        # Run with UI
-yarn test:coverage  # Generate coverage report
+```
+dist/
+  assets/
+    index-[hash].js      Compiled JavaScript
+    index-[hash].css     Compiled CSS
+  index.html             Entry point
 ```
 
-## 🚀 Production Build
+### Static Hosting
 
-```bash
-# Build
-yarn build
+Build fayllarini har qanday static hosting'ga deploy qilish mumkin:
 
-# Output in dist/
-# Upload to your hosting
+- Nginx
+- Apache
+- Vercel
+- Netlify
+- GitHub Pages
+
+**Nginx config example**:
+
+```nginx
+server {
+    listen 80;
+    server_name student.univer.uz;
+
+    root /var/www/univer-front/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
 ```
 
-### Environment Variables
+---
 
-```env
-# API URL
-VITE_API_URL=http://localhost:8000/api
+## 📦 Asosiy Dependencies
 
-# Sentry (optional)
-VITE_SENTRY_DSN=
-VITE_SENTRY_ENVIRONMENT=production
+### Main Dependencies
 
-# App version
-VITE_APP_VERSION=1.0.0
-```
+- **React 19**: UI library
+- **TypeScript 5.9**: Type safety
+- **Vite 7**: Build tool
+- **React Router 7**: Routing
+- **TanStack Query 5**: Data fetching
+- **Axios 1**: HTTP client
+- **Zustand 5**: State management
+- **React Hook Form 7**: Form handling
+- **Zod 4**: Schema validation
+- **i18next 23**: Internationalization
+- **Tailwind CSS 4**: Styling
+- **Shadcn UI**: Component library
 
-## 📱 Features
+### Dev Dependencies
 
-- **Responsive Design** - Mobile-first approach
-- **Dark Mode Ready** - Built with Tailwind CSS
-- **Error Tracking** - Sentry integration
-- **Performance Monitoring** - React Query DevTools
-- **Type Safety** - Full TypeScript coverage
-- **Code Splitting** - Automatic with Vite
-- **Hot Module Replacement** - Fast development
+- **Vitest**: Testing framework
+- **TypeScript ESLint**: Linting
+- **Autoprefixer**: CSS post-processing
 
-## 🔗 Links
+---
 
-- [Documentation](./docs/) - Project documentation
-- [Security Documentation](./docs/security/) - Security analysis and guides
-- [Frontend Development Plan](./FRONTEND_DEVELOPMENT_PLAN.md)
-- [Implementation Status](./IMPLEMENTATION_STATUS.md)
+## 📞 Support
 
-## 📦 Package Manager
+**Backend API**: `http://127.0.0.1:8000`
+**Frontend Dev**: `http://localhost:5173`
 
-This project uses **Yarn 4** (Berry).
+---
 
-**Important:** Use `yarn` instead of `npm`:
-```bash
-yarn install    # NOT npm install
-yarn add pkg    # NOT npm install pkg
-yarn dev        # NOT npm run dev
-```
+**Versiya**: 1.0.0
+**React**: 19.2.0
+**Node.js**: 20.19.0+ yoki 22.12.0+
+**Package Manager**: Yarn 4.10.3
+**Status**: ✅ Production Ready
+
+**Last Updated**: January 9, 2025

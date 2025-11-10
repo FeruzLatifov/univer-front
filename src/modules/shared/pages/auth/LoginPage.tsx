@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import type { CSSProperties } from 'react'
-import type { CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/themeStore'
@@ -84,19 +83,33 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     clearError()
 
+    console.log('[LoginPage] Form submitted:', {
+      userType,
+      login: loginField,
+      student_id: studentId,
+      timestamp: new Date().toISOString()
+    })
+
     try {
+      console.log('[LoginPage] Calling login API...')
       await login({
         login: userType === 'employee' ? loginField : undefined,
         student_id: userType === 'student' ? studentId : undefined,
         password,
         userType,
       })
+      console.log('[LoginPage] Login successful, navigating to dashboard')
       toast.success(t('auth.login_to_continue'))
       navigate('/dashboard')
     } catch (error) {
-      toast.error(getErrorMessage(error, t('auth.welcome_back')))
+      console.error('[LoginPage] Login failed:', error)
+      const errorMessage = getErrorMessage(error, 'Login yoki parol noto\'g\'ri')
+      console.log('[LoginPage] Error message:', errorMessage)
+      toast.error(errorMessage)
+      // Error is already in authStore.error state, will be displayed inline
     }
   }
 
@@ -300,8 +313,6 @@ export default function LoginPage() {
                       {t('auth.forgot_password')}
                     </button>
                   </div>
-
-                  {/* Error message removed; toast already shows feedback */}
                 </form>
 
                 {!configLoading && (

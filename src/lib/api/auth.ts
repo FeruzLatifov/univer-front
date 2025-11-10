@@ -77,12 +77,20 @@ export const employeeLogin = async (login: string, password: string): Promise<Au
     login,
     password,
   })
+  
   // Interceptor already unwrapped {success, data} → data
-  // But we need to return {success, data} format for AuthResponse
+  // response.data now contains: { user, access_token, token_type, expires_in, _success, _message }
+  const data = response.data
+  
   return {
-    success: response.data._success ?? true,
-    data: response.data,
-    message: response.data._message
+    success: data._success !== undefined ? data._success : true,
+    data: {
+      user: data.user,
+      access_token: data.access_token,
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 3600,
+    },
+    message: data._message
   }
 }
 
@@ -95,11 +103,19 @@ export const studentLogin = async (studentId: string, password: string): Promise
     student_id: studentId,
     password,
   })
+  
   // Interceptor already unwrapped {success, data} → data
+  const data = response.data
+  
   return {
-    success: response.data._success ?? true,
-    data: response.data,
-    message: response.data._message
+    success: data._success !== undefined ? data._success : true,
+    data: {
+      user: data.user,
+      access_token: data.access_token,
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 3600,
+    },
+    message: data._message
   }
 }
 

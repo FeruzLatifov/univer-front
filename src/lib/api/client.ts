@@ -47,20 +47,32 @@ apiClient.interceptors.response.use(
     // Smart unwrap: Only unwrap Laravel {success: true, data: ...} format
     // This makes the API transparent - callers don't need to know about wrapping
     if (response.data && typeof response.data === 'object') {
-      if ('success' in response.data && 'data' in response.data) {
-        // Laravel format detected - unwrap it
-        // But keep success status and meta accessible
-        const unwrapped = response.data.data
-        // Add success flag and meta to the unwrapped data if it's an object
-        if (unwrapped && typeof unwrapped === 'object' && !Array.isArray(unwrapped)) {
-          unwrapped._success = response.data.success
-          unwrapped._message = response.data.message
-          // Preserve meta field if it exists
-          if (response.data.meta) {
-            unwrapped._meta = response.data.meta
-          }
+      if ('success' in response.data) {
+        // Laravel format detected
+
+        // If success: false, reject the promise with the error message
+        if (response.data.success === false) {
+          const error = new Error(response.data.message || 'Request failed') as Error & { response?: { data: typeof response.data } }
+          error.response = { data: response.data }
+          return Promise.reject(error)
         }
-        response.data = unwrapped
+
+        // If success: true and has data, unwrap it
+        if ('data' in response.data) {
+          // Laravel format detected - unwrap it
+          // But keep success status and meta accessible
+          const unwrapped = response.data.data
+          // Add success flag and meta to the unwrapped data if it's an object
+          if (unwrapped && typeof unwrapped === 'object' && !Array.isArray(unwrapped)) {
+            unwrapped._success = response.data.success
+            unwrapped._message = response.data.message
+            // Preserve meta field if it exists
+            if (response.data.meta) {
+              unwrapped._meta = response.data.meta
+            }
+          }
+          response.data = unwrapped
+        }
       }
     }
     return response
@@ -68,8 +80,32 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
+    // Extract Laravel error format FIRST (before any early returns)
+    if (error.response?.data) {
+      const errorData = error.response.data
+
+      // Extract error message from Laravel format
+      if (errorData.message) {
+        error.message = errorData.message
+      }
+
+      // Extract validation errors
+      if (errorData.errors) {
+        error.validationErrors = errorData.errors
+      }
+    }
+
     // Handle 401 Unauthorized - token expired or invalid
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Don't redirect if this is a login request (wrong credentials)
+      const isLoginRequest = originalRequest.url?.includes('/auth/login')
+
+      if (isLoginRequest) {
+        // Let the login page handle the error display
+        logger.info('[API] 401 error on login: Invalid credentials')
+        return Promise.reject(error)
+      }
+
       originalRequest._retry = true
 
       const refreshToken = sessionStorage.getItem('refresh_token')
@@ -141,29 +177,14 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Handle Laravel error format
-    if (error.response?.data) {
-      const errorData = error.response.data
-
-      // Extract error message from Laravel format
-      if (errorData.message) {
-        error.message = errorData.message
-      }
-
-      // Extract validation errors
-      if (errorData.errors) {
-        error.validationErrors = errorData.errors
-      }
-
-      // Log API errors to console (except 401 - already logged above)
-      if (error.response.status !== 401) {
-        logger.error('[API] Request failed', {
-          url: error.config?.url,
-          method: error.config?.method,
-          status: error.response.status,
-          message: error.message,
-        })
-      }
+    // Log API errors to console (except 401 - already logged above)
+    if (error.response?.status !== 401) {
+      logger.error('[API] Request failed', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        message: error.message,
+      })
     }
 
     // Handle other errors

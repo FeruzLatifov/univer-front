@@ -16,7 +16,8 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:80
  */
 export const getApiOrigin = (): string => {
   try {
-    return new URL(API_BASE_URL).origin
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+    return new URL(baseUrl).origin
   } catch {
     return 'http://localhost:8000'
   }

@@ -50,38 +50,38 @@ export const useAuthStore = create<AuthState>()(
         set({ loading: true, error: null })
 
         try {
-          // authApi.login() returns AuthResponse (already unwrapped by auth.ts)
+          // authApi.login() returns AuthResponse (already unwrapped by interceptor)
+          // If login fails (success: false), interceptor will reject and throw error
           const response = await authApi.login(credentials)
-          if (response.success) {
-            const { user, access_token } = response.data
 
-            logger.debug('[AuthStore] Login successful', {
-              userId: user.id,
-              userName: user.full_name ?? user.login ?? user.student_id_number ?? 'N/A',
-              userType: credentials.userType,
-            })
+          // Interceptor unwraps Laravel {success, data} → response.data is the unwrapped data
+          const { user, access_token, refresh_token } = response.data
 
-            // Store tokens in sessionStorage (browser yopilsa o'chadi)
-            // JWT uses same token for access and refresh
-            sessionStorage.setItem('access_token', access_token)
-            sessionStorage.setItem('refresh_token', access_token) // ← JWT same token for refresh
-            sessionStorage.setItem('user_type', credentials.userType as string)
+          logger.debug('[AuthStore] Login successful', {
+            userId: user.id,
+            userName: user.full_name ?? user.login ?? user.student_id_number ?? 'N/A',
+            userType: credentials.userType,
+            hasAccessToken: !!access_token,
+            hasRefreshToken: !!refresh_token,
+          })
 
-            set({
-              token: access_token,
-              isAuthenticated: true,
-              loading: false,
-              error: null,
-            })
+          // Store tokens in sessionStorage (browser yopilsa o'chadi)
+          sessionStorage.setItem('access_token', access_token)
+          sessionStorage.setItem('refresh_token', refresh_token || access_token)
+          sessionStorage.setItem('user_type', credentials.userType as string)
 
-            // Update user in userStore
-            useUserStore.getState().setUserFromApi(user)
-            // Set permissions cache timestamp
-            useUserStore.getState().setPermissionsCachedAt(Date.now())
+          set({
+            token: access_token,
+            isAuthenticated: true,
+            loading: false,
+            error: null,
+          })
 
-          } else {
-            throw new Error(response.message || 'Login failed')
-          }
+          // Update user in userStore
+          useUserStore.getState().setUserFromApi(user)
+          // Set permissions cache timestamp
+          useUserStore.getState().setPermissionsCachedAt(Date.now())
+
         } catch (error: unknown) {
           const apiError = error as {
             response?: { data?: { message?: string } }
