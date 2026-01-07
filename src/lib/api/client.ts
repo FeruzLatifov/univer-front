@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { API_CONFIG } from '@/config/api'
 import { logger } from '@/utils/logger'
+import { getSecurityHeaders, isSecurityEnabled } from './security'
 
 // Create axios instance with default config
 export const apiClient = axios.create(API_CONFIG)
@@ -22,13 +23,26 @@ try {
   logger.warn('[API] Failed to initialize language headers', error)
 }
 
-// Request interceptor for adding auth token
+// Request interceptor for adding auth token and security headers
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // Add authorization token from sessionStorage (more secure)
     const token = sessionStorage.getItem('access_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+
+    // Add API security headers (app key, signature, timestamp, device id)
+    if (isSecurityEnabled() && config.url) {
+      try {
+        const securityHeaders = await getSecurityHeaders(
+          config.method?.toUpperCase() || 'GET',
+          config.url
+        )
+        Object.assign(config.headers, securityHeaders)
+      } catch (error) {
+        logger.warn('[API] Failed to generate security headers', error)
+      }
     }
 
     // Note: Language headers (X-Locale, Accept-Language) are set by languageStore
@@ -52,7 +66,7 @@ apiClient.interceptors.response.use(
 
         // If success: false, reject the promise with the error message
         if (response.data.success === false) {
-          const error = new Error(response.data.message || 'Request failed') as Error & { response?: { data: typeof response.data } }
+          const error = new Error(response.data.message || 'Request failed') as Error & { response?: { data: unknown } }
           error.response = { data: response.data }
           return Promise.reject(error)
         }
@@ -61,7 +75,8 @@ apiClient.interceptors.response.use(
         if ('data' in response.data) {
           // Laravel format detected - unwrap it
           // But keep success status and meta accessible
-          const unwrapped = response.data.data
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const unwrapped = response.data.data as any
           // Add success flag and meta to the unwrapped data if it's an object
           if (unwrapped && typeof unwrapped === 'object' && !Array.isArray(unwrapped)) {
             unwrapped._success = response.data.success

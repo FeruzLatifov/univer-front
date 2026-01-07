@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth'
@@ -39,6 +39,7 @@ export default function LoginPage() {
     appVersion: '1.0.0'
   })
   const [configLoading, setConfigLoading] = useState(true)
+  const serverErrorToastShownRef = useRef(false)
 
   // Current date/time for footer
   const [currentDateTime, setCurrentDateTime] = useState(new Date())
@@ -63,7 +64,15 @@ export default function LoginPage() {
         }
       } catch (error) {
         console.error('Failed to fetch system config:', error)
-        // Keep default values if API fails
+        // Backend server ishlamasa: faqat toast orqali xabar beramiz (banner va auto-retry yo'q)
+        const errorMessage = getErrorMessage(error, 'Serverga ulanib bo\'lmadi')
+        if (!serverErrorToastShownRef.current) {
+          toast.error(errorMessage, { id: 'server-conn-error', duration: 5000 })
+          serverErrorToastShownRef.current = true
+        } else {
+          // Update existing toast (prevents duplicates in React StrictMode / double effects)
+          toast.error(errorMessage, { id: 'server-conn-error', duration: 5000 })
+        }
       } finally {
         setConfigLoading(false)
       }
@@ -106,9 +115,14 @@ export default function LoginPage() {
       navigate('/dashboard')
     } catch (error) {
       console.error('[LoginPage] Login failed:', error)
+      // getErrorMessage() endi network xatolarini ham aniq ko'rsatadi
       const errorMessage = getErrorMessage(error, 'Login yoki parol noto\'g\'ri')
       console.log('[LoginPage] Error message:', errorMessage)
-      toast.error(errorMessage)
+      
+      // Toast orqali foydalanuvchiga ko'rsatamiz
+      toast.error(errorMessage, {
+        duration: 5000, // 5 soniya ko'rinadi (network xatolarda ko'proq o'qish vaqti kerak)
+      })
       // Error is already in authStore.error state, will be displayed inline
     }
   }
@@ -166,11 +180,19 @@ export default function LoginPage() {
                         <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded"></div>
                       </div>
                     ) : systemConfig.logo ? (
-                      <div className="w-16 h-16 rounded-lg flex items-center justify-center border p-2" style={{ borderColor: 'var(--primary)', backgroundColor: 'var(--active-bg)' }}>
+                      <div className="w-16 h-16 rounded-lg flex items-center justify-center border p-2" 
+                           style={{ 
+                             borderColor: 'var(--primary)', 
+                             backgroundColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.95)' : '#ffffff'
+                           }}>
                         <img src={systemConfig.logo} alt={systemConfig.name} className="w-full h-full object-contain" />
                       </div>
                     ) : (
-                      <div className="w-16 h-16 rounded-lg flex items-center justify-center border p-2" style={{ borderColor: 'var(--primary)', backgroundColor: 'var(--active-bg)' }}>
+                      <div className="w-16 h-16 rounded-lg flex items-center justify-center border p-2" 
+                           style={{ 
+                             borderColor: 'var(--primary)', 
+                             backgroundColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.95)' : '#ffffff'
+                           }}>
                         <img src={DEFAULT_FAVICON} alt="Logo" className="w-full h-full object-contain" />
                       </div>
                     )}
@@ -188,6 +210,8 @@ export default function LoginPage() {
                     </>
                   )}
                 </div>
+
+                {/* Server error banner intentionally removed: use toast only */}
 
                 <div className="flex gap-2 p-1 rounded-lg mb-4" style={{ backgroundColor: 'rgba(0,0,0,0.03)', border: '1px solid var(--border-color)' }}>
                   <button
