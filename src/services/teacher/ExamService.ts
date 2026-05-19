@@ -104,6 +104,63 @@ export class ExamService extends BaseApiService {
   async getStatistics(examId: number) {
     return this.get<ExamStatistics>(`/${examId}/statistics`)
   }
+
+  /**
+   * Get spreadsheet-style roster for inline grading
+   */
+  async getRoster(examId: number) {
+    return this.get<ExamRosterResponse>(`/${examId}/roster`)
+  }
+
+  /**
+   * Submit results with letter grade and comment per row
+   */
+  async submitRoster(
+    examId: number,
+    rows: Array<{
+      student_id: number
+      score?: number
+      grade?: string | null
+      attended?: boolean
+      notes?: string | null
+    }>
+  ) {
+    return this.post(`/${examId}/results`, { results: rows })
+  }
+}
+
+export interface ExamRosterRow {
+  student_id: number
+  student_id_number: string
+  full_name: string
+  first_name: string
+  second_name: string
+  result: {
+    id: number
+    score: number
+    max_score: number
+    grade: string | null
+    letter_grade: string | null
+    attended: boolean
+    comment: string | null
+    graded_at: string | null
+  } | null
+}
+
+export interface ExamRosterResponse {
+  exam: {
+    id: number
+    title: string
+    exam_type: string
+    exam_date: string
+    max_score: number
+    passing_score: number
+    subject: { id: number; name: string } | null
+    group: { id: number; name: string } | null
+  }
+  roster: ExamRosterRow[]
+  total_students: number
+  entered: number
 }
 
 // Export singleton instance

@@ -166,9 +166,16 @@ export default function ExamsPage() {
                       <span className="font-semibold">{exam.max_score}</span>
                     </div>
                   </div>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigate(`/teacher/exams/${exam.id}/results`)
+                    }}
+                  >
                     <Eye className="w-4 h-4 mr-2" />
-                    Natijalarni ko'rish
+                    Natijalarni kiritish
                   </Button>
                 </CardContent>
               </Card>

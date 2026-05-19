@@ -83,6 +83,7 @@ import TeacherGroupDetailPage from '@/modules/teacher/pages/GroupDetailPage'
 import TeacherVisitsPage from '@/modules/teacher/pages/VisitsPage'
 import TeacherContractsPage from '@/modules/teacher/pages/ContractsPage'
 import TeacherStudentDetailPage from '@/modules/teacher/pages/StudentDetailPage'
+import TeacherExamResultsTablePage from '@/modules/teacher/pages/ExamResultsTablePage'
 
 // Messaging & Notifications
 import MessagesPage from '@/modules/teacher/pages/MessagesPage'
@@ -326,6 +327,7 @@ function App() {
         <Route path="/teacher/visits" element={<TeacherVisitsPage />} />
         <Route path="/teacher/contracts" element={<TeacherContractsPage />} />
         <Route path="/teacher/students/:id" element={<TeacherStudentDetailPage />} />
+        <Route path="/teacher/exams/:id/results" element={<TeacherExamResultsTablePage />} />
 
         {/* Messaging & Notifications */}
         <Route path="/teacher/messages" element={<MessagesPage />} />
