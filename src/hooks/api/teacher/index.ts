@@ -13,6 +13,7 @@
 export * from '../../useTests'
 export * from '../../useAssignments'
 export * from '../../useReports'
+export * from '../../useTeacherGroups'
 
 // TODO: Add more teacher hooks here as they are created
 // export * from './useSchedule'

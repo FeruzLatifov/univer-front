@@ -78,6 +78,8 @@ import TeacherResourcesPage from '@/modules/teacher/pages/ResourcesPage'
 import TeacherTopicsPage from '@/modules/teacher/pages/TopicsPage'
 import TeacherExamsPage from '@/modules/teacher/pages/ExamsPage'
 import TeacherReportsPage from '@/modules/teacher/pages/ReportsPage'
+import TeacherGroupsPage from '@/modules/teacher/pages/GroupsPage'
+import TeacherGroupDetailPage from '@/modules/teacher/pages/GroupDetailPage'
 
 // Messaging & Notifications
 import MessagesPage from '@/modules/teacher/pages/MessagesPage'
@@ -316,6 +318,8 @@ function App() {
         <Route path="/teacher/topics" element={<TeacherTopicsPage />} />
         <Route path="/teacher/exams" element={<TeacherExamsPage />} />
         <Route path="/teacher/reports" element={<TeacherReportsPage />} />
+        <Route path="/teacher/groups" element={<TeacherGroupsPage />} />
+        <Route path="/teacher/groups/:id" element={<TeacherGroupDetailPage />} />
 
         {/* Messaging & Notifications */}
         <Route path="/teacher/messages" element={<MessagesPage />} />
