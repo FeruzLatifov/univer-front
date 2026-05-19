@@ -143,8 +143,9 @@ export default function GroupDetailPage() {
           {!studentsLoading && students.length > 0 && (
             <div className="space-y-2">
               {students.map((student) => (
-                <div
+                <Link
                   key={student.id}
+                  to={`/teacher/students/${student.id}`}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <Avatar className="h-10 w-10">
@@ -175,7 +176,7 @@ export default function GroupDetailPage() {
                       </span>
                     )}
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

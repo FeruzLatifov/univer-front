@@ -23,7 +23,7 @@ export interface TutorVisit {
     second_name: string
     third_name: string
     student_id_number: string
-    phone_number?: string | null
+    phone?: string | null
   } | null
 }
 
