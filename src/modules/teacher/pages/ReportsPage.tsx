@@ -12,12 +12,14 @@ import {
   PieChart
 } from 'lucide-react'
 import { useTranslation } from '@/hooks/useTranslation'
+import { useTeacherReportsOverview } from '@/hooks/useReports'
 import { teacherSubjectService } from '@/services/teacher/SubjectService'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type ReportType = 'overview' | 'attendance' | 'grades'
 
@@ -33,15 +35,13 @@ export default function ReportsPage() {
 
   const subjects = subjectsData?.data || []
 
-  // Mock data for demonstration
-  const mockData = {
-    totalStudents: 120,
-    averageAttendance: 87.5,
-    averageGrade: 78.3,
-    totalLessons: 45,
-    completedTopics: 12,
-    totalTopics: 15,
-  }
+  const { data: overview, isLoading: overviewLoading } =
+    useTeacherReportsOverview(selectedSubject)
+
+  const topicProgress =
+    overview && overview.total_topics > 0
+      ? (overview.completed_topics / overview.total_topics) * 100
+      : 0
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -65,8 +65,10 @@ export default function ReportsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Fan</label>
               <Select
-                value={selectedSubject?.toString()}
-                onValueChange={(value) => setSelectedSubject(Number(value))}
+                value={selectedSubject?.toString() ?? 'all'}
+                onValueChange={(value) =>
+                  setSelectedSubject(value === 'all' ? null : Number(value))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Fanni tanlang yoki umumiy ko'ring" />
@@ -110,7 +112,11 @@ export default function ReportsPage() {
                 <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <div className="text-3xl font-bold">{mockData.totalStudents}</div>
+                {overviewLoading ? (
+                  <Skeleton className="h-9 w-16" />
+                ) : (
+                  <div className="text-3xl font-bold">{overview?.total_students ?? 0}</div>
+                )}
                 <p className="text-sm text-muted-foreground">Talaba</p>
               </div>
             </div>
@@ -127,7 +133,11 @@ export default function ReportsPage() {
                 <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <div className="text-3xl font-bold">{mockData.averageAttendance}%</div>
+                {overviewLoading ? (
+                  <Skeleton className="h-9 w-20" />
+                ) : (
+                  <div className="text-3xl font-bold">{overview?.average_attendance ?? 0}%</div>
+                )}
                 <p className="text-sm text-muted-foreground">Davomat</p>
               </div>
             </div>
@@ -144,7 +154,11 @@ export default function ReportsPage() {
                 <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <div className="text-3xl font-bold">{mockData.averageGrade}</div>
+                {overviewLoading ? (
+                  <Skeleton className="h-9 w-16" />
+                ) : (
+                  <div className="text-3xl font-bold">{overview?.average_grade ?? 0}</div>
+                )}
                 <p className="text-sm text-muted-foreground">Ball</p>
               </div>
             </div>
@@ -161,9 +175,13 @@ export default function ReportsPage() {
                 <BookOpen className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <div className="text-3xl font-bold">
-                  {mockData.completedTopics}/{mockData.totalTopics}
-                </div>
+                {overviewLoading ? (
+                  <Skeleton className="h-9 w-20" />
+                ) : (
+                  <div className="text-3xl font-bold">
+                    {overview?.completed_topics ?? 0}/{overview?.total_topics ?? 0}
+                  </div>
+                )}
                 <p className="text-sm text-muted-foreground">Mavzu</p>
               </div>
             </div>
@@ -193,19 +211,16 @@ export default function ReportsPage() {
                   <div className="flex justify-between text-sm">
                     <span>O'tilgan mavzular</span>
                     <span className="font-semibold">
-                      {mockData.completedTopics} / {mockData.totalTopics}
+                      {overview?.completed_topics ?? 0} / {overview?.total_topics ?? 0}
                     </span>
                   </div>
-                  <Progress
-                    value={(mockData.completedTopics / mockData.totalTopics) * 100}
-                  />
+                  <Progress value={topicProgress} />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>O'tkazilgan darslar</span>
-                    <span className="font-semibold">{mockData.totalLessons}</span>
+                    <span className="font-semibold">{overview?.total_lessons ?? 0}</span>
                   </div>
-                  <Progress value={75} />
                 </div>
               </CardContent>
             </Card>
@@ -221,16 +236,16 @@ export default function ReportsPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Davomat ko'rsatkichi</span>
-                    <span className="font-semibold">{mockData.averageAttendance}%</span>
+                    <span className="font-semibold">{overview?.average_attendance ?? 0}%</span>
                   </div>
-                  <Progress value={mockData.averageAttendance} />
+                  <Progress value={overview?.average_attendance ?? 0} />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>O'zlashtirish darajasi</span>
-                    <span className="font-semibold">{mockData.averageGrade}%</span>
+                    <span className="font-semibold">{overview?.average_grade ?? 0}</span>
                   </div>
-                  <Progress value={mockData.averageGrade} />
+                  <Progress value={overview?.average_grade ?? 0} />
                 </div>
               </CardContent>
             </Card>

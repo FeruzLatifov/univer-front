@@ -12,6 +12,7 @@
 // Re-export existing hooks from parent directory
 export * from '../../useTests'
 export * from '../../useAssignments'
+export * from '../../useReports'
 
 // TODO: Add more teacher hooks here as they are created
 // export * from './useSchedule'
