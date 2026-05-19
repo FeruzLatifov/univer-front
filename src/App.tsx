@@ -81,6 +81,7 @@ import TeacherReportsPage from '@/modules/teacher/pages/ReportsPage'
 import TeacherGroupsPage from '@/modules/teacher/pages/GroupsPage'
 import TeacherGroupDetailPage from '@/modules/teacher/pages/GroupDetailPage'
 import TeacherVisitsPage from '@/modules/teacher/pages/VisitsPage'
+import TeacherContractsPage from '@/modules/teacher/pages/ContractsPage'
 
 // Messaging & Notifications
 import MessagesPage from '@/modules/teacher/pages/MessagesPage'
@@ -322,6 +323,7 @@ function App() {
         <Route path="/teacher/groups" element={<TeacherGroupsPage />} />
         <Route path="/teacher/groups/:id" element={<TeacherGroupDetailPage />} />
         <Route path="/teacher/visits" element={<TeacherVisitsPage />} />
+        <Route path="/teacher/contracts" element={<TeacherContractsPage />} />
 
         {/* Messaging & Notifications */}
         <Route path="/teacher/messages" element={<MessagesPage />} />

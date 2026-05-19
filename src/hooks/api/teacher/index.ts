@@ -15,6 +15,7 @@ export * from '../../useAssignments'
 export * from '../../useReports'
 export * from '../../useTeacherGroups'
 export * from '../../useTutorVisits'
+export * from '../../useContracts'
 
 // TODO: Add more teacher hooks here as they are created
 // export * from './useSchedule'
